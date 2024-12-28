@@ -670,16 +670,20 @@ class Name_Pic(QMainWindow):
                 self.scroll_area.scroll_to_label(self.this_index)
 
     def move_to_moren_position(self, mode = 0):
-        if self.position_mode:
-            if mode != self.previous_nation:
-                change_nation_flag = True
-                self.previous_nation = mode
+        if self.this_index % 2 == 0:
+            if self.position_mode:
+                if mode != self.previous_nation:
+                    change_nation_flag = True
+                    self.previous_nation = mode
+                else:
+                    change_nation_flag = False
+                if mode == '香港':
+                    mode = 2
+                elif mode == '内地':
+                    mode = 1
             else:
-                change_nation_flag = False
-            if mode == '香港':
-                mode = 2
-            elif mode == '内地':
-                mode = 1
+                change_nation_flag = True
+                mode = 0
         else:
             change_nation_flag = True
             mode = 0
