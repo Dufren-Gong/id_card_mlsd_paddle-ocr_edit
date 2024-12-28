@@ -420,9 +420,9 @@ class Name_Pic(QMainWindow):
                 else:
                     text = text_now
                 if text != None or text == '无':
-                    color = 'black'
+                    color = self.global_config['paddleocr_conf']['color']['right']
                 else:
-                    color = 'red'
+                    color = self.global_config['paddleocr_conf']['color']['error']
                 if obj_now.moved_flag:
                     obj_now.setStyleSheet(f'{type_t}{{background-color: rgba(255, 255, 255, 0);border: none;color:{color};}}QToolTip{{background-color: white;color: black;border: 1px solid black;font-size: 12px;}}')
                 else:

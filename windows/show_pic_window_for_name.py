@@ -53,6 +53,7 @@ class Show_Pic_Window(QMainWindow):
                 # 设置窗口样式表，添加黑色边框
         self.setCentralWidget(central_widget)
         keyboard_shift = 6
+        init_position = self.global_config['paddleocr_conf']['init_position']
         self.row_zero = Row_Zero(
             central_widget,
             self.shape.shape_tuples[0][0],
@@ -61,7 +62,7 @@ class Show_Pic_Window(QMainWindow):
             self.shape.shape_tuples[0][3],
             self.shape.shape_tuples[0][4],
             self.shape.shape_tuples[0][5],
-            keyboard_shift,
+            keyboard_shift
         )
 
         self.row_one = Row_One(
@@ -72,7 +73,8 @@ class Show_Pic_Window(QMainWindow):
             self.shape.shape_tuples[1][3],
             self.shape.shape_tuples[1][4],
             self.shape.shape_tuples[1][5],
-            keyboard_shift
+            keyboard_shift,
+            init_position.get('name', None)
         )
 
         self.row_two = Row_Two(
@@ -84,7 +86,9 @@ class Show_Pic_Window(QMainWindow):
             self.shape.shape_tuples[2][4],
             self.shape.shape_tuples[2][5],
             self.shape.shape_tuples[2][6],
-            keyboard_shift
+            keyboard_shift,
+            init_position.get('sex', None),
+            init_position.get('nation', None)
         )
 
         self.row_four = Row_Four(
@@ -93,19 +97,22 @@ class Show_Pic_Window(QMainWindow):
             self.shape.shape_tuples[3][1],
             self.shape.shape_tuples[3][2],
             self.init_edge_color,
-            keyboard_shift
+            keyboard_shift,
+            init_position.get('birth', None)
         )
 
         self.row_five = Row_Five(
             central_widget,
             self.shape.shape_tuples[4][0],
             self.shape.shape_tuples[4][1],
+            init_position.get('address', None)
         )
 
         self.row_six = Row_Six(
             central_widget,
             self.shape.shape_tuples[5][0],
             self.shape.shape_tuples[5][1],
+            init_position.get('id', None)
         )
 
         self.row_seven = Row_Seven(

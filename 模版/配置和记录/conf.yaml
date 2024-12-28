@@ -49,6 +49,16 @@ paddleocr_conf:
     birth_checks: ['出生', '由生', '出年']
     nation_checks: ['民族', '民旅', '民旗']
     address_checks: ['住址', '佳址', '往址', '生址']
+  init_position: #点击移动之后，文本框的初始位置
+    name: [285, 80]
+    sex: [215, 150]
+    nation: [400, 150]
+    birth: [175, 260]
+    address: [170, 380]
+    id: [310, 520]
+  color:
+    right: green #正确文本的颜色
+    error: red #错误文本的颜色
 
 pic_shape: [856, 540] #[width, height]， 最终生成照片的尺寸
 catch_days: 0 #制作的照片缓存几天，填写0代表一直缓存, 正整数比如1，就缓存当天的照片，第二天再打开软件，前一天的缓存就删掉了

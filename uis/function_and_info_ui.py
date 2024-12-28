@@ -6,7 +6,7 @@ from PyQt6.QtGui import QRegularExpressionValidator, QFont, QPalette
 names = ['姓名', '性别', '民族', '生日', '住址', '卡号']
 
 class DraggableLineEdit(QtWidgets.QLineEdit):
-    def __init__(self, shape, parent=None, scale_width=None, space_flag = False, font_size = None, data_flag = False):
+    def __init__(self, shape, parent=None, scale_width=None, space_flag = False, font_size = None, data_flag = False, init_pos = None):
         super().__init__(parent)
         self.shape = shape
         self.setStyleSheet("""QLineEdit {border-width: 1px;border-style: solid;border-color: black;background-color:white;color: black;}QToolTip{background-color: white;color: black;border: 1px solid black;font-size: 12px;}""")
@@ -16,7 +16,7 @@ class DraggableLineEdit(QtWidgets.QLineEdit):
         self.data_flag = data_flag
         self.scale_width = scale_width or shape[2]
         self.font_size = font_size or 25
-
+        self.init_pos = init_pos
         self.enable_move_flag = False
         self.moved_flag = False
         self.init_flag = True
@@ -124,11 +124,16 @@ class DraggableLineEdit(QtWidgets.QLineEdit):
             cursor.removeSelectedText()
 
     def move_event(self):
+        if not self.init_flag:
+            self.setCursor(Qt.CursorShape.ClosedHandCursor)  # 改变鼠标形状为抓取
+            self.enable_move_flag = True
         # 将控件置于顶层
         if self.init_flag and not self.moved_flag:
             self.moved_flag = True
             QApplication.processEvents()
             self.raise_()
+            if self.init_pos != None:
+                self.move(QtCore.QPoint(self.init_pos[0], self.init_pos[1]))
             self.init_flag = False
             color = self.get_font_color()
             self.setStyleSheet(f'QLineEdit{{background-color: rgba(255, 255, 255, 0);border: none;color:{color};}}QToolTip{{background-color: white;color: black;border: 1px solid black;font-size: 12px;}}')
@@ -145,8 +150,6 @@ class DraggableLineEdit(QtWidgets.QLineEdit):
                     if len(info) == 4:
                         text = [info[0]] + ['年'] + [info[1]] + ['月'] + [info[2]] + ['日']
                         self.setText(' '.join(text))
-        self.setCursor(Qt.CursorShape.ClosedHandCursor)  # 改变鼠标形状为抓取
-        self.enable_move_flag = True
 
     def no_drag(self):
         self.enable_move_flag = False
@@ -347,10 +350,12 @@ class Row_One():
                  left_shape: tuple,
                  all_shape: tuple,
                  right_shape: tuple,
-                 keyboard_shift = 6
+                 keyboard_shift = 6,
+                 init_pos = None
                  ) -> None:
         self.centralwidget = centralwidget
         self.keyboard_shift = keyboard_shift
+        self.init_pos = init_pos
         self.init_one_tip_label(tip_label_shape)
         self.init_one_pic_name_lineedit(info_lineedit_shape)
         self.edge_border_width_minues_pushbutton(border_width_minues_shape)
@@ -368,7 +373,7 @@ class Row_One():
         self.tip_label.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)
 
     def init_one_pic_name_lineedit(self, shape):
-        self.pic_name_lineedit = DraggableLineEdit(shape, parent=self.centralwidget, scale_width=135)
+        self.pic_name_lineedit = DraggableLineEdit(shape, parent=self.centralwidget, scale_width=135, init_pos=self.init_pos)
         self.pic_name_lineedit.setValidator(QRegularExpressionValidator(QRegularExpression(r"^[^\n]*$")))
         self.pic_name_lineedit.setObjectName("pic_name_lineedit")
 
@@ -470,9 +475,14 @@ class Row_Two():
                  done_left_shape: tuple,
                  down_shape: tuple,
                  down_right_shape: tuple,
-                 keyboard_shift = 6) -> None:
+                 keyboard_shift = 6,
+                 init_pos = None,
+                 init_pos_two = None
+                 ) -> None:
         self.centralwidget = centralwidget
         self.keyboard_shift = keyboard_shift
+        self.init_pos = init_pos
+        self.init_pos_two = init_pos_two
         self.init_one_tip_label(tip_label_shape)
         self.init_one_pic_name_lineedit(info_lineedit_shape)
         self.init_two_tip_label(two_tip_label_shape)
@@ -492,7 +502,7 @@ class Row_Two():
 
 
     def init_one_pic_name_lineedit(self, shape):
-        self.pic_name_lineedit = DraggableLineEdit(shape, parent=self.centralwidget, scale_width=45)
+        self.pic_name_lineedit = DraggableLineEdit(shape, parent=self.centralwidget, scale_width=45, init_pos=self.init_pos)
         self.pic_name_lineedit.setObjectName("pic_name_lineedit2")
         self.pic_name_lineedit.setValidator(QRegularExpressionValidator(QRegularExpression(r"^[^\n]*$")))
         self.pic_name_lineedit.setMaxLength(1)
@@ -508,7 +518,7 @@ class Row_Two():
 
 
     def init_two_pic_name_lineedit(self, shape):
-        self.two_pic_name_lineedit = DraggableLineEdit(shape, parent=self.centralwidget, scale_width=135)
+        self.two_pic_name_lineedit = DraggableLineEdit(shape, parent=self.centralwidget, scale_width=135, init_pos=self.init_pos_two)
         self.two_pic_name_lineedit.setObjectName("pic_name_lineedit3")
         self.pic_name_lineedit.setValidator(QRegularExpressionValidator(QRegularExpression(r"^[^\n]*$")))
 
@@ -583,7 +593,8 @@ class Row_Three():
                  centralwidget,
                  match_liangdu_shape: tuple,
                  black_shap: tuple,
-                 skip_shape: tuple) -> None:
+                 skip_shape: tuple
+                 ) -> None:
         self.centralwidget = centralwidget
         self.init_two_column_three_match_liangdu_pushbutton(match_liangdu_shape)
         self.init_two_column_three_black_pushbutton(black_shap)
@@ -661,9 +672,12 @@ class Row_Four():
                  info_lineedit_shape: tuple,
                  color_shape:tuple,
                  init_edge_color,
-                 keyboard_shift = 6) -> None:
+                 keyboard_shift = 6,
+                 init_pos = None
+                 ) -> None:
         self.init_edge_color = init_edge_color
         self.keyboard_shift = keyboard_shift
+        self.init_pos = init_pos
         self.colors = ['黑色', '偏黑色', '灰色', '暗灰色', '偏白色', '白色']
         self.centralwidget = centralwidget
         self.init_one_tip_label(tip_label_shape)
@@ -681,7 +695,7 @@ class Row_Four():
 
 
     def init_one_pic_name_lineedit(self, shape):
-        self.pic_name_lineedit = DraggableLineEdit(shape, parent=self.centralwidget, scale_width=240, data_flag=True)
+        self.pic_name_lineedit = DraggableLineEdit(shape, parent=self.centralwidget, scale_width=340, data_flag=True, init_pos=self.init_pos)
         self.pic_name_lineedit.setObjectName("pic_name_lineedit4")
         self.pic_name_lineedit.setValidator(QRegularExpressionValidator(QRegularExpression(r"^[^\n]*$")))
 
@@ -711,7 +725,7 @@ class Row_Four():
 class CustomPlainTextEdit(QtWidgets.QPlainTextEdit):
     # # 定义信号，传递当前文本
     # textSubmitted = pyqtSignal(str)
-    def __init__(self, shape, parent=None):
+    def __init__(self, shape, parent=None, init_pos = None):
         super().__init__(parent)
         self.shape = shape
         self.setStyleSheet("""QPlainTextEdit {border-width: 1px;border-style: solid;border-color: black;background-color:white;color: black;}QToolTip{background-color: white;color: black;border: 1px solid black;font-size: 12px;}""")
@@ -719,7 +733,7 @@ class CustomPlainTextEdit(QtWidgets.QPlainTextEdit):
         self.initial_pos = None  # 初始位置
         self.current_pos = QtCore.QPoint(*shape[:2])  # 当前拖动的位置
         self.default_font = self.font()
-
+        self.init_pos = init_pos
         self.enable_move_flag = False
         self.moved_flag = False
         self.init_flag = True
@@ -784,18 +798,20 @@ class CustomPlainTextEdit(QtWidgets.QPlainTextEdit):
         super().mouseMoveEvent(event)
 
     def move_event(self):
-        # self.setCursor(Qt.CursorShape.ClosedHandCursor)  # 改变鼠标形状为抓取
+        if not self.init_flag:
+            self.enable_move_flag = True
         if self.init_flag and not self.moved_flag:
             self.moved_flag = True
             QApplication.processEvents()
             self.raise_()
+            if self.init_pos != None:
+                self.move(QtCore.QPoint(self.init_pos[0], self.init_pos[1]))
             self.init_flag = False
             color = self.get_font_color()
             self.setStyleSheet(f'QPlainTextEdit{{background-color: rgba(255, 255, 255, 0);border: none;color:{color};}}QToolTip{{background-color: white;color: black;border: 1px solid black;font-size: 12px;}}')
             font = QFont("SimHei", 24)  # "SimHei" 是黑体的字体名称，14 是字号
             self.setFont(font)
             self.setFixedSize(375, 120)
-        self.enable_move_flag = True
 
     def contextMenuEvent(self, event):
         # 创建自定义右键菜单
@@ -871,8 +887,11 @@ class Row_Five():
     def __init__(self,
                  centralwidget,
                  tip_label_shape: tuple,
-                 info_lineedit_shape: tuple) -> None:
+                 info_lineedit_shape: tuple,
+                 init_pos = None
+                 ) -> None:
         self.centralwidget = centralwidget
+        self.init_pos = init_pos
         self.init_one_tip_label(tip_label_shape)
         self.init_one_pic_name_lineedit(info_lineedit_shape)
 
@@ -886,15 +905,18 @@ class Row_Five():
         self.tip_label.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)
 
     def init_one_pic_name_lineedit(self, shape):
-        self.pic_name_lineedit = CustomPlainTextEdit(shape, parent=self.centralwidget)
+        self.pic_name_lineedit = CustomPlainTextEdit(shape, parent=self.centralwidget, init_pos=self.init_pos)
         self.pic_name_lineedit.setObjectName("pic_name_lineedit5")
 
 class Row_Six():
     def __init__(self,
                  centralwidget,
                  tip_label_shape: tuple,
-                 info_lineedit_shape: tuple) -> None:
+                 info_lineedit_shape: tuple,
+                 init_pos = None
+                 ) -> None:
         self.centralwidget = centralwidget
+        self.init_pos = init_pos
         self.init_one_tip_label(tip_label_shape)
         self.init_one_pic_name_lineedit(info_lineedit_shape)
 
@@ -909,7 +931,7 @@ class Row_Six():
 
 
     def init_one_pic_name_lineedit(self, shape):
-        self.pic_name_lineedit = DraggableLineEdit(shape, parent=self.centralwidget, scale_width=475, space_flag=True, font_size=28)
+        self.pic_name_lineedit = DraggableLineEdit(shape, parent=self.centralwidget, scale_width=475, space_flag=True, font_size=28, init_pos=self.init_pos)
         self.pic_name_lineedit.setObjectName("pic_name_lineedit6")
         self.pic_name_lineedit.setValidator(QRegularExpressionValidator(QRegularExpression(r"^[^\n]*$")))
 
@@ -968,7 +990,8 @@ class Row_Seven():
     def __init__(self,
                  centralwidget,
                  tip_label_shape: tuple,
-                 info_lineedit_shape: tuple) -> None:
+                 info_lineedit_shape: tuple,
+                 ) -> None:
         self.centralwidget = centralwidget
         self.init_one_tip_label(tip_label_shape)
         self.init_one_pic_name_lineedit(info_lineedit_shape)
