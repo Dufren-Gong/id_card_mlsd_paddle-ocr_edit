@@ -1,7 +1,0 @@
-Traceback (most recent call last):
-  File "uis\photo_gallery_ui\name_pic_ui.py", line 343, in function_confire
-  File "uis\photo_gallery_ui\name_pic_ui.py", line 218, in display_large_image
-  File "uis\photo_gallery_ui\name_pic_ui.py", line 149, in change_info
-  File "uis\photo_gallery_ui\name_pic_ui.py", line 136, in shwo_red_or_black
-UnboundLocalError: local variable 'text' referenced before assignment
-
