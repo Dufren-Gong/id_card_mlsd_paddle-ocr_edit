@@ -28,8 +28,9 @@ class Show_Pic_Window(QMainWindow):
 
         self.init_edge_color = init_edge_color
         self.shape = Ui_Shapes(start_width=870, start_height=50, round_gap=10)
+        line_shift = 4
         self.shape.layout([self.shape.label_height] * 4 + [self.shape.label_height * 3] + [self.shape.label_height] + [self.shape.label_height * 7] +[self.shape.label_height] * 3,
-                            [[30, 94] + [20] * 4] * 2 + [[30, 25, 28, 63] + [20] * 3] + [[30, 124, 80]] + [[30, 210]] * 3 + [[80] * 3] * 3)
+                            [[30, 94] + [20] * 4] * 2 + [[30, 25, 28, 63] + [20] * 3] + [[30, 124, 80]] + [[30, 210 + line_shift]] + [[30, 150 ,50 + line_shift]] + [[30, 210 + line_shift]] + [[80] * 3] * 3)
         self.init_ui()
 
     def clear_content(self):
@@ -53,7 +54,8 @@ class Show_Pic_Window(QMainWindow):
                 # 设置窗口样式表，添加黑色边框
         self.setCentralWidget(central_widget)
         keyboard_shift = 6
-        init_position = self.global_config['paddleocr_conf']['init_position']
+        init_neidi_position = self.global_config['paddleocr_conf']['init_position']['neidi']
+        init_hk_position = self.global_config['paddleocr_conf']['init_position']['hk']
         self.row_zero = Row_Zero(
             central_widget,
             self.shape.shape_tuples[0][0],
@@ -74,7 +76,8 @@ class Show_Pic_Window(QMainWindow):
             self.shape.shape_tuples[1][4],
             self.shape.shape_tuples[1][5],
             keyboard_shift,
-            init_position.get('name', None)
+            init_neidi_position.get('name', None),
+            init_hk_position.get('name', None)
         )
 
         self.row_two = Row_Two(
@@ -87,8 +90,9 @@ class Show_Pic_Window(QMainWindow):
             self.shape.shape_tuples[2][5],
             self.shape.shape_tuples[2][6],
             keyboard_shift,
-            init_position.get('sex', None),
-            init_position.get('nation', None)
+            init_neidi_position.get('sex', None),
+            init_hk_position.get('sex', None),
+            init_neidi_position.get('nation', None)
         )
 
         self.row_four = Row_Four(
@@ -98,21 +102,25 @@ class Show_Pic_Window(QMainWindow):
             self.shape.shape_tuples[3][2],
             self.init_edge_color,
             keyboard_shift,
-            init_position.get('birth', None)
+            init_neidi_position.get('birth', None),
+            init_hk_position.get('birth', None)
         )
 
         self.row_five = Row_Five(
             central_widget,
             self.shape.shape_tuples[4][0],
             self.shape.shape_tuples[4][1],
-            init_position.get('address', None)
+            init_neidi_position.get('address', None)
         )
 
         self.row_six = Row_Six(
             central_widget,
             self.shape.shape_tuples[5][0],
             self.shape.shape_tuples[5][1],
-            init_position.get('id', None)
+            self.shape.shape_tuples[5][2],
+            keyboard_shift,
+            init_neidi_position.get('id', None),
+            init_hk_position.get('id', None)
         )
 
         self.row_seven = Row_Seven(

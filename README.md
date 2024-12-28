@@ -16,7 +16,6 @@ cp ./模版/配置和记录/new/main_new.spec ./main_new.spec
 
 pip install pyinstaller
 
-
 pyinstaller main_new.spec
 
 ## 如果出现代理连接问题,获取代理ip端口

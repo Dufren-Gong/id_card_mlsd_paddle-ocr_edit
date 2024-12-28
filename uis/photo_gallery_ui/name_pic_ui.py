@@ -40,7 +40,9 @@ class Name_Pic(QMainWindow):
         self.setWindowTitle("照片信息编辑")
         self.setGeometry(0, 0, 800, 600)
         self.setWindowIcon(QIcon(get_internal_path('./files/icon/icon.ico')))
-
+        self.position_mode = self.global_config['paddleocr_conf']['defalut_position_mode']
+        self.position_mode_text = ['默认原位', '默认移动']
+        self.previous_nation = '未知'
         # 创建主布局，水平布局
         main_layout = QHBoxLayout()
 
@@ -50,6 +52,7 @@ class Name_Pic(QMainWindow):
 
         # 创建 QLabel 用于显示大图
         self.large_image_label = Show_Pic_Window(show_info, global_config, init_edge_color=copy.copy(self.global_config['paddleocr_conf']['edge_color']), height_gap=self.height_gap)
+        self.large_image_label.row_six.all_moved_button.setText(self.position_mode_text[not self.position_mode])
 
         # 创建 Scroll_Area 实例
         self.scroll_area = Scroll_Area(width_t=self.scroll_area_width, 
@@ -219,6 +222,7 @@ class Name_Pic(QMainWindow):
             self.large_image_label.row_seven.pic_name_lineedit.setPlainText('\n'.join(pic_info_dict))
             self.scroll_area.scroll_to_label(self.this_index)
             self.display_flag = False
+            self.move_to_moren_position(self.scroll_area.labels[index].info[6])
 
     def confirm_selection(self):
         self.large_image_label.row_eight.confire_all_button.setDisabled(True)
@@ -665,6 +669,29 @@ class Name_Pic(QMainWindow):
                 self.scroll_area.labels[self.this_index].setPixmap(scaled_pixmap)
                 self.scroll_area.scroll_to_label(self.this_index)
 
+    def move_to_moren_position(self, mode = 0):
+        if self.position_mode:
+            if mode != self.previous_nation:
+                change_nation_flag = True
+                self.previous_nation = mode
+            else:
+                change_nation_flag = False
+            if mode == '香港':
+                mode = 2
+            elif mode == '内地':
+                mode = 1
+        else:
+            change_nation_flag = True
+            mode = 0
+        for obj in self.obj_index:
+            if not obj.moved_flag or change_nation_flag:
+                obj.change_pos(mode)
+
+    def change_moren_position_mode(self):
+        self.position_mode = int(not self.position_mode)
+        self.large_image_label.row_six.all_moved_button.setText(self.position_mode_text[not self.position_mode])
+        self.move_to_moren_position(self.scroll_area.labels[self.this_index].info[6])
+
     def init_event(self):
         self.init_black_button_timer()
         self.init_combbox_change_tips_timer()
@@ -696,3 +723,4 @@ class Name_Pic(QMainWindow):
         self.large_image_label.row_zero.border_width_plus_button.clicked.connect(lambda: self.change_edge_ipx(0))
         self.large_image_label.row_one.border_width_minues_pushbutton.clicked.connect(lambda: self.change_edge_ipx(1))
         self.large_image_label.row_four.border_color_combobox.currentIndexChanged.connect(self.change_edge_color)
+        self.large_image_label.row_six.all_moved_button.clicked.connect(self.change_moren_position_mode)
