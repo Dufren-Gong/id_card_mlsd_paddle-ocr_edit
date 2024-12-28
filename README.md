@@ -15,15 +15,20 @@ cp ./模版/配置和记录/new/main_new.spec ./main_new.spec
 ## 根据./模版/配置和记录/安装使用记录.txt修改main_new.spec内容
 
 pip install pyinstaller
+
+
 pyinstaller main_new.spec
 
 ## 如果出现代理连接问题,获取代理ip端口
 
 git config --global http.proxy 127.0.0.1:port
+
 git config --global https.proxy 127.0.0.1:port
 
 ## 上传git
 
 git add .
+
 git commit -m "..."
+
 git push -u origin main
