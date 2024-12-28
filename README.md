@@ -26,4 +26,4 @@ git config --global https.proxy 127.0.0.1:port
 
 git add .
 git commit -m "..."
-git push -u origin mian
+git push -u origin main
