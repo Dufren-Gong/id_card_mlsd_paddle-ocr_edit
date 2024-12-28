@@ -1,0 +1,130 @@
+from PyQt6 import QtCore
+import os, json
+from my_utils.utils import cv_imwrite
+from my_utils.pdf_to_pic import convert_pdf_to_images
+from my_utils.ocr_by_paddleocr import pic_to_str
+from my_utils.mlsd_scan import square_four_lines, get_square_dots
+import numpy as np
+
+class PDFToPicSignals(QtCore.QObject):
+    finished = QtCore.pyqtSignal()
+
+class Pdf_to_Pic_Thread(QtCore.QRunnable):  # 继承QThread
+    def __init__(self, folder_path, save_path, pic_formate): # 从前端界面中传递参数到这个任务后台
+        super().__init__()
+        self.folder_path = folder_path
+        self.pic_formate = pic_formate
+        self.save_path = save_path
+        self.signals = PDFToPicSignals()
+
+    def run(self):  # 重写run  比较耗时的后台任务可以在这里运行
+        convert_pdf_to_images(self.folder_path, self.save_path, self.pic_formate)
+        self.signals.finished.emit()  # 任务完成后，发送信号
+
+class OcrSignals(QtCore.QObject):
+    finished = QtCore.pyqtSignal(object, object, object)
+
+class Get_Ocr(QtCore.QRunnable):
+    def __init__(self, cv_img, ocr_model, path, pass_flag=False, scale=0.8, pic_shape = (856, 540), times = 1, pic_type='origin', info_checks = dict(), one_line_scale = 30): # 从前端界面中传递参数到这个任务后台
+        super().__init__()
+        self.cv_img = cv_img
+        self.ocr_model = ocr_model
+        self.path = path
+        self.pass_flag = pass_flag
+        self.scale = scale
+        self.pic_shape = pic_shape
+        self.pic_type = pic_type
+        self.times = times
+        self.info_checks = info_checks
+        self.one_line_scale = one_line_scale
+        self.signals = OcrSignals()
+
+    def run(self):  # 重写run  比较耗时的后台任务可以在这里运行
+        catch, pic_info_dict = pic_to_str(self.cv_img, self.ocr_model, self.pass_flag, scale=self.scale, shape=self.pic_shape, times = self.times, pic_type = self.pic_type, info_checks = self.info_checks, one_line_scale = self.one_line_scale)
+        self.signals.finished.emit(catch, pic_info_dict, self.path)  # 任务完成后，发送信号
+
+class LDSignals(QtCore.QObject):
+    finished = QtCore.pyqtSignal(object, object, object, object, object)
+
+class Get_line_detect(QtCore.QRunnable):
+    def __init__(self, cv_pairs, pair_paths, scales, line_detect_model, model_large, params, max_t_arr, model_type, pic_shape, tiny_first_flag): # 从前端界面中传递参数到这个任务后台
+        super().__init__()
+        self.cv_pairs = cv_pairs
+        self.pair_paths = pair_paths
+        self.scales = scales
+        self.line_detect_model = line_detect_model
+        self.model_large = model_large
+        self.params = params
+        self.max_t_arr = max_t_arr
+        self.model_type = model_type
+        self.pic_shape = pic_shape
+        self.tiny_first_flag = tiny_first_flag
+        self.signals = LDSignals()
+
+    def run(self):  # 重写run  比较耗时的后台任务可以在这里运行
+        points = []
+        max_flags = []
+        for people in self.cv_pairs:
+            h, w, _ = people.shape
+            if self.model_type == 'tiny':
+                squares, array_score = get_square_dots(people, self.line_detect_model, max_t=self.max_t_arr[0], params=self.params)
+                squares_lines, max_flag = square_four_lines(squares, array_score, (h, w), 0.1, self.pic_shape)
+            elif self.model_type == 'large':
+                squares, array_score = get_square_dots(people, self.model_large, max_t=self.max_t_arr[1], params=self.params)
+                squares_lines, max_flag = square_four_lines(squares, array_score, (h, w), 0.1, self.pic_shape)
+            elif self.model_type == 'all':
+                if self.tiny_first_flag:
+                    squares, array_score = get_square_dots(people, self.line_detect_model, max_t=self.max_t_arr[0], params=self.params)
+                else:
+                    squares, array_score = get_square_dots(people, self.model_large, max_t=self.max_t_arr[1], params=self.params)
+                squares_lines, max_flag = square_four_lines(squares, array_score, (h, w), 0.1, self.pic_shape)
+                if max_flag:
+                    if self.tiny_first_flag:
+                        squares, array_score = get_square_dots(people, self.model_large, max_t=self.max_t_arr[1], params=self.params)
+                    else:
+                        squares, array_score = get_square_dots(people, self.line_detect_model, max_t=self.max_t_arr[0], params=self.params)
+                    squares_lines, max_flag = square_four_lines(squares, array_score, (h, w), 0.1, self.pic_shape)
+            squares_lines = sorted(squares_lines, key=lambda x:x[4], reverse=False)
+            first_step = [i[:4] for i in squares_lines]
+            second_step = [[j[0][0], j[0][1], j[2][0], j[2][1]] for j in first_step]
+            final_point = np.array(second_step[-1])
+            points.append(final_point)
+            max_flags.append(max_flag)
+        self.signals.finished.emit(self.cv_pairs, self.pair_paths, points, max_flags, self.scales)  # 任务完成后，发送信号
+
+class Remove_File(QtCore.QThread):
+    resSignal = QtCore.pyqtSignal()  # 注册一个信号
+    def __init__(self, file_path): # 从前端界面中传递参数到这个任务后台
+        super().__init__()
+        self.file_path = file_path
+
+    def run(self):  # 重写run  比较耗时的后台任务可以在这里运行
+        for file_path in self.file_path:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+        self.resSignal.emit()
+
+class Save_Pic(QtCore.QThread):
+    resSignal = QtCore.pyqtSignal()  # 注册一个信号
+    def __init__(self, cv_img, pic_type, name): # 从前端界面中传递参数到这个任务后台
+        super().__init__()
+        self.cv_img = cv_img
+        self.pic_type = pic_type
+        self.name = name
+
+    def run(self):  # 重写run  比较耗时的后台任务可以在这里运行
+        cv_imwrite(self.cv_img, self.pic_type, self.name)
+        self.resSignal.emit()
+
+class Save_Info(QtCore.QThread):
+    resSignal = QtCore.pyqtSignal()  # 注册一个信号
+    def __init__(self, save_path, temp_dict): # 从前端界面中传递参数到这个任务后台
+        super().__init__()
+        self.save_path = save_path
+        self.temp_dict = temp_dict
+
+    def run(self):  # 重写run  比较耗时的后台任务可以在这里运行
+        with open(self.save_path, 'w', encoding='utf-8') as writer:
+            line = json.dumps(self.temp_dict, ensure_ascii=False) + '\n'
+            writer.write(line)
+        self.resSignal.emit()

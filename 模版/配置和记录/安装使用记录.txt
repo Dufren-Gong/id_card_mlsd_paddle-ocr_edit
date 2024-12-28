@@ -1,0 +1,85 @@
+pip install paddle paddleocr paddlepaddle
+
+生成一个.spec文件，名字与入口函数相同，内容如下：
+"""
+# -*- mode: python ; coding: utf-8 -*-
+
+
+a = Analysis(
+    ['operate.py'],
+    pathex=['D:\Always_Softwares\Miniconda3\envs\paddle-ocr\Lib\site-packages\paddleocr','D:\Always_Softwares\Miniconda3\envs\paddle-ocr\Lib\site-packages\paddle\libs'],
+    binaries=[('D:\Always_Softwares\Miniconda3\envs\paddle-ocr\Lib\site-packages\paddle\libs','.')],
+    datas=[('D:\Always_Softwares\Miniconda3\envs\paddle-ocr\Lib\site-packages\paddleocr\ppocr','ppocr'),('./files/icon/icon.ico','icon')],
+    hiddenimports=[],
+    hookspath=[],
+    hooksconfig={},
+    runtime_hooks=[],
+    excludes=[],
+    noarchive=False,
+    optimize=0,
+)
+pyz = PYZ(a.pure)
+
+exe = EXE(
+    pyz,
+    a.scripts,
+    [],
+    exclude_binaries=True,
+    name='operate',
+    debug=False,
+    bootloader_ignore_signals=False,
+    strip=False,
+    upx=True,
+    console=True,
+    disable_windowed_traceback=False,
+    argv_emulation=False,
+    target_arch=None,
+    codesign_identity=None,
+    entitlements_file=None,
+)
+coll = COLLECT(
+    exe,
+    a.binaries,
+    a.datas,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    name='operate',
+)
+"""
+
+需要更改三个数据
+pathex=['D:\Always_Softwares\Miniconda3\envs\paddle-ocr\Lib\site-packages\paddleocr','D:\Always_Softwares\Miniconda3\envs\paddle-ocr\Lib\site-packages\paddle\libs'],
+binaries=[('D:\Always_Softwares\Miniconda3\envs\paddle-ocr\Lib\site-packages\paddle\libs','.')],
+datas=[('D:\Always_Softwares\Miniconda3\envs\paddle-ocr\Lib\site-packages\paddleocr\ppocr','ppocr'),('./files/icon/icon.ico','icon')],
+分别是相对库的安装包和icon
+安装包有paddleocr, paddle等
+
+然后执行pyinstaller 入口文件名.spec
+
+
+如果出现类似这样的问题
+Traceback (most recent call last):
+  File "operate.py", line 4, in <module>
+  File "<frozen importlib._bootstrap>", line 991, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 975, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 671, in _load_unlocked
+  File "PyInstaller\loader\pyimod02_importers.py", line 378, in exec_module
+  File "Ui_untitled.py", line 20, in <module>
+  File "<frozen importlib._bootstrap>", line 991, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 975, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 671, in _load_unlocked
+  File "PyInstaller\loader\pyimod02_importers.py", line 378, in exec_module
+  File "ocr_by_paddleocr.py", line 1, in <module>
+  File "<frozen importlib._bootstrap>", line 991, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 975, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 671, in _load_unlocked
+  File "PyInstaller\loader\pyimod02_importers.py", line 378, in exec_module
+  File "paddleocr.py", line 46, in <module>
+  File "paddleocr.py", line 40, in _import_file
+  File "<frozen importlib._bootstrap_external>", line 839, in exec_module
+  File "<frozen importlib._bootstrap_external>", line 975, in get_code
+  File "<frozen importlib._bootstrap_external>", line 1032, in get_data
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\11930\\Desktop\\operate\\_internal\\tools/__init__.py'
+就将环境里的D:\Always_Softwares\Miniconda3\envs\paddle-ocr\Lib\site-packages\paddleocr
+文件夹下的tools文件夹复制到C:\\Users\\11930\\Desktop\\operate\\_internal里

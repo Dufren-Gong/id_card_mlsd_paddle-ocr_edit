@@ -1,0 +1,14 @@
+pandas
+opencv-python
+onnxruntime
+numpy
+natsort
+openpyxl
+pillow
+python-docx
+pymupdf
+pyqt6
+opencc
+pyclipper
+shapely
+concurrent

@@ -1,0 +1,767 @@
+import os, shutil
+from PyQt6.QtWidgets import QMainWindow, QWidget, QFileDialog, QApplication
+from uis.shapes import Ui_Shapes
+from my_utils.utils import delete_specific_files_and_folders
+from uis.main_window_ui import Row_Zero, Row_One, Row_Two, Row_Catch
+from windows.show_info_window import Show_Info_Window
+from my_utils.threads import Pdf_to_Pic_Thread
+from my_utils.utils import get_data_str, open_floader, find_in_catch_pic, get_internal_path
+from my_utils.operate_excel import read_sheets, get_kaidan_pairs, get_nahuo_pairs, get_zhuandan_pairs, get_nianfei_pairs, get_budan_pairs, get_buka_pairs, fill_information, check_excel
+from each_types import kaidan, nahuo, zhuandan, budan, nianfei, buka
+from PyQt6.QtGui import QDragEnterEvent, QIcon
+from PyQt6.QtCore import QFileInfo, QThreadPool, QTimer
+from my_utils.operate_word import copy_template, replace_text_with_same_format, replace_pic
+from natsort import natsorted
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from my_utils.Traditional_to_Simplified_Chinese import fan_to_jian
+        
+class Main_Window(QMainWindow):
+    def __init__(self, open_pic_operate_window, global_config):
+        super().__init__()
+        self.show_info = Show_Info_Window()
+        self.Thread_pdf_to_pic = None
+        self.global_config = global_config
+        self.formates = ['jpg', 'jpeg', 'png', 'info']
+        self.have_error_flag = False
+        self.pic_scale = 0.378
+        self.thread_pool = QThreadPool.globalInstance()
+        self.thread_pool.setMaxThreadCount(1)
+        self.open_pic_operate_window = open_pic_operate_window
+        self.select_file_flag = False
+        self.shape = Ui_Shapes(round_gap=10)
+        self.concat_index = 3
+        self.pdf_to_pic_count = 0
+        self.pdf_to_pic_finished = 0
+        # 启用拖放
+        self.setAcceptDrops(True)
+        self.shape.layout([self.shape.combobox_height, self.shape.combobox_height, self.shape.button_height, 27],
+                          [[60, 234]] + [[60, 135, 95]] * 2 + [[298]])
+        self.setWindowIcon(QIcon(get_internal_path('./files/icon/icon.ico')))
+        self.init_ui()
+        self.init_events()
+
+    def dragEnterEvent(self, event: QDragEnterEvent):
+        # 只要拖拽内容包含 URL，就接受拖拽
+        if self.row_one.function_combobox.currentIndex() != 2:
+            if event.mimeData().hasUrls():
+                event.acceptProposedAction()  # 接受所有拖拽操作
+            else:
+                event.ignore()  # 如果没有 URL，忽略拖拽
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        index = self.row_one.function_combobox.currentIndex()
+        pic_check_index = [0, 1]
+        # floader_check_index = [3, 4, 5, 6, 7, 8, 9, 10]
+        no_event_arr = [2, 11]
+        # 获取拖拽的所有文件或文件夹路径
+        urls = event.mimeData().urls()
+        if urls:
+            for index_t, url in enumerate(urls):
+                local_path = url.toLocalFile()  # 获取本地路径
+                if local_path:
+                    file_info = QFileInfo(local_path)
+                    if file_info.isFile():  # 如果是文件
+                        # 检查文件扩展名
+                        file_extension = file_info.suffix().lower()  # 获取文件后缀，并转为小写
+                        if index != 11:
+                            if file_extension in self.formates[:-1]:
+                                shutil.copy(local_path, os.path.join('./照片放这里', get_data_str() + f'_{index_t}.' + file_extension))
+                        elif index == 11:
+                            if file_extension == 'pdf':
+                                self.pdf_to_pic_count += 1
+                                self.open_folder_dialog(local_path)
+                    elif file_info.isDir():  # 如果是文件夹
+                        if index not in no_event_arr:
+                            if not (self.row_zero.file_type_combobox.currentIndex() == 1 and index in pic_check_index):
+                                self.open_folder_dialog(local_path)
+                            break
+
+    def closeEvent(self, event):
+        if self.thread_pool is not None:
+            self.thread_pool.clear()
+        delete_specific_files_and_folders('.', '__pycache__', '.DS_Store')
+        self.deleteLater()
+        self.close()
+
+    def concat_all(self, path_t, files):
+        flag = False
+        items = os.listdir(path_t)
+        if len(items) != 0:
+            # 过滤出文件夹的名称
+            directories = natsorted([item for item in items if os.path.isdir(os.path.join(path_t, item))])
+            source_dir = self.folder_path
+            destination_dir = os.path.join(path_t, directories[-1])
+            if source_dir != destination_dir:
+                # 获取源目录中的所有条目
+                for item in files:
+                    # 构造完整的文件路径
+                    source_item_path = os.path.join(source_dir, item)
+                    
+                    # 目标文件路径
+                    destination_item_path = os.path.join(destination_dir, item)
+
+                    # 检查该条目是否为文件
+                    if os.path.isfile(source_item_path):
+                        # 检查目标目录是否已经存在同名文件
+                        if not os.path.exists(destination_item_path):
+                            # 复制文件到目标目录
+                            shutil.copy(source_item_path, destination_item_path)
+                            flag = True
+        return flag
+
+    def open_folder_dialog(self, floader_path = None):
+        selected_options = self.row_one.function_combobox.currentIndex()
+        if selected_options != 11:
+            # 打开文件夹选择对话框
+            if selected_options == 0 or selected_options == 1:
+                if self.row_zero.file_type_combobox.currentIndex() == 0:
+                    if floader_path == None:
+                        self.folder_path = QFileDialog.getExistingDirectory(self, "选择文件夹")
+                    else:
+                        self.folder_path = floader_path
+                    if self.folder_path:
+                        folder_path_pic = os.listdir(self.folder_path)
+                        self.folder_path = [os.path.join(self.folder_path, i) for i in folder_path_pic if i.rsplit('.', maxsplit=1)[-1] in self.formates[:-1]]
+                        if len(self.folder_path) == 0:
+                            self.folder_path = None
+                elif self.row_zero.file_type_combobox.currentIndex() == 1:
+                    self.folder_path, _ = QFileDialog.getOpenFileNames(self, '选择照片文件', '',
+                                                                        '图像文件 (*.jpg *.jpeg *.png);;所有文件 (*)')
+                if self.folder_path != '' and self.folder_path != []:
+                    if self.folder_path == None:
+                        self.select_file_flag = False
+                        self.show_info.set_show_text('所选文件夹内无照片')
+                        self.show_info.show_window()
+                    elif len(self.folder_path) % 2 != 0:
+                        self.select_file_flag = False
+                        self.show_info.set_show_text('照片数量为单数，必须为双数')
+                        self.show_info.show_window()
+                    else:
+                        self.select_file_flag = True
+            else:
+                if floader_path == None:
+                    self.folder_path = QFileDialog.getExistingDirectory(self, "选择文件夹")
+                else:
+                    self.folder_path = floader_path
+                if self.folder_path:  # 检查是否选择了文件夹
+                    files = os.listdir(self.folder_path)
+                    if ".DS_Store" in files:
+                        files.remove('.DS_Store')
+                    if selected_options == self.concat_index:
+                        files = [i for i in files if i.rsplit('.', maxsplit = 1)[-1] in self.formates]
+                        if len(files) == 0:
+                            self.show_info.set_show_text('所选文件夹无可合并信息！检查是否全是同名文件或者选择了合并到同一个文件')
+                        else:
+                            if self.concat_all('照片编辑结果', files):
+                                self.show_info.set_show_text('合并文件夹照片成功，但不包含文件夹和同名文件')
+                            else:
+                                self.show_info.set_show_text('还未操作过照片，请先操作照片。')
+                        self.show_info.show_window()
+                    else:
+                        self.excel_name = '非身份证信息需求.xlsx'
+                        if not os.path.exists(os.path.join('模版', self.excel_name)):
+                            self.show_info.set_show_text(f'缺少"{self.excel_name}"文件')
+                            self.show_info.show_window()
+                        else:
+                            self.show_info.set_show_text('正在制作中，请稍后！')
+                            self.show_info.show_window()
+                            QApplication.processEvents()
+                            if selected_options == 4:
+                                self.make_singe('开单')
+                            elif selected_options == 5:
+                                self.make_singe('拿货')
+                            elif selected_options == 6:
+                                self.make_singe('转单')
+                            elif selected_options == 7:
+                                self.make_singe('年费')
+                            elif selected_options == 8:
+                                self.make_singe('补单')
+                            elif selected_options == 9:
+                                self.make_singe('补卡')
+                            elif selected_options == 10:
+                                self.start_processing()
+                            if not self.have_error_flag:
+                                duration = self.global_config['show_tip_timer_duration']
+                                if duration > 0:
+                                    self.show_info.set_show_text('制作完成！')
+                                    self.show_info.show_window()
+                                    self.combbox_change_tips_timer.start(duration)    
+                else:
+                    self.select_file_flag = False
+        else:
+            if floader_path == None:
+                self.folder_path, _ = QFileDialog.getOpenFileName(self, '选择pdf文件', '', 
+                                                    'Pdf Files (*.pdf);;All Files (*)')
+            else:
+                self.folder_path = floader_path
+            self.select_file_flag = True
+        if self.select_file_flag and ((isinstance(self.folder_path, list) and len(self.folder_path) != 0) or (isinstance(self.folder_path, str) and self.folder_path)):
+            if selected_options == 0 or selected_options == 1:
+                self.hide()
+                self.open_pic_operate_window(natsorted(self.folder_path), selected_options)
+            elif selected_options == 11:
+                if floader_path == None:
+                    self.pdf_to_pic_count += 1
+                if self.pdf_to_pic_finished == 0:
+                    self.row_two.select_files_button.setDisabled(True)
+                    self.show_info.set_show_text('可能需要一些时间，请等待')
+                    self.show_info.show_window()
+                    QApplication.processEvents()
+                save_path = os.path.join('./照片编辑结果', get_data_str())
+                os.makedirs(save_path, exist_ok=True)
+                self.Thread_pdf_to_pic = Pdf_to_Pic_Thread(self.folder_path, save_path, 'png')
+                self.Thread_pdf_to_pic.signals.finished.connect(self.end_pdf_to_pic)  # 把任务完成的信号与任务完成后处理的槽函数绑定
+                self.thread_pool.start(self.Thread_pdf_to_pic)
+        self.have_error_flag = False
+        self.select_file_flag = False
+
+    def start_processing(self):
+        inputs = ['开单', '拿货', '转单', '年费', '补单', '补卡']
+        try:
+            pass_flag = check_excel(os.path.join('模版', self.excel_name), self.folder_path)
+        except PermissionError:
+            pass_flag = '请先关闭excel!'
+        if pass_flag == True:
+            functions = [self.make_all_single] * len(inputs)
+
+            with ThreadPoolExecutor() as executor:
+                futures = [executor.submit(fn, inp) for fn, inp in zip(functions, inputs)]
+
+                results = []
+                for future in as_completed(futures):
+                    result = future.result()
+                    results.append(result)
+            # 处理所有函数返回的结果
+            self.handle_results(results)
+        else:
+            open_floader(os.path.join('模版', self.excel_name))
+            self.have_error_flag = True
+            if pass_flag == False:
+                self.show_info.set_show_text('excel信息有误，已经将有误的地方标为红色，请检查！')
+            else:
+                self.show_info.set_show_text(pass_flag)
+            self.show_info.show_window()
+
+    def make_singe(self, mode):
+        try:
+            pass_flag = check_excel(os.path.join('模版', self.excel_name), self.folder_path, mode)
+        except PermissionError:
+            pass_flag = '请先关闭excel!'
+        if pass_flag == True:
+            try:
+                self.which_func(mode)
+            except:
+                self.shwo_total_error()
+        else:
+            open_floader(os.path.join('模版', self.excel_name))
+            self.have_error_flag = True
+            if pass_flag == False:
+                self.show_info.set_show_text('excel信息有误，已经将有误的地方标为红色，请检查！')
+            else:
+                self.show_info.set_show_text(pass_flag)
+            self.show_info.show_window()
+
+    def make_all_single(self, mode):
+        error_part = []
+        show_str = []
+        try:
+            str = self.get_error_str(mode, self.which_func(mode))
+            if str != '':
+                show_str.append(str)
+        except:
+            error_part.append(mode)
+        return (show_str, error_part)
+    
+    def handle_results(self, results):
+        error_part = []
+        show_str = []
+        for result in results:
+            if result[0] != []:
+                show_str.extend(result[0])
+            if result[1] != []:
+                error_part.extend(result[1])
+        show_str = [i for i in show_str if i != '']
+        show_s = ''
+        if len(error_part) != 0:
+            show_s = ','.join(error_part) + '制作失败\n'
+            self.have_error_flag = True
+        if len(show_str) != 0:
+            sstr = '\n'.join(show_str)
+            show_s += f'{sstr}\n'
+            self.have_error_flag = True
+        if show_s != '':
+            show_s += '请检查提供的信息和照片是否完全，或者联系作者。'
+            self.show_info.set_show_text(show_s)
+            self.show_info.show_window() 
+
+    def which_func(self, mode):
+        if mode == '开单':
+            return self.creat_kaidan(mode)
+        if mode == '拿货':
+            return self.creat_nahuo(mode)
+        if mode == '转单':
+            return self.creat_zhuandan(mode)
+        if mode == '年费':
+            return self.creat_nianfei(mode)
+        if mode == '补单':
+            return self.creat_budan(mode)
+        if mode == '补卡':
+            return self.creat_buka(mode)
+
+    def shwo_total_error(self):
+        self.show_info.set_show_text('制作失败或部分成功\n提供的信息缺失或excel未关闭\n如果检查无误\n就是代码有问题\n请联系作者')
+        self.show_info.show_window()
+
+    def get_error_str(self, cue, errors):
+        if len(errors) != 0:
+            errors_s = ','.join(errors)
+            return f'{cue}:{errors_s}'
+        else:
+            return ''
+
+    def end_pdf_to_pic(self):
+        self.pdf_to_pic_finished += 1
+        if self.pdf_to_pic_finished == self.pdf_to_pic_count:
+            self.row_two.select_files_button.setEnabled(True)
+            duration = self.global_config['show_tip_timer_duration']
+            if duration > 0:
+                self.show_info.set_show_text('转换成功！')
+                self.show_info.show_window()
+                self.combbox_change_tips_timer.start(duration)  
+            self.pdf_to_pic_finished = 0
+            self.pdf_to_pic_count = 0
+
+    def show_error(self, errors):
+        if len(errors) != 0:
+            name_str = '，'.join(errors)
+            self.show_info.set_show_text(f'制作完成\n{name_str}\n信息缺失或照片缺失\n其所在内组的word未制作')
+            self.have_error_flag = True
+
+    def creat_zhuandan(self, mode):
+        df = read_sheets(f'./模版/{self.excel_name}', mode)
+        kaidan_pairs, errors = get_zhuandan_pairs(df, self.folder_path)
+        for kaidan_pair in kaidan_pairs:
+            words = ['转让', '授权', '年费']
+            #如果被委托人的卡号为空就不需要办年费，不为空就办
+            if not isinstance(kaidan_pair.beiweituo.sail_card_id, str):
+                words.pop()
+            for word in words:
+                name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name + '_' + kaidan_pair.beiweituo.name
+                count = 0
+                if kaidan_pair.client.native == '香港':
+                    count += 1
+                if kaidan_pair.entrusted.native == '香港':
+                    count += 1
+                kaidan_path = copy_template(mode, self.folder_path, name_concat, count, word)
+                shift = 0
+                if word == '转让':
+                    changes, obj = zhuandan.get_sub_arr_zhuanrang(kaidan_pair)
+                    shift = -4
+                elif word == '授权':
+                    changes, obj = zhuandan.get_sub_arr_shouquan(kaidan_pair)
+                    shift = 4
+                elif word == '年费':
+                    changes, obj = zhuandan.get_sub_arr_nianfei(kaidan_pair)
+                    shift = 2
+                doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
+                doc = replace_pic(doc, obj, 18 + shift, kaidan_path, 0, 6, self.pic_scale)
+                doc = replace_pic(doc, obj, 16 + shift, kaidan_path, 1, 6, self.pic_scale)
+                try:
+                    fill_information(obj, f'./模版/{self.excel_name}', mode, cache_all_flag=True)
+                except:
+                    pass
+                doc.save(kaidan_path)
+            kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path), 3)
+        self.show_error(errors)
+        return errors
+
+    def creat_nahuo(self, mode):
+        df = read_sheets(f'./模版/{self.excel_name}', mode)
+        kaidan_pairs, errors = get_nahuo_pairs(df, self.folder_path)
+        for kaidan_pair in kaidan_pairs:
+            name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
+            count = 0
+            if kaidan_pair.client.native == '香港':
+                count += 1
+            if kaidan_pair.entrusted.native == '香港':
+                count += 1
+            kaidan_path = copy_template(mode, self.folder_path, name_concat, count)
+            changes = nahuo.get_sub_arr(kaidan_pair)
+            doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
+            doc = replace_pic(doc, kaidan_pair,18, kaidan_path, 0, 6, self.pic_scale)
+            doc = replace_pic(doc, kaidan_pair, 16, kaidan_path, 1, 6, self.pic_scale)
+            try:
+                fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
+            except:
+                pass
+            doc.save(kaidan_path)
+            kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path))
+        self.show_error(errors)
+        return errors
+    
+    def creat_nianfei(self, mode):
+        df = read_sheets(f'./模版/{self.excel_name}', mode)
+        kaidan_pairs, errors = get_nianfei_pairs(df, self.folder_path)
+        for kaidan_pair in kaidan_pairs:
+            name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
+            count = 0
+            if kaidan_pair.client.native == '香港':
+                count += 1
+            if kaidan_pair.entrusted.native == '香港':
+                count += 1
+            kaidan_path = copy_template(mode, self.folder_path, name_concat, count)
+            changes = nianfei.get_sub_arr_nianfei(kaidan_pair)
+            doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
+            doc = replace_pic(doc, kaidan_pair,20, kaidan_path, 0, 6, self.pic_scale)
+            doc = replace_pic(doc, kaidan_pair, 18, kaidan_path, 1, 6, self.pic_scale)
+            try:
+                fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
+            except:
+                pass
+            doc.save(kaidan_path)
+            kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path))
+        self.show_error(errors)
+        return errors
+
+    def creat_kaidan(self, mode):
+        df = read_sheets(f'./模版/{self.excel_name}', mode)
+        kaidan_pairs, errors = get_kaidan_pairs(df, self.folder_path)
+        for kaidan_pair in kaidan_pairs:
+            name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
+            count = 0
+            if kaidan_pair.client.native == '香港':
+                count += 1
+            if kaidan_pair.entrusted.native == '香港':
+                count += 1
+            kaidan_path = copy_template(mode, self.folder_path, name_concat, count)
+            changes = kaidan.get_sub_arr(kaidan_pair)
+            doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
+            doc = replace_pic(doc, kaidan_pair, 20, kaidan_path, 0, 6, self.pic_scale)
+            doc = replace_pic(doc, kaidan_pair, 18, kaidan_path, 1, 6, self.pic_scale)
+            try:
+                fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
+            except:
+                pass
+            doc.save(kaidan_path)
+            kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path))
+        self.show_error(errors)
+        return errors
+    
+    def creat_budan(self, mode):
+        df = read_sheets(f'./模版/{self.excel_name}', mode)
+        kaidan_pairs, errors = get_budan_pairs(df, self.folder_path)
+        for kaidan_pair in kaidan_pairs:
+            name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
+            count = 0
+            if kaidan_pair.client.native == '香港':
+                count += 1
+            if kaidan_pair.entrusted.native == '香港':
+                count += 1
+            kaidan_path = copy_template(mode, self.folder_path, name_concat, count)
+            changes = budan.get_sub_arr_budan(kaidan_pair)
+            doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
+            doc = replace_pic(doc, kaidan_pair, 14, kaidan_path, 0, 6, self.pic_scale)
+            doc = replace_pic(doc, kaidan_pair, 12, kaidan_path, 1, 6, self.pic_scale)
+            try:
+                fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
+            except:
+                pass
+            doc.save(kaidan_path)
+            kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path))
+        self.show_error(errors)
+        return errors
+    
+    def creat_buka(self, mode):
+        df = read_sheets(f'./模版/{self.excel_name}', mode)
+        kaidan_pairs, errors = get_buka_pairs(df, self.folder_path)
+        for kaidan_pair in kaidan_pairs:
+            name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
+            count = 0
+            if kaidan_pair.client.native == '香港':
+                count += 1
+            if kaidan_pair.entrusted.native == '香港':
+                count += 1
+            kaidan_path = copy_template(mode, self.folder_path, name_concat, count)
+            changes = buka.get_sub_arr_buka(kaidan_pair)
+            doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
+            doc = replace_pic(doc, kaidan_pair, 15, kaidan_path, 0, 6, self.pic_scale)
+            doc = replace_pic(doc, kaidan_pair, 13, kaidan_path, 1, 6, self.pic_scale)
+            try:
+                fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
+            except:
+                pass
+            doc.save(kaidan_path)
+            kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path))
+        self.show_error(errors)
+        return errors
+
+    def init_ui(self):
+        self.setWindowTitle("选择功能")
+        self.setGeometry(self.shape.start_width, self.shape.start_height, self.shape.width, self.shape.height)
+        self.setFixedSize(self.shape.width, self.shape.height)
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+        self.row_zero = Row_Zero(
+            central_widget,
+            self.shape.shape_tuples[1][0],
+            self.shape.shape_tuples[1][1],
+            self.shape.shape_tuples[1][2],
+        )
+
+        self.row_one = Row_One(
+            central_widget,
+            self.shape.shape_tuples[0][0],
+            self.shape.shape_tuples[0][1],
+        )
+
+        self.row_two = Row_Two(
+            central_widget,
+            self.shape.shape_tuples[2][0],
+            self.shape.shape_tuples[2][1],
+            self.shape.shape_tuples[2][2],
+        )
+
+        self.row_catch = Row_Catch(
+            central_widget,
+            self.shape.shape_tuples[3][0],
+            self.shape.label_height * self.global_config['main_window_conf']['catch_max_height']
+        )
+
+    def change_function_index(self):
+        self.row_two.select_files_button.clicked.disconnect()
+        try:
+            self.row_two.open_newest_button.clicked.disconnect()
+        except:
+            self.row_two.open_newest_button.pressed.disconnect()
+            self.row_two.open_newest_button.released.disconnect()
+        current_index = self.row_one.function_combobox.currentIndex()
+        if current_index == 0 or current_index == 1:
+            self.row_zero.tip_label.setText('文件类型:')
+            self.row_two.open_newest_button.setText('打开最新/删除所有编辑')
+            self.row_two.select_files_button.setText('选择文件/文件夹')
+            self.row_two.select_files_button.setToolTip('选择文件或者文件夹直接跳转开始编辑')
+            self.row_two.open_newest_button.setToolTip('短按打开编辑结果中最新生成结果的文件夹，长按删除"照片编辑结果"中所有编辑')
+            self.row_two.select_files_button.clicked.connect(lambda: self.open_folder_dialog())
+            self.row_two.open_newest_button.pressed.connect(self.open_newest_pressed)
+            self.row_two.open_newest_button.released.connect(self.open_newest_released)
+            self.row_zero.tip_label.show()
+            self.row_zero.file_type_combobox.setEnabled(True)
+            self.row_zero.file_type_combobox.show()
+            self.row_zero.pic_name_lineedit.hide()
+            self.row_zero.select_newest_checkbox.hide()
+        elif current_index == 2:
+            self.row_zero.tip_label.setText('输入名字:')
+            self.row_two.open_newest_button.setText('繁体转简体')
+            self.row_two.select_files_button.setText('查询')
+            self.row_two.select_files_button.setToolTip('输入完名称之后在高频照片和缓存照片里开始查询')
+            self.row_two.open_newest_button.setToolTip('如果输入的名字时香港人的名字且带繁体，输入查询的人名后将名字从繁体转为简体')
+            self.row_two.select_files_button.clicked.connect(self.search_name)
+            self.row_two.open_newest_button.clicked.connect(self.fan_zhuan_jian)
+            self.row_zero.tip_label.show()
+            self.row_zero.pic_name_lineedit.show()
+            self.row_zero.file_type_combobox.hide()
+            self.row_zero.select_newest_checkbox.hide()
+            self.row_zero.pic_name_lineedit.setFocus()
+        elif current_index == self.concat_index or current_index == 11:
+            self.row_two.open_newest_button.setText('打开最新/删除所有编辑')
+            self.row_two.select_files_button.setText('选择文件/文件夹')
+            self.row_zero.tip_label.setText('文件类型:')
+            self.row_two.open_newest_button.setToolTip('短按打开编辑结果中最新生成结果的文件夹，长按删除"照片编辑结果"中所有编辑')
+            self.row_two.select_files_button.setToolTip('选择文件或者文件夹直接跳转开始编辑')
+            self.row_two.open_newest_button.pressed.connect(self.open_newest_pressed)
+            self.row_two.open_newest_button.released.connect(self.open_newest_released)
+            self.row_two.select_files_button.clicked.connect(lambda: self.open_folder_dialog())
+            self.row_zero.tip_label.show()
+            self.row_zero.file_type_combobox.show()
+            self.row_zero.file_type_combobox.setDisabled(True)
+            self.row_zero.pic_name_lineedit.hide()
+            self.row_zero.select_newest_checkbox.hide()
+        else:
+            duration = self.global_config['main_show_tip_timer_duration']
+            if duration > 0:
+                self.show_info.set_show_text(f'记得先保存和关闭excel文件\n此窗口在{str(duration/1000)}秒后自动关闭')
+                self.show_info.show()
+            self.row_two.open_newest_button.setText('打开最新/删除所有编辑')
+            self.change_moren()
+            self.row_two.open_newest_button.setToolTip('短按打开编辑结果中最新生成结果的文件夹，长按删除"照片编辑结果"中所有编辑')
+            self.row_two.open_newest_button.pressed.connect(self.open_newest_pressed)
+            self.row_two.open_newest_button.released.connect(self.open_newest_released)
+            self.row_zero.file_type_combobox.hide()
+            self.row_zero.pic_name_lineedit.hide()
+            self.row_zero.tip_label.hide()
+            self.row_zero.select_newest_checkbox.show()
+            if duration > 0:
+                self.combbox_change_tips_timer.start(duration)
+
+    def operate_on_moren(self):
+        floader_path = './照片编辑结果'
+        paths = natsorted(os.listdir(floader_path))
+        if '.DS_Store' in paths:
+            paths.remove('.DS_Store')
+        if len(paths) == 0:
+            paths = [get_data_str()]
+        path = os.path.join(floader_path, paths[-1])
+        os.makedirs(path, exist_ok=True)
+        self.open_folder_dialog(path)
+
+    def fan_zhuan_jian(self):
+        text = self.row_zero.pic_name_lineedit.text().replace(' ', '')
+        if text:
+            try:
+                text = fan_to_jian(text)
+            except:
+                pass
+            self.row_zero.pic_name_lineedit.setText(text)
+        else:
+            self.show_info.set_show_text(f'你还没有输入名字，或者名字为空！')
+            self.show_info.show()
+        self.row_zero.pic_name_lineedit.setFocus()
+
+    def search_name(self):
+        text = self.row_zero.pic_name_lineedit.text().replace(' ', '')
+        if text:
+            #高频信息里面找
+            cache_path = os.path.join('模版', '高频照片')
+            cache_names = os.listdir(cache_path)
+            searched = ''
+            if text + '.info' in cache_names and text + '.png' in cache_names and text + '反.png' in cache_names:
+                searched = cache_path
+            else:
+                searched_in_catch = find_in_catch_pic(text)
+                if searched_in_catch != '':
+                    searched = os.path.dirname(searched_in_catch)
+            if searched != '':
+                self.show_info.set_show_text(f'{text}信息已存在，不用重新编辑照片！\n照片和信息在:{searched}')
+                open_floader(os.path.join(searched, f'{text}.png'))
+            else:
+                self.show_info.set_show_text(f'{text}信息不存在，需要编辑此人照片！如果是香港人名字且带繁体字，先点击繁体转简体再查询')
+        else:
+            self.show_info.set_show_text(f'你还没有输入名字，或者名字为空！')
+        self.show_info.show()
+        self.row_zero.pic_name_lineedit.setFocus()
+
+    def open_excel(self):
+        path = './模版/非身份证信息需求.xlsx'
+        if os.path.exists(path):
+            open_floader(path)
+        else:
+            self.show_info.set_show_text(f'{path} 不存在!')
+            self.show_info.show()
+
+    def change_moren(self):
+        try:
+            self.row_two.select_files_button.clicked.disconnect()
+        except:
+            pass
+        if self.row_zero.select_newest_checkbox.isChecked():
+            self.row_two.select_files_button.setText('确认制作')
+            self.row_two.select_files_button.setToolTip('将制作的word默认保存到最新编辑结果文件夹中')
+            self.row_two.select_files_button.clicked.connect(lambda: self.operate_on_moren())
+        else:
+            self.row_two.select_files_button.setText('选择保存路径')
+            self.row_two.select_files_button.setToolTip('选择将制作的word与使用的照片和信息放到那个路径下')
+            self.row_two.select_files_button.clicked.connect(lambda: self.open_folder_dialog())
+
+    def open_pic_floader(self):
+        path = './照片放这里'
+        open_floader(path)
+
+    def init_black_button_timer(self):
+        self.black_timer = QTimer()
+        self.black_timer.setSingleShot(True)
+        self.black_timer.timeout.connect(self.clear_photos)
+        self.black_is_pressed = False
+
+    def black_pressed(self):
+        self.black_is_pressed = True
+        self.black_timer.start(self.global_config['button_timer_duration'])
+
+    def clear_photos(self):
+        if self.black_is_pressed:
+            self.black_is_pressed = False
+            path = './照片放这里'
+            if os.path.exists(path):
+                try:
+                    shutil.rmtree(path)
+                except:
+                    os.makedirs(path, exist_ok=True)
+                    self.show_info.set_show_text('“照片放这里”正在被其他应用占用，可能清空失败，再次单击打开这个文件检查是否被清空。未清空就手动清空')
+                    self.show_info.show()
+                    return
+            os.makedirs(path, exist_ok=True)
+            self.show_info.set_show_text('“照片放这里”文件夹已清空，可以拖拽照片到窗口添加照片进去！')
+            self.show_info.show()
+
+    def black_released(self):
+        if self.black_is_pressed:
+            self.black_is_pressed = False
+            self.clear_photos()
+            self.open_pic_floader()
+            self.black_timer.stop()
+
+    def init_open_newest_timer(self):
+        self.open_newest_timer = QTimer()
+        self.open_newest_timer.setSingleShot(True)
+        self.open_newest_timer.timeout.connect(self.open_newest)
+        self.open_newest_pressed_falg = False
+
+    def open_newest_pressed(self):
+        self.open_newest_pressed_falg = True
+        self.open_newest_timer.start(self.global_config['button_timer_duration'])
+
+    def open_newest(self):
+        if self.open_newest_pressed_falg:
+            self.open_newest_pressed_falg = False
+            path = './照片编辑结果'
+            if os.path.exists(path):
+                try:
+                    shutil.rmtree(path)
+                except:
+                    os.makedirs(path, exist_ok=True)
+                    self.show_info.set_show_text('“照片编辑结果”正在被其他应用占用，可能清空失败，再次单击打开这个文件检查是否被清空。未清空就手动清空')
+                    self.show_info.show()
+                    return
+            os.makedirs(path, exist_ok=True)
+            self.show_info.set_show_text('“照片编辑结果”文件夹已清空')
+            self.show_info.show()
+
+    def open_newest_released(self):
+        if self.open_newest_pressed_falg:
+            self.open_newest_pressed_falg = False
+            floader_path = './照片编辑结果'
+            paths = natsorted(os.listdir(floader_path))
+            if '.DS_Store' in paths:
+                paths.remove('.DS_Store')
+            if len(paths) == 0:
+                self.show_info.set_show_text('”照片编辑结果“文件夹内为空，请先编辑.')
+                self.show_info.show()
+            else:
+                path = paths[-1]
+                open_floader(os.path.join(floader_path, path))
+
+    def init_combbox_change_tips_timer(self):
+        self.combbox_change_tips_timer = QTimer()
+        self.combbox_change_tips_timer.setSingleShot(True)
+        self.combbox_change_tips_timer.timeout.connect(self.change_tip)
+
+    def change_tip(self):
+        self.show_info.hide()
+
+    def change_height(self, height_shift):
+        self.setFixedSize(self.width(), self.height() + height_shift)
+
+    def init_events(self):
+        self.init_black_button_timer()
+        self.init_open_newest_timer()
+        self.init_combbox_change_tips_timer()
+        self.row_zero.exit_button.pressed.connect(self.black_pressed)
+        self.row_zero.exit_button.released.connect(self.black_released)
+        self.row_one.function_combobox.currentIndexChanged.connect(self.change_function_index)
+        self.row_two.select_files_button.clicked.connect(lambda: self.open_folder_dialog())
+        self.row_two.open_newest_button.pressed.connect(self.open_newest_pressed)
+        self.row_two.open_newest_button.released.connect(self.open_newest_released)
+        self.row_two.open_excel_button.clicked.connect(self.open_excel)
+        self.row_zero.select_newest_checkbox.stateChanged.connect(self.change_moren)
+        self.row_catch.pic_name_lineedit.doubleClickedSignal.connect(self.change_height)
