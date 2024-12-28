@@ -133,12 +133,12 @@ class Name_Pic(QMainWindow):
                 if obj.space_flag:
                     str_t = '\u2009'.join(str_t.replace(' ', '').replace('\u2009', ''))
                 if obj.data_flag:
-                    if '年' in text and '月' in text and '日' in text:
-                        text = text.replace('年', '*').replace('月', '*').replace('日', '*')
-                        info = text.split('*')
+                    if '年' in str_t and '月' in str_t and '日' in str_t:
+                        str_t = str_t.replace('年', '*').replace('月', '*').replace('日', '*')
+                        info = str_t.split('*')
                         if len(info) == 4:
-                            text = [info[0]] + ['年'] + [info[1]] + ['月'] + [info[2]] + ['日']
-                            str_t = ' '.join(text)
+                            str_t = [info[0]] + ['年'] + [info[1]] + ['月'] + [info[2]] + ['日']
+                            str_t = ' '.join(str_t)
             obj.setText(str_t)
         elif isinstance(obj, QPlainTextEdit):
             obj.setPlainText(str_t)
