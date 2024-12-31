@@ -1,5 +1,5 @@
 from PyQt6 import QtCore
-import os, json
+import json
 from my_utils.utils import cv_imwrite
 from my_utils.pdf_to_pic import convert_pdf_to_images
 from my_utils.ocr_by_paddleocr import pic_to_str
@@ -91,18 +91,6 @@ class Get_line_detect(QtCore.QRunnable):
             points.append(final_point)
             max_flags.append(max_flag)
         self.signals.finished.emit(self.cv_pairs, self.pair_paths, points, max_flags, self.scales)  # 任务完成后，发送信号
-
-class Remove_File(QtCore.QThread):
-    resSignal = QtCore.pyqtSignal()  # 注册一个信号
-    def __init__(self, file_path): # 从前端界面中传递参数到这个任务后台
-        super().__init__()
-        self.file_path = file_path
-
-    def run(self):  # 重写run  比较耗时的后台任务可以在这里运行
-        for file_path in self.file_path:
-            if os.path.exists(file_path):
-                os.remove(file_path)
-        self.resSignal.emit()
 
 class Save_Pic(QtCore.QThread):
     resSignal = QtCore.pyqtSignal()  # 注册一个信号

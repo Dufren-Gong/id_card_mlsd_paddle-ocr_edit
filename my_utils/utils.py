@@ -10,6 +10,7 @@ import platform
 import cv2, copy
 import numpy as np
 from pathlib import Path
+from send2trash import send2trash
 
 def rgb_to_gray_with_three_channels(image):
     # 将 RGB 图像转换为灰度图像 (单通道)
@@ -53,7 +54,7 @@ def delete_specific_files_and_folders(target_dir, del_dirname = None, del_filena
                 for dir_name in dirs:
                     if dir_name == del_dirname:
                         dir_path = os.path.join(root, dir_name)
-                        shutil.rmtree(dir_path)  # 删除整个文件夹
+                        send2trash(dir_path)  # 删除整个文件夹
 
             if del_filename != None:
                 # 删除 .DS_Store 文件
@@ -94,7 +95,7 @@ def check_catch_pic(catch_days):
         del_days = [i for i in day_pics if i not in catch_days_floader]
         if len(del_days) != 0:
             for i in del_days:
-                shutil.rmtree(os.path.join(check_path, i))
+                send2trash(os.path.join(check_path, i))
         today_floader = os.path.join(check_path, catch_days_floader[0])
     else:
         catch_days_floader = get_past_dates(1)

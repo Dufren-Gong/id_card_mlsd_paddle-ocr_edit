@@ -25,6 +25,7 @@ class Cut_Pic(QMainWindow):
         self.height_gap = 40
         self.fixed_width = self.global_config['mlsd_conf']['small_pic_fixed_width']
         self.angle_rate = self.global_config['mlsd_conf']['angle_rate']
+        self.zheng_fan_shift = self.global_config['mlsd_conf']['zheng_fan_shift']
         self.this_index = None
         self.thread_pool = QThreadPool.globalInstance()
         self.thread_pool.setMaxThreadCount(self.global_config['mlsd_conf']['max_threads'])
@@ -351,13 +352,14 @@ class Cut_Pic(QMainWindow):
             self.scroll_area.labels[self.this_index].points = np.array(new_point)
             shou_flag = not self.scroll_area.labels[self.this_index].moved_flag and not self.scroll_area.labels[self.this_index].max_flag
             self.display_large_image(self.this_index, shou_flag, True, True)
-            fixed_width = self.fixed_width
+            shift = self.zheng_fan_shift * (self.this_index in self.viewed)
+            fixed_width = self.fixed_width - shift
             pixmap = cv_to_qpixmap(self.scroll_area.labels[self.this_index].img)
             scaled_height = int(pixmap.height() * fixed_width / pixmap.width())  # 使用 int() 确保高度是整数
             scaled_pixmap = pixmap.scaled(fixed_width, scaled_height, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
             self.scroll_area.labels[self.this_index].setPixmap(scaled_pixmap)
             self.scroll_area.labels[self.this_index].setPixmap(scaled_pixmap)
-            self.scroll_area.labels[self.this_index].setFixedSize(fixed_width, scaled_height)  # 设置每张图片的固定宽度
+            self.scroll_area.labels[self.this_index].setFixedSize(fixed_width + shift, scaled_height)  # 设置每张图片的固定宽度
 
     def read_cut_info(self, obj:ClickableLabel):
         index = obj.index
@@ -397,18 +399,21 @@ class Cut_Pic(QMainWindow):
                 _, photo_path1, points1, points_cache1, scale1, scale_cache1, img1, img_cache1, moved_flag1, max_flag1 = self.read_cut_info(self.scroll_area.labels[self.this_index + shift])
                 self.scroll_area.labels[self.this_index] = self.write_cut_info(self.scroll_area.labels[self.this_index], self.this_index, photo_path1, points1, points_cache1, scale1, scale_cache1, img1, img_cache1, moved_flag1, max_flag1)
                 self.scroll_area.labels[self.this_index + shift] = self.write_cut_info(self.scroll_area.labels[self.this_index + shift], self.this_index + shift, photo_path, points, points_cache, scale, scale_cache, img, img_cache, moved_flag, max_flag)
-                fixed_width = self.fixed_width
+                shift_t = self.zheng_fan_shift * ((self.this_index + shift) in self.viewed)
+                fixed_width = self.fixed_width - shift_t
                 pixmap = cv_to_qpixmap(self.scroll_area.labels[self.this_index + shift].img)
                 scaled_height = int(pixmap.height() * fixed_width / pixmap.width())  # 使用 int() 确保高度是整数
                 scaled_pixmap = pixmap.scaled(fixed_width, scaled_height, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
                 self.scroll_area.labels[self.this_index + shift].setPixmap(scaled_pixmap)
-                self.scroll_area.labels[self.this_index + shift].setFixedSize(fixed_width, scaled_height)  # 设置每张图片的固定宽度
+                self.scroll_area.labels[self.this_index + shift].setFixedSize(fixed_width + shift_t, scaled_height)  # 设置每张图片的固定宽度
 
+                shift_t = self.zheng_fan_shift * (self.this_index in self.viewed)
+                fixed_width = self.fixed_width - shift_t
                 pixmap = cv_to_qpixmap(self.scroll_area.labels[self.this_index].img)
                 scaled_height = int(pixmap.height() * fixed_width / pixmap.width())  # 使用 int() 确保高度是整数
                 scaled_pixmap = pixmap.scaled(fixed_width, scaled_height, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
                 self.scroll_area.labels[self.this_index].setPixmap(scaled_pixmap)
-                self.scroll_area.labels[self.this_index].setFixedSize(fixed_width, scaled_height)  # 设置每张图片的固定宽度
+                self.scroll_area.labels[self.this_index].setFixedSize(fixed_width + shift_t, scaled_height)  # 设置每张图片的固定宽度
                 if self.this_index in self.viewed and self.this_index + shift not in self.viewed:
                     self.viewed.append(self.this_index + shift)
                     self.viewed.remove(self.this_index)
@@ -439,12 +444,13 @@ class Cut_Pic(QMainWindow):
                 self.scroll_area.labels[self.this_index].scale = 1
 
                 #显示小图
-                fixed_width = self.fixed_width
+                shift = self.zheng_fan_shift * (self.this_index in self.viewed)
+                fixed_width = self.fixed_width - shift
                 pixmap = cv_to_qpixmap(self.scroll_area.labels[self.this_index].img)
                 scaled_height = int(pixmap.height() * fixed_width / pixmap.width())  # 使用 int() 确保高度是整数
                 scaled_pixmap = pixmap.scaled(fixed_width, scaled_height, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
                 self.scroll_area.labels[self.this_index].setPixmap(scaled_pixmap)
-                self.scroll_area.labels[self.this_index].setFixedSize(fixed_width, scaled_height)  # 设置每张图片的固定宽度
+                self.scroll_area.labels[self.this_index].setFixedSize(fixed_width + shift, scaled_height)  # 设置每张图片的固定宽度
 
             if change_pic_flag:
                 if self.this_index != len(self.scroll_area.labels) - 1 and next_flag:
@@ -478,12 +484,13 @@ class Cut_Pic(QMainWindow):
                 self.scroll_area.labels[self.this_index].scale_cache = 1
 
                 #显示小图
-                fixed_width = self.fixed_width
+                shift = self.zheng_fan_shift * (self.this_index in self.viewed)
+                fixed_width = self.fixed_width - shift
                 pixmap = cv_to_qpixmap(img)
                 scaled_height = int(pixmap.height() * fixed_width / pixmap.width())  # 使用 int() 确保高度是整数
                 scaled_pixmap = pixmap.scaled(fixed_width, scaled_height, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
                 self.scroll_area.labels[self.this_index].setPixmap(scaled_pixmap)
-                self.scroll_area.labels[self.this_index].setFixedSize(fixed_width, scaled_height)  # 设置每张图片的固定宽度
+                self.scroll_area.labels[self.this_index].setFixedSize(fixed_width + shift, scaled_height)  # 设置每张图片的固定宽度
 
                 #显示大图
                 pixmap = cv_to_qpixmap(img)

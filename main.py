@@ -20,6 +20,9 @@ class MainApp:
 
     def run(self):
         self.main_window.show()
+        if self.main_window.update_flag:
+            self.main_window.show_info.set_show_text(f'软件更新完成！\nversion {self.main_window.previous_version} -> version {self.main_window.now_version}\n可以选择手动删除上一个版本')
+            self.main_window.show_info.show()
 
 # 全局异常捕获函数
 def global_exception_handler(exc_type, exc_value, exc_traceback):

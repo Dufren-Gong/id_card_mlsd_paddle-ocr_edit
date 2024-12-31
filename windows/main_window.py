@@ -1,11 +1,11 @@
-import os, shutil
+import os, shutil, sys
 from PyQt6.QtWidgets import QMainWindow, QWidget, QFileDialog, QApplication
 from uis.shapes import Ui_Shapes
 from my_utils.utils import delete_specific_files_and_folders
 from uis.main_window_ui import Row_Zero, Row_One, Row_Two, Row_Catch
 from windows.show_info_window import Show_Info_Window
 from my_utils.threads import Pdf_to_Pic_Thread
-from my_utils.utils import get_data_str, open_floader, find_in_catch_pic, get_internal_path
+from my_utils.utils import get_data_str, open_floader, find_in_catch_pic, get_internal_path, unzip_file
 from my_utils.operate_excel import read_sheets, get_kaidan_pairs, get_nahuo_pairs, get_zhuandan_pairs, get_nianfei_pairs, get_budan_pairs, get_buka_pairs, fill_information, check_excel
 from each_types import kaidan, nahuo, zhuandan, budan, nianfei, buka
 from PyQt6.QtGui import QDragEnterEvent, QIcon
@@ -14,6 +14,8 @@ from my_utils.operate_word import copy_template, replace_text_with_same_format, 
 from natsort import natsorted
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from my_utils.Traditional_to_Simplified_Chinese import fan_to_jian
+import subprocess, platform
+from send2trash import send2trash
         
 class Main_Window(QMainWindow):
     def __init__(self, open_pic_operate_window, global_config):
@@ -32,6 +34,8 @@ class Main_Window(QMainWindow):
         self.concat_index = 3
         self.pdf_to_pic_count = 0
         self.pdf_to_pic_finished = 0
+        self.flag_file = './flag_file'  # 标志文件路径
+        self.update_flag = False
         # 启用拖放
         self.setAcceptDrops(True)
         self.shape.layout([self.shape.combobox_height, self.shape.combobox_height, self.shape.button_height, 27],
@@ -39,6 +43,17 @@ class Main_Window(QMainWindow):
         self.setWindowIcon(QIcon(get_internal_path('./files/icon/icon.ico')))
         self.init_ui()
         self.init_events()
+        if os.path.exists(self.flag_file):
+            os.remove(self.flag_file)
+            self.check_version()
+
+    def check_version(self):
+        name = '身份证照片识别'
+        self.now_version = os.path.split(os.path.abspath('.'))[-1].lstrip(name)
+        self.previous_version = self.merge_version(self.now_version, -1)
+        if self.previous_version == '':
+            self.previous_version = '1.0'
+        self.update_flag = True
 
     def dragEnterEvent(self, event: QDragEnterEvent):
         # 只要拖拽内容包含 URL，就接受拖拽
@@ -54,7 +69,7 @@ class Main_Window(QMainWindow):
         index = self.row_one.function_combobox.currentIndex()
         pic_check_index = [0, 1]
         # floader_check_index = [3, 4, 5, 6, 7, 8, 9, 10]
-        no_event_arr = [2, 11]
+        no_event_arr = [2, 11, 12]
         # 获取拖拽的所有文件或文件夹路径
         urls = event.mimeData().urls()
         if urls:
@@ -65,13 +80,19 @@ class Main_Window(QMainWindow):
                     if file_info.isFile():  # 如果是文件
                         # 检查文件扩展名
                         file_extension = file_info.suffix().lower()  # 获取文件后缀，并转为小写
-                        if index != 11:
+                        if index != 11 and index != 12:
                             if file_extension in self.formates[:-1]:
                                 shutil.copy(local_path, os.path.join('./照片放这里', get_data_str() + f'_{index_t}.' + file_extension))
                         elif index == 11:
                             if file_extension == 'pdf':
                                 self.pdf_to_pic_count += 1
                                 self.open_folder_dialog(local_path)
+                        elif index == 12:
+                            if file_extension == 'zip':
+                                shutil.move(local_path, '.')
+                            else:
+                                self.show_info.set_show_text('该功能拖拽只接受后缀为zip类型的压缩包')
+                                self.show_info.show_window()
                     elif file_info.isDir():  # 如果是文件夹
                         if index not in no_event_arr:
                             if not (self.row_zero.file_type_combobox.currentIndex() == 1 and index in pic_check_index):
@@ -514,6 +535,7 @@ class Main_Window(QMainWindow):
             central_widget,
             self.shape.shape_tuples[0][0],
             self.shape.shape_tuples[0][1],
+            self.global_config['enable_update']
         )
 
         self.row_two = Row_Two(
@@ -564,27 +586,27 @@ class Main_Window(QMainWindow):
             self.row_zero.file_type_combobox.hide()
             self.row_zero.select_newest_checkbox.hide()
             self.row_zero.pic_name_lineedit.setFocus()
-        elif current_index == self.concat_index or current_index == 11:
+        elif current_index == self.concat_index or current_index == 11 or current_index == 12:
             self.row_two.open_newest_button.setText('打开最新/删除所有编辑')
-            self.row_two.select_files_button.setText('选择文件/文件夹')
             self.row_zero.tip_label.setText('文件类型:')
             self.row_two.open_newest_button.setToolTip('短按打开编辑结果中最新生成结果的文件夹，长按删除"照片编辑结果"中所有编辑')
-            self.row_two.select_files_button.setToolTip('选择文件或者文件夹直接跳转开始编辑')
             self.row_two.open_newest_button.pressed.connect(self.open_newest_pressed)
             self.row_two.open_newest_button.released.connect(self.open_newest_released)
-            self.row_two.select_files_button.clicked.connect(lambda: self.open_folder_dialog())
             self.row_zero.tip_label.show()
             self.row_zero.file_type_combobox.show()
             self.row_zero.file_type_combobox.setDisabled(True)
             self.row_zero.pic_name_lineedit.hide()
             self.row_zero.select_newest_checkbox.hide()
+            if current_index != 12:
+                self.row_two.select_files_button.setText('选择文件/文件夹')
+                self.row_two.select_files_button.setToolTip('选择文件或者文件夹直接跳转开始编辑')
+                self.row_two.select_files_button.clicked.connect(lambda: self.open_folder_dialog())
+            else:
+                self.row_two.select_files_button.setText('开始更新')
+                self.row_two.select_files_button.setToolTip('开始更新程序')
+                self.row_two.select_files_button.clicked.connect(self.update_software)
         else:
-            duration = self.global_config['main_show_tip_timer_duration']
-            if duration > 0:
-                self.show_info.set_show_text(f'记得先保存和关闭excel文件\n此窗口在{str(duration/1000)}秒后自动关闭')
-                self.show_info.show()
             self.row_two.open_newest_button.setText('打开最新/删除所有编辑')
-            self.change_moren()
             self.row_two.open_newest_button.setToolTip('短按打开编辑结果中最新生成结果的文件夹，长按删除"照片编辑结果"中所有编辑')
             self.row_two.open_newest_button.pressed.connect(self.open_newest_pressed)
             self.row_two.open_newest_button.released.connect(self.open_newest_released)
@@ -592,8 +614,124 @@ class Main_Window(QMainWindow):
             self.row_zero.pic_name_lineedit.hide()
             self.row_zero.tip_label.hide()
             self.row_zero.select_newest_checkbox.show()
+            duration = self.global_config['main_show_tip_timer_duration']
+            if duration > 0:
+                self.show_info.set_show_text(f'记得先保存和关闭excel文件\n此窗口在{str(duration/1000)}秒后自动关闭')
+                self.show_info.show()
+            self.change_moren()
             if duration > 0:
                 self.combbox_change_tips_timer.start(duration)
+
+    def merge_version(self, version, mode = 1):
+        if version != '':
+            if not (mode == -1 and version == '1.1'):
+                # 将字符串转换为浮点数
+                number = float(version)
+                # 加 0.1
+                result = number + 0.1 * mode
+            else:
+                return ''
+        else:
+            if mode == 1:
+                result = 1.1
+            else:
+                return None
+        return f"{result:.1f}"
+
+    def update_software(self):
+        current_os = platform.system()
+        if current_os == "Windows":
+            name = '身份证照片识别'
+            zip_file_path = f'{name}.zip'
+            if os.path.exists(zip_file_path):
+                root_floader = os.path.abspath('.')
+                old_version = os.path.split(root_floader)[-1].lstrip(name)
+                new_version = self.merge_version(old_version)
+                #解压文件
+                if not os.path.exists(name):
+                    unzip_file(zip_file_path, '.')
+                try:
+                    os.chdir(name)
+                except:
+                    self.show_info.set_show_text(f'解压错误，尝试手动解压{zip_file_path}再次尝试。')
+                    self.show_info.show()
+                    return
+                self.hide()
+                QApplication.processEvents()
+                shutil.copy(os.path.join('模版', '配置和记录', 'new', 'main_new.spec'), './main_new.spec')
+                shell_path = os.path.abspath(self.global_config['update_shell_path'])
+                conda_env = self.global_config['conda_env_name']
+                try:
+                    os.chmod(shell_path, 0o755)
+                except:
+                    pass
+                command = [
+                    "cmd",  # 调用 PowerShell
+                    "/c",  # 不加载用户配置文件，避免干扰
+                    shell_path,  # 指定脚本路径
+                    conda_env
+                ]
+                self.show_info.row_one.exit_button.hide()
+                self.show_info.row_one.tip_label.setFixedSize(self.show_info.width() - 2 * self.show_info.shape.round_gap, self.show_info.row_one.tip_label.height())
+                self.show_info.setWindowTitle('更新软件中')
+                self.update_show_time = self.global_config['update_info_show_time']
+                self.show_info.set_show_text(f'正在更新中,时间可能有点长,不要关闭弹出的窗口,可以正常使用电脑,等待提示更新完成即可,此提示窗口{self.update_show_time}秒后自动关闭')
+                self.show_info.show()
+                self.update_timer = QTimer()
+                time_count = 1000
+                self.update_timer.timeout.connect(lambda: self.end_pyinstaller(time_count, name, root_floader, new_version, zip_file_path))
+                self.pyinstaller_process = subprocess.Popen(command)
+                self.update_counter = 0
+                self.update_timer.start(time_count)
+            else:
+                self.show_info.set_show_text(f'并未在软件根目录下发现{zip_file_path}，无法更新')
+                self.show_info.show()
+        # elif current_os == "Darwin":  # macOS
+        else:  # macOS
+            self.show_info.set_show_text(f'此功能暂不支持在非windows系统上更新')
+            self.show_info.show()
+
+    def end_pyinstaller(self, time_count, name, root_floader, new_version, zip_file_path):
+        self.update_counter += 1
+        if self.update_counter == self.update_show_time:
+            self.show_info.hide()
+            QApplication.processEvents()  # 刷新界面
+        # 检查进程是否仍在运行
+        if self.pyinstaller_process.poll() is None:
+            self.update_timer.start(time_count)  # 继续定时器
+        else:
+            self.show_info.row_one.tip_label.appendPlainText('更新即将完成，请稍等......')
+            os.chdir('..')
+            shutil.copytree('./模版/', os.path.join(name, 'dist', 'main', '模版'))
+            if not os.path.exists(os.path.join(name, 'dist', 'main', '_internal', '_tk_data')):
+                shutil.copytree(os.path.join('_internal', '_tk_data'), os.path.join(name, 'dist', 'main', '_internal', '_tk_data'))
+            os.chdir(name)
+            shutil.rmtree(os.path.join('dist', 'main', '模版', '配置和记录'))
+            shutil.move(os.path.join('模版', '配置和记录'), os.path.join('dist', 'main', '模版', '配置和记录'))
+            os.chdir('..')
+            if os.path.exists("照片编辑结果"):
+                shutil.copytree('./照片编辑结果/', os.path.join(name, 'dist', 'main', '照片编辑结果'))
+            if os.path.exists("./照片放这里"):
+                shutil.copytree('./照片放这里/', os.path.join(name, 'dist', 'main', '照片放这里'))
+            if os.path.exists(os.path.join(name, 'dist', 'main', '模版', zip_file_path)):
+                os.remove(os.path.join(name, 'dist', 'main', '模版', zip_file_path))
+            shutil.move(zip_file_path, os.path.join(name, 'dist', 'main', '模版', zip_file_path))
+            shutil.move(os.path.join(name, 'dist', 'main'), os.path.join(os.path.dirname(root_floader), f'{name}{new_version}'))
+            shutil.rmtree(name)            
+            os.chdir(os.path.join(os.path.dirname(root_floader), f'{name}{new_version}'))
+            shell_path = os.path.abspath(self.global_config['del_and_reopen_shell_path'])
+            command = [
+                "powershell",  # 调用 PowerShell
+                "-NoProfile",  # 不加载用户配置文件，避免干扰
+                # "-NoExit", # -NoExit 保持窗口打开
+                "-ExecutionPolicy", 
+                "Bypass",  # 绕过脚本执行限制
+                "-File", shell_path,  # 指定脚本路径
+                "-flag_file", self.flag_file,
+                "-exe_name", f'{name}.exe'
+            ]
+            subprocess.Popen(command)
+            sys.exit(0)
 
     def operate_on_moren(self):
         floader_path = './照片编辑结果'
@@ -684,7 +822,7 @@ class Main_Window(QMainWindow):
             path = './照片放这里'
             if os.path.exists(path):
                 try:
-                    shutil.rmtree(path)
+                    send2trash(path)
                 except:
                     os.makedirs(path, exist_ok=True)
                     self.show_info.set_show_text('“照片放这里”正在被其他应用占用，可能清空失败，再次单击打开这个文件检查是否被清空。未清空就手动清空')
@@ -717,7 +855,7 @@ class Main_Window(QMainWindow):
             path = './照片编辑结果'
             if os.path.exists(path):
                 try:
-                    shutil.rmtree(path)
+                    send2trash(path)
                 except:
                     os.makedirs(path, exist_ok=True)
                     self.show_info.set_show_text('“照片编辑结果”正在被其他应用占用，可能清空失败，再次单击打开这个文件检查是否被清空。未清空就手动清空')

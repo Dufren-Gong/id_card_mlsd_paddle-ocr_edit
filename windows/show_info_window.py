@@ -9,7 +9,7 @@ class Show_Info_Window(QMainWindow):
         super().__init__()
         self.reopen_main_window = None
         self.shape = Ui_Shapes(round_gap=10)
-        self.shape.layout([self.shape.label_height*3],
+        self.shape.layout([self.shape.label_height*5],
                           [[200, 35]])
         self.setWindowIcon(QIcon(get_internal_path('./files/icon/icon.ico')))
         self.init_ui()

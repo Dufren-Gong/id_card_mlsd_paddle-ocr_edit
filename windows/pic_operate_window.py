@@ -1,9 +1,10 @@
-import os, cv2, shutil
+import os, cv2
 from PyQt6.QtWidgets import QApplication
 from uis.photo_gallery_ui.cut_pic_ui import Cut_Pic
 from my_utils.utils import get_data_str, get_all_pic_path, cv_imread, cv_imwrite
 from uis.photo_gallery_ui.name_pic_ui import Name_Pic
 from windows.show_info_window import Show_Info_Window
+from send2trash import send2trash
 
 class Pic_Operate_Windows():
     def __init__(self, file_path, reopen_main_window, global_config, mode=0):
@@ -61,7 +62,7 @@ class Pic_Operate_Windows():
             paths = os.listdir(self.cut_save_floader)
             for path in paths:
                 os.rename(os.path.join(self.cut_save_floader, path), os.path.join(self.save_floader, path))
-            shutil.rmtree(self.cut_save_floader)
+            send2trash(self.cut_save_floader)
         self.cut_pic_window = None
         self.reopen_main_window()
 

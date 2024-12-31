@@ -12,3 +12,4 @@ opencc
 pyclipper
 shapely
 concurrent
+send2trash

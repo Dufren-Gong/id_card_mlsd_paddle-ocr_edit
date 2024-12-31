@@ -120,7 +120,7 @@ class Scroll_Area(QWidget):
         left_layout.addLayout(button_layout1)
         left_layout.addWidget(self.tip_label)
         left_layout.addWidget(self.scroll_area)
-        left_layout.setSpacing(5)
+        left_layout.setSpacing(0)
         left_layout.setContentsMargins(0, 0, 0, 0)
 
         self.setLayout(left_layout)  # 设置主布局
@@ -144,15 +144,24 @@ class Scroll_Area(QWidget):
             scaled_height = int(pixmap.height() * fixed_width / pixmap.width())  # 使用 int() 确保高度是整数
             scaled_pixmap = pixmap.scaled(fixed_width, scaled_height, aspectRatioMode=QtCore.Qt.AspectRatioMode.KeepAspectRatio)
             label.setPixmap(scaled_pixmap)
-            label.setScaledContents(True)  # 根据需要进行缩放
+            # label.setScaledContents(True)  # 根据需要进行缩放
             label.setFixedSize(fixed_width, scaled_height)  # 设置每张图片的固定宽度
+            if index % 2 == 0:
+                label.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignLeft)  # 左对齐，垂直居中
+            else:
+                label.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignRight)  # 右对齐，垂直居中
             # label.setMaximumHeight(1000)  # 设置最大高度
             self.layout.addWidget(label)
 
             # 创建一个 QLabel 来显示序号
-            index_label = QLabel(f"{length + index + 1}")
+            if index % 2 == 0:
+                tail = '正面'
+            else:
+                tail = '背面'
+            index_label = QLabel(f"{length + index + 1}  {tail} ↑")
+            index_label.setStyleSheet(f"font-size: 16px;")
             index_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)  # 居中对齐
-            index_label.setFixedHeight(10)
+            index_label.setFixedHeight(15)
 
             # 将容器添加到主布局
             self.layout.addWidget(index_label)

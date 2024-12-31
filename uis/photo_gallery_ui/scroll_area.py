@@ -96,7 +96,7 @@ class Scroll_Area(QWidget):
 
             if index % 2 == 1:
                 # 创建一个 QLabel 来显示序号
-                index_label = QLabel(f"{int(length / 2) + 1}")
+                index_label = QLabel(f"{int(length / 2) + 1} ↑")
                 index_label.setAlignment(Qt.AlignmentFlag.AlignCenter)  # 居中对齐
                 index_label.setFixedHeight(10)
                 

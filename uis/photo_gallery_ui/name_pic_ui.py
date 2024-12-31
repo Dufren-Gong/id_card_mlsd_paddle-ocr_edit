@@ -14,6 +14,7 @@ import numpy as np
 from PIL.ImageEnhance import Brightness as PILImageEnhanceBrightness
 from PIL.ImageEnhance import Contrast as PILImageEnhanceContrast
 from PIL.Image import fromarray as PILImagefromarray
+from send2trash import send2trash
 
 class Name_Pic(QMainWindow):
     def __init__(self, global_config, cut_save_floader, save_formate, id_shape, reopen_main_window, show_info:Show_Info_Window = None):
@@ -309,7 +310,7 @@ class Name_Pic(QMainWindow):
                         shutil.copy(os.path.join(self.cut_save_floader, f'{name}.info'),
                                     os.path.join(self.gaopin_path, f'{name}.info'))
                 if os.path.exists(os.path.join(self.cut_save_floader, '截图后')):
-                    shutil.rmtree(os.path.join(self.cut_save_floader, '截图后'))
+                    send2trash(os.path.join(self.cut_save_floader, '截图后'))
                 self.reopen_main_window()
                 duration = self.global_config['show_tip_timer_duration']
                 if duration > 0:
