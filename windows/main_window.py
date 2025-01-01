@@ -16,6 +16,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from my_utils.Traditional_to_Simplified_Chinese import fan_to_jian
 import subprocess, platform
 from send2trash import send2trash
+from ruamel.yaml import YAML
         
 class Main_Window(QMainWindow):
     def __init__(self, open_pic_operate_window, global_config):
@@ -48,7 +49,14 @@ class Main_Window(QMainWindow):
             self.check_version()
 
     def check_version(self):
-        self.now_version = str(self.global_config['version'])
+        self.now_version = os.path.split(os.path.abspath('.'))[-1].lstrip('身份证照片识别')
+        self.global_config['version'] = eval(self.now_version)
+        # 初始化 YAML 处理器
+        yaml = YAML()
+        yaml.preserve_quotes = True  # 保留引号（如果 YAML 中有引号）
+        # 写回 YAML 文件（保留注释和格式）
+        with open('./模版/配置和记录/conf.yaml', 'w', encoding='utf-8') as file:
+            yaml.dump(self.global_config, file)
         self.previous_version = self.merge_version(self.now_version, -1)
         if self.previous_version == '':
             self.previous_version = '1.0'
@@ -646,7 +654,7 @@ class Main_Window(QMainWindow):
             name = f'{name}-{ref}'
             zip_file_path = f'{result_name}.zip'
             root_floader = os.path.abspath('.')
-            old_version = str(self.global_config['version'])
+            old_version = str(self.global_config.get('version', 1.0))
             new_version = self.merge_version(old_version)
             if not os.path.exists(name) and not os.path.exists(zip_file_path):
                 self.show_info.set_show_text(f'正在下载源代码，请稍等......')
@@ -739,11 +747,10 @@ class Main_Window(QMainWindow):
                 shutil.copytree('./照片放这里/', os.path.join(name, 'dist', 'main', '照片放这里'))
             if os.path.exists(os.path.join(name, 'dist', 'main', '模版', zip_file_path)):
                 os.remove(os.path.join(name, 'dist', 'main', '模版', zip_file_path))
-            # shutil.move(zip_file_path, os.path.join(name, 'dist', 'main', '模版', zip_file_path))
+            if os.path.exists(zip_file_path):
+                shutil.move(zip_file_path, os.path.join(name, 'dist', 'main', '模版', zip_file_path))
             shutil.move(os.path.join(name, 'dist', 'main'), os.path.join(os.path.dirname(root_floader), f'{save_name}{new_version}'))
             shutil.rmtree(name)   
-            if os.path.exists(zip_file_path):
-                os.remove(zip_file_path)       
             os.chdir(os.path.join(os.path.dirname(root_floader), f'{save_name}{new_version}'))
             shell_path = os.path.abspath(self.global_config['del_and_reopen_shell_path'])
             command = [

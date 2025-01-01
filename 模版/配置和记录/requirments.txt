@@ -13,3 +13,4 @@ pyclipper
 shapely
 concurrent
 send2trash
+ruamel.yaml
