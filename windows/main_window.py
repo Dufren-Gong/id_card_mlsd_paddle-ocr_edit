@@ -48,8 +48,7 @@ class Main_Window(QMainWindow):
             self.check_version()
 
     def check_version(self):
-        name = '身份证照片识别'
-        self.now_version = os.path.split(os.path.abspath('.'))[-1].lstrip(name)
+        self.now_version = str(self.global_config['version'])
         self.previous_version = self.merge_version(self.now_version, -1)
         if self.previous_version == '':
             self.previous_version = '1.0'
@@ -647,7 +646,7 @@ class Main_Window(QMainWindow):
             name = f'{name}-{ref}'
             zip_file_path = f'{result_name}.zip'
             root_floader = os.path.abspath('.')
-            old_version = os.path.split(root_floader)[-1].lstrip(result_name)
+            old_version = str(self.global_config['version'])
             new_version = self.merge_version(old_version)
             if not os.path.exists(name) and not os.path.exists(zip_file_path):
                 self.show_info.set_show_text(f'正在下载源代码，请稍等......')

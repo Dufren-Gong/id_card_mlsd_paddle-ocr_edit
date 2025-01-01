@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 import os, math, json, sys
-import shutil, yaml, requests
+import shutil, requests
 # import PIL
 # import PIL.Image
 # import PIL.ImageEnhance
@@ -10,6 +10,7 @@ import platform
 import cv2, copy
 import numpy as np
 from pathlib import Path
+from ruamel.yaml import YAML
 from send2trash import send2trash
 
 def rgb_to_gray_with_three_channels(image):
@@ -20,8 +21,11 @@ def rgb_to_gray_with_three_channels(image):
     return gray_3_channels
 
 def get_config(config_path = './模版/配置和记录/conf.yaml'):
+    # 初始化 YAML 处理器
+    yaml = YAML()
+    yaml.preserve_quotes = True  # 保留引号（如果 YAML 中有引号）
     with open(config_path, 'r', encoding='utf-8') as file:
-        global_config = yaml.load(file, Loader=yaml.SafeLoader)  # 使用 SafeLoader 更安全
+        global_config = yaml.load(file)
     return global_config
 
 #用下面这两个函数可以使用cv读取含有中文路径的文件
