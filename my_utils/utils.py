@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-import os, math, json, sys
+import os, math, json, sys, base64
 import shutil, requests
 # import PIL
 # import PIL.Image
@@ -369,3 +369,26 @@ def download_zip(global_config, name, files = []):
             return f"下载失败，状态码：{response.status_code}\n详情：{response.text}"
     except Exception as e:
         return f"下载过程中出错：{e}"
+    
+def download_single_file(global_config, path_in_cloud, to_path):
+    owner = global_config['owner']
+    repo = global_config['repo']
+    access_token = global_config['access_token']
+    ref = global_config['ref']
+
+    # 构建 API URL
+    url = f"https://gitee.com/api/v5/repos/{owner}/{repo}/contents/{path_in_cloud}?access_token={access_token}&ref={ref}"
+
+    # 请求文件内容
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        file_info = response.json()
+        file_content = base64.b64decode(file_info['content'])  # 文件内容是 Base64 编码的
+        # 保存到本地
+        print("当前工作目录：", os.getcwd())
+        with open(to_path, "wb") as file:
+            file.write(file_content)
+        return True
+    else:
+        print(f"文件下载失败，状态码：{response.status_code}, 错误信息：{response.text}")

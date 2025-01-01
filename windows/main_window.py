@@ -5,7 +5,7 @@ from my_utils.utils import delete_specific_files_and_folders
 from uis.main_window_ui import Row_Zero, Row_One, Row_Two, Row_Catch
 from windows.show_info_window import Show_Info_Window
 from my_utils.threads import Pdf_to_Pic_Thread, Download_Sourcecode
-from my_utils.utils import get_data_str, open_floader, find_in_catch_pic, get_internal_path, unzip_file, get_config
+from my_utils.utils import get_data_str, open_floader, find_in_catch_pic, get_internal_path, unzip_file, get_config, download_single_file
 from my_utils.operate_excel import read_sheets, get_kaidan_pairs, get_nahuo_pairs, get_zhuandan_pairs, get_nianfei_pairs, get_budan_pairs, get_buka_pairs, fill_information, check_excel
 from each_types import kaidan, nahuo, zhuandan, budan, nianfei, buka
 from PyQt6.QtGui import QDragEnterEvent, QIcon
@@ -620,48 +620,53 @@ class Main_Window(QMainWindow):
             zip_file_path = f'{result_name}.zip'
             root_floader = os.path.abspath('.')
             old_version = str(self.global_config['version'])
+            conf_path = '模版/配置和记录/conf.yaml'
             if not os.path.exists(name) and not os.path.exists(zip_file_path):
-                self.show_info.set_show_text(f'正在下载源代码，请稍等......')
-                self.show_info.show()
-                QApplication.processEvents()
-                download_source_code_thread = Download_Sourcecode(self.global_config, name, zip_file_path, old_version, result_name, root_floader)
-                download_source_code_thread.resSignal.connect(self.end_get_source_code)
-                download_source_code_thread.start()
+                download_single_file(self.global_config, conf_path, 'conf.yaml')
+                config_check = get_config('conf.yaml')
+                new_version = str(config_check['version'])
+                os.remove('conf.yaml')
+                if new_version == old_version:
+                    self.show_info.set_show_text(f'已是最新版本，不需要更新')
+                    self.show_info.show()
+                    return
+                else:
+                    self.show_info.set_show_text(f'正在下载源代码，请稍等......')
+                    self.show_info.show()
+                    QApplication.processEvents()
+                    download_source_code_thread = Download_Sourcecode(self.global_config, name, zip_file_path, result_name, root_floader, new_version)
+                    download_source_code_thread.resSignal.connect(self.end_get_source_code)
+                    download_source_code_thread.start()
             else:
                 if os.path.exists(name):
-                    unzip_file_flag = False
+                    pass
                 else:
-                    unzip_file_flag = True
-                self.end_get_source_code(self, name, zip_file_path, old_version, result_name, root_floader, unzip_file_flag)
+                    unzip_file(zip_file_path, '.')
+                try:
+                    config_check = get_config(f'{name}/{conf_path}')
+                except:
+                    self.show_info.set_show_text(f'提供的源代码或者云端下载的源代码有问题，请联系作者')
+                    self.show_info.show()
+                    return
+                new_version = str(config_check['version'])
+                if new_version == old_version:
+                    self.row_one.function_combobox.clear()
+                    self.row_one.function_combobox.addItem(self.row_one.mode_options[:-1])
+                    self.show_info.set_show_text(f'已是最新版本，不需要更新')
+                    self.show_info.show()
+                    return
+                else:
+                    self.end_get_source_code(self, name, zip_file_path, result_name, root_floader, new_version)
         # elif current_os == "Darwin":  # macOS
         else:
             self.show_info.set_show_text(f'此功能暂不支持在非windows系统上更新')
             self.show_info.show()
 
-    def end_get_source_code(self, name, zip_file_path, old_version, result_name, root_floader, unzip_file_flag = False):
-        if unzip_file_flag:
-            unzip_file(zip_file_path, '.')
+    def end_get_source_code(self, name, zip_file_path, result_name, root_floader, new_version):
         try:
             os.chdir(name)
         except:
             self.show_info.set_show_text(f'解压错误，尝试手动解压{zip_file_path}到{name}文件夹再次尝试。还是不行的话，就是下载更新包有问题，请联系作者')
-            self.show_info.show()
-            return
-        try:
-            config_check = get_config(f'./模版/配置和记录/conf.yaml')
-        except:
-            self.show_info.set_show_text(f'提供的源代码或者云端下载的源代码有问题，请联系作者')
-            self.show_info.show()
-            return
-        new_version = str(config_check['version'])
-        if new_version == old_version:
-            os.chdir('..')
-            shutil.rmtree(name)
-            if os.path.exists(zip_file_path):
-                os.remove(zip_file_path)
-            self.row_one.function_combobox.clear()
-            self.row_one.function_combobox.addItem(self.row_one.mode_options[:-1])
-            self.show_info.set_show_text(f'已是最新版本，不需要更新')
             self.show_info.show()
             return
         self.hide()

@@ -1,5 +1,5 @@
 from PyQt6 import QtCore
-from my_utils.utils import download_zip
+from my_utils.utils import download_zip, unzip_file
 from my_utils.pdf_to_pic import convert_pdf_to_images
 from my_utils.ocr_by_paddleocr import pic_to_str
 from my_utils.mlsd_scan import square_four_lines, get_square_dots
@@ -92,16 +92,17 @@ class Get_line_detect(QtCore.QRunnable):
         self.signals.finished.emit(self.cv_pairs, self.pair_paths, points, max_flags, self.scales)  # 任务完成后，发送信号
 
 class Download_Sourcecode(QtCore.QThread):
-    resSignal = QtCore.pyqtSignal(object, object, object, object, object, object)  # 注册一个信号
-    def __init__(self, global_config, name, zip_file_path, old_version, result_name, root_floader): # 从前端界面中传递参数到这个任务后台
+    resSignal = QtCore.pyqtSignal(object, object, object, object, object)  # 注册一个信号
+    def __init__(self, global_config, name, zip_file_path, result_name, root_floader, new_version): # 从前端界面中传递参数到这个任务后台
         super().__init__()
         self.global_config = global_config
-        self.zip_file_path = zip_file_path
-        self.old_version = old_version
         self.name = name
+        self.zip_file_path = zip_file_path
         self.result_name = result_name
         self.root_floader = root_floader
+        self.new_version = new_version
 
     def run(self):  # 重写run  比较耗时的后台任务可以在这里运行
         _ = download_zip(self.global_config, self.result_name)
-        self.resSignal.emit(self.name, self.zip_file_path, self.old_version, self.result_name, self.root_floader, True)
+        unzip_file(self.zip_file_path, '.')
+        self.resSignal.emit(self.name, self.zip_file_path, self.result_name, self.root_floader, self.new_version)
