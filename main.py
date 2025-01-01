@@ -10,7 +10,10 @@ import traceback
 class MainApp:
     def __init__(self, global_config):
         self.global_config = global_config
-        self.main_window = Main_Window(self.open_pic_operate_window, self.global_config)
+        self.flag_file = './flag_file'
+        if os.path.exists(self.flag_file):
+            self.global_config['enable_update'] = False
+        self.main_window = Main_Window(self.open_pic_operate_window, self.global_config, self.flag_file)
 
     def open_pic_operate_window(self, file_path, mode):
         self.pic_operate = Pic_Operate_Windows(file_path, self.reopen_main_window, self.global_config, mode)
@@ -21,8 +24,8 @@ class MainApp:
 
     def run(self):
         self.main_window.show()
-        if os.path.exists(self.main_window.flag_file):
-            os.remove(self.main_window.flag_file)
+        if os.path.exists(self.flag_file):
+            os.remove(self.flag_file)
             now_version = self.global_config['version']
             self.main_window.show_info.set_show_text(f'软件更新完成！\n新版本为 version {now_version}\n可以选择手动删除上一个版本')
             self.main_window.show_info.show()

@@ -18,7 +18,7 @@ import subprocess, platform
 from send2trash import send2trash
         
 class Main_Window(QMainWindow):
-    def __init__(self, open_pic_operate_window, global_config):
+    def __init__(self, open_pic_operate_window, global_config, flag_file):
         super().__init__()
         self.show_info = Show_Info_Window()
         self.Thread_pdf_to_pic = None
@@ -34,7 +34,7 @@ class Main_Window(QMainWindow):
         self.concat_index = 3
         self.pdf_to_pic_count = 0
         self.pdf_to_pic_finished = 0
-        self.flag_file = './flag_file'  # 标志文件路径
+        self.flag_file = flag_file  # 标志文件路径
         # 启用拖放
         self.setAcceptDrops(True)
         self.shape.layout([self.shape.combobox_height, self.shape.combobox_height, self.shape.button_height, 27],
@@ -625,12 +625,14 @@ class Main_Window(QMainWindow):
                 self.show_info.show()
                 QApplication.processEvents()
                 tip = download_zip(self.global_config, result_name)
-                if tip != True:
-                    unzip_file(zip_file_path, '.')
-                else:
-                    self.show_info.set_show_text(f'更新包下载失败，也未提供更新源代码，无法更新，请联系作者')
-                    self.show_info.show()
-                    return
+                print(f"当前工作目录:{os.getcwd()}")
+                print(tip)
+                # if tip != True:
+                unzip_file(zip_file_path, '.')
+                # else:
+                #     self.show_info.set_show_text(f'更新包下载失败，也未提供更新源代码，无法更新，请联系作者')
+                #     self.show_info.show()
+                #     return
             elif os.path.exists(name):
                 pass
             else:
