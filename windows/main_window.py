@@ -625,11 +625,13 @@ class Main_Window(QMainWindow):
                 self.show_info.show()
                 QApplication.processEvents()
                 _ = download_zip(self.global_config, result_name)
+                QApplication.processEvents()
                 unzip_file(zip_file_path, '.')
             elif os.path.exists(name):
                 pass
             else:
                 unzip_file(zip_file_path, '.')
+                QApplication.processEvents()
             try:
                 os.chdir(name)
             except:
@@ -644,6 +646,7 @@ class Main_Window(QMainWindow):
                 return
             new_version = str(config_check['version'])
             if new_version == old_version:
+                os.chdir('..')
                 shutil.rmtree(name)
                 if os.path.exists(zip_file_path):
                     os.remove(zip_file_path)
