@@ -728,9 +728,10 @@ class Main_Window(QMainWindow):
                 shutil.copytree('./照片放这里/', os.path.join(name, 'dist', 'main', '照片放这里'))
             if os.path.exists(os.path.join(name, 'dist', 'main', '模版', zip_file_path)):
                 os.remove(os.path.join(name, 'dist', 'main', '模版', zip_file_path))
-            shutil.move(zip_file_path, os.path.join(name, 'dist', 'main', '模版', zip_file_path))
+            # shutil.move(zip_file_path, os.path.join(name, 'dist', 'main', '模版', zip_file_path))
             shutil.move(os.path.join(name, 'dist', 'main'), os.path.join(os.path.dirname(root_floader), f'{name}{new_version}'))
-            shutil.rmtree(name)            
+            shutil.rmtree(name)     
+            os.remove(zip_file_path)       
             os.chdir(os.path.join(os.path.dirname(root_floader), f'{name}{new_version}'))
             shell_path = os.path.abspath(self.global_config['del_and_reopen_shell_path'])
             command = [
