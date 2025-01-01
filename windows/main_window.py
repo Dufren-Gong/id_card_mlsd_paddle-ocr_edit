@@ -4,8 +4,8 @@ from uis.shapes import Ui_Shapes
 from my_utils.utils import delete_specific_files_and_folders
 from uis.main_window_ui import Row_Zero, Row_One, Row_Two, Row_Catch
 from windows.show_info_window import Show_Info_Window
-from my_utils.threads import Pdf_to_Pic_Thread
-from my_utils.utils import get_data_str, open_floader, find_in_catch_pic, get_internal_path, unzip_file, download_zip, get_config
+from my_utils.threads import Pdf_to_Pic_Thread, Download_Sourcecode
+from my_utils.utils import get_data_str, open_floader, find_in_catch_pic, get_internal_path, unzip_file, get_config
 from my_utils.operate_excel import read_sheets, get_kaidan_pairs, get_nahuo_pairs, get_zhuandan_pairs, get_nianfei_pairs, get_budan_pairs, get_buka_pairs, fill_information, check_excel
 from each_types import kaidan, nahuo, zhuandan, budan, nianfei, buka
 from PyQt6.QtGui import QDragEnterEvent, QIcon
@@ -624,67 +624,74 @@ class Main_Window(QMainWindow):
                 self.show_info.set_show_text(f'正在下载源代码，请稍等......')
                 self.show_info.show()
                 QApplication.processEvents()
-                _ = download_zip(self.global_config, result_name)
-                QApplication.processEvents()
-                unzip_file(zip_file_path, '.')
-            elif os.path.exists(name):
-                pass
+                download_source_code_thread = Download_Sourcecode(self.global_config, name, zip_file_path, old_version, result_name, root_floader)
+                download_source_code_thread.resSignal.connect(self.end_get_source_code)
+                download_source_code_thread.start()
             else:
-                unzip_file(zip_file_path, '.')
-                QApplication.processEvents()
-            try:
-                os.chdir(name)
-            except:
-                self.show_info.set_show_text(f'解压错误，尝试手动解压{zip_file_path}到{name}文件夹再次尝试。还是不行的话，就是下载更新包有问题，请联系作者')
-                self.show_info.show()
-                return
-            try:
-                config_check = get_config(f'./模版/配置和记录/conf.yaml')
-            except:
-                self.show_info.set_show_text(f'提供的源代码或者云端下载的源代码有问题，请联系作者')
-                self.show_info.show()
-                return
-            new_version = str(config_check['version'])
-            if new_version == old_version:
-                os.chdir('..')
-                shutil.rmtree(name)
-                if os.path.exists(zip_file_path):
-                    os.remove(zip_file_path)
-                self.show_info.set_show_text(f'已是最新版本，不需要更新')
-                self.show_info.show()
-                return
-            self.hide()
-            QApplication.processEvents()
-            shutil.copy(os.path.join('模版', '配置和记录', 'new', 'main_new.spec'), './main_new.spec')
-            shell_path = os.path.abspath(self.global_config['update_shell_path'])
-            conda_env = self.global_config['conda_env_name']
-            try:
-                os.chmod(shell_path, 0o755)
-            except:
-                pass
-            command = [
-                "cmd",  # 调用 PowerShell
-                "/c",  # 不加载用户配置文件，避免干扰
-                shell_path,  # 指定脚本路径
-                conda_env
-            ]
-            self.show_info.row_one.exit_button.hide()
-            self.show_info.row_one.tip_label.setFixedSize(self.show_info.width() - 2 * self.show_info.shape.round_gap, self.show_info.row_one.tip_label.height())
-            self.show_info.setWindowTitle('更新软件中')
-            self.update_show_time = self.global_config['update_info_show_time']
-            self.show_info.set_show_text(f'正在更新中,时间可能有点长,不要关闭弹出的窗口,最好等待提示更新再使用电脑,此提示窗口{self.update_show_time}秒后自动关闭')
-            self.show_info.show()
-            self.update_timer = QTimer()
-            time_count = 1000
-            self.update_timer.timeout.connect(lambda: self.end_pyinstaller(time_count, name, result_name, root_floader, new_version, zip_file_path))
-            self.pyinstaller_process = subprocess.Popen(command)
-            self.update_counter = 0
-            self.update_timer.start(time_count)
-
+                if os.path.exists(name):
+                    unzip_file_flag = False
+                else:
+                    unzip_file_flag = True
+                self.end_get_source_code(self, name, zip_file_path, old_version, result_name, root_floader, unzip_file_flag)
         # elif current_os == "Darwin":  # macOS
-        else:  # macOS
+        else:
             self.show_info.set_show_text(f'此功能暂不支持在非windows系统上更新')
             self.show_info.show()
+
+    def end_get_source_code(self, name, zip_file_path, old_version, result_name, root_floader, unzip_file_flag = False):
+        if unzip_file_flag:
+            unzip_file(zip_file_path, '.')
+        try:
+            os.chdir(name)
+        except:
+            self.show_info.set_show_text(f'解压错误，尝试手动解压{zip_file_path}到{name}文件夹再次尝试。还是不行的话，就是下载更新包有问题，请联系作者')
+            self.show_info.show()
+            return
+        try:
+            config_check = get_config(f'./模版/配置和记录/conf.yaml')
+        except:
+            self.show_info.set_show_text(f'提供的源代码或者云端下载的源代码有问题，请联系作者')
+            self.show_info.show()
+            return
+        new_version = str(config_check['version'])
+        if new_version == old_version:
+            os.chdir('..')
+            shutil.rmtree(name)
+            if os.path.exists(zip_file_path):
+                os.remove(zip_file_path)
+            self.row_one.function_combobox.clear()
+            self.row_one.function_combobox.addItem(self.row_one.mode_options[:-1])
+            self.show_info.set_show_text(f'已是最新版本，不需要更新')
+            self.show_info.show()
+            return
+        self.hide()
+        QApplication.processEvents()
+        shutil.copy(os.path.join('模版', '配置和记录', 'new', 'main_new.spec'), './main_new.spec')
+        shell_path = os.path.abspath(self.global_config['update_shell_path'])
+        conda_env = self.global_config['conda_env_name']
+        try:
+            os.chmod(shell_path, 0o755)
+        except:
+            pass
+        command = [
+            "cmd",  # 调用 PowerShell
+            "/c",  # 不加载用户配置文件，避免干扰
+            shell_path,  # 指定脚本路径
+            conda_env
+        ]
+        self.show_info.row_one.exit_button.hide()
+        self.show_info.row_one.tip_label.setFixedSize(self.show_info.width() - 2 * self.show_info.shape.round_gap, self.show_info.row_one.tip_label.height())
+        self.show_info.setWindowTitle('更新软件中')
+        self.update_show_time = self.global_config['update_info_show_time']
+        self.show_info.set_show_text(f'正在更新中,时间可能有点长,不要关闭弹出的窗口,最好等待提示更新再使用电脑,此提示窗口{self.update_show_time}秒后自动关闭')
+        self.show_info.show()
+        self.update_timer = QTimer()
+        time_count = 1000
+        self.update_timer.timeout.connect(lambda: self.end_pyinstaller(time_count, name, result_name, root_floader, new_version, zip_file_path))
+        self.pyinstaller_process = subprocess.Popen(command)
+        self.update_counter = 0
+        self.update_timer.start(time_count)
+
 
     def end_pyinstaller(self, time_count, name, save_name, root_floader, new_version, zip_file_path):
         self.update_counter += 1
