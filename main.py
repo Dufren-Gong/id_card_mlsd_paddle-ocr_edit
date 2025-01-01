@@ -22,6 +22,7 @@ class MainApp:
     def run(self):
         self.main_window.show()
         if os.path.exists(self.main_window.flag_file):
+            os.remove(self.main_window.flag_file)
             now_version = self.global_config['version']
             self.main_window.show_info.set_show_text(f'软件更新完成！\n新版本为 version {now_version}\n可以选择手动删除上一个版本')
             self.main_window.show_info.show()
