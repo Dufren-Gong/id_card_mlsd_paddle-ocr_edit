@@ -670,7 +670,12 @@ class Main_Window(QMainWindow):
                 self.show_info.set_show_text(f'解压错误，尝试手动解压{zip_file_path}到{name}文件夹再次尝试。还是不行的话，就是下载更新包有问题，请联系作者')
                 self.show_info.show()
                 return
-            config_check = get_config(f'./模版/配置和记录/conf.yaml')
+            try:
+                config_check = get_config(f'./模版/配置和记录/conf.yaml')
+            except:
+                self.show_info.set_show_text(f'提供的源代码或者云端下载的源代码有问题，请联系作者')
+                self.show_info.show()
+                return
             if str(config_check['version']) == old_version:
                 shutil.rmtree(name)
                 if os.path.exists(zip_file_path):
