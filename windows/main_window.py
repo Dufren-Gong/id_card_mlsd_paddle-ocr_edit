@@ -619,7 +619,7 @@ class Main_Window(QMainWindow):
             name = f'{name}-{ref}'
             zip_file_path = f'{result_name}.zip'
             root_floader = os.path.abspath('.')
-            old_version = self.global_config['version']
+            old_version = str(self.global_config['version'])
             if not os.path.exists(name) and not os.path.exists(zip_file_path):
                 self.show_info.set_show_text(f'正在下载源代码，请稍等......')
                 self.show_info.show()
