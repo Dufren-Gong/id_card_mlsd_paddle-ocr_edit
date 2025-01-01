@@ -624,15 +624,8 @@ class Main_Window(QMainWindow):
                 self.show_info.set_show_text(f'正在下载源代码，请稍等......')
                 self.show_info.show()
                 QApplication.processEvents()
-                tip = download_zip(self.global_config, result_name)
-                print(f"当前工作目录:{os.getcwd()}")
-                print(tip)
-                # if tip != True:
+                _ = download_zip(self.global_config, result_name)
                 unzip_file(zip_file_path, '.')
-                # else:
-                #     self.show_info.set_show_text(f'更新包下载失败，也未提供更新源代码，无法更新，请联系作者')
-                #     self.show_info.show()
-                #     return
             elif os.path.exists(name):
                 pass
             else:
@@ -712,8 +705,6 @@ class Main_Window(QMainWindow):
                 shutil.copytree('./照片编辑结果/', os.path.join(name, 'dist', 'main', '照片编辑结果'))
             if os.path.exists("./照片放这里"):
                 shutil.copytree('./照片放这里/', os.path.join(name, 'dist', 'main', '照片放这里'))
-            if os.path.exists(os.path.join(name, 'dist', 'main', '模版', zip_file_path)):
-                os.remove(os.path.join(name, 'dist', 'main', '模版', zip_file_path))
             if os.path.exists(zip_file_path):
                 shutil.move(zip_file_path, os.path.join(name, 'dist', 'main', '模版', zip_file_path))
             shutil.move(os.path.join(name, 'dist', 'main'), os.path.join(os.path.dirname(root_floader), f'{save_name}{new_version}'))
