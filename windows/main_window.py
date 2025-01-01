@@ -649,28 +649,32 @@ class Main_Window(QMainWindow):
             root_floader = os.path.abspath('.')
             old_version = os.path.split(root_floader)[-1].lstrip(result_name)
             new_version = self.merge_version(old_version)
-            if not os.path.exists(zip_file_path):
+            if not os.path.exists(name) and not os.path.exists(zip_file_path):
                 self.show_info.set_show_text(f'正在下载源代码，请稍等......')
                 self.show_info.show()
                 QApplication.processEvents()
                 tip = download_zip(self.global_config, result_name)
                 if tip != True:
-                    self.show_info.set_show_text(f'更新包下载失败，也未在软件根目录下发现{zip_file_path}，无法更新，请联系作者')
+                    unzip_file(zip_file_path, '.')
+                else:
+                    self.show_info.set_show_text(f'更新包下载失败，也未提供更新源代码，无法更新，请联系作者')
                     self.show_info.show()
                     return
-            if os.path.exists(name):
-                shutil.rmtree(name)
-            unzip_file(zip_file_path, '.')
+            elif os.path.exists(name):
+                pass
+            else:
+                unzip_file(zip_file_path, '.')
             try:
                 os.chdir(name)
             except:
-                self.show_info.set_show_text(f'解压错误，尝试手动解压{zip_file_path}再次尝试。还是不行的话，就是下载更新包有问题，请联系作者')
+                self.show_info.set_show_text(f'解压错误，尝试手动解压{zip_file_path}到{name}文件夹再次尝试。还是不行的话，就是下载更新包有问题，请联系作者')
                 self.show_info.show()
                 return
             config_check = get_config(f'./模版/配置和记录/conf.yaml')
-            if config_check['version'] == old_version:
+            if str(config_check['version']) == old_version:
                 shutil.rmtree(name)
-                os.remove(zip_file_path)
+                if os.path.exists(zip_file_path):
+                    os.remove(zip_file_path)
                 self.show_info.set_show_text(f'已是最新版本，不需要更新')
                 self.show_info.show()
                 return
@@ -693,7 +697,7 @@ class Main_Window(QMainWindow):
             self.show_info.row_one.tip_label.setFixedSize(self.show_info.width() - 2 * self.show_info.shape.round_gap, self.show_info.row_one.tip_label.height())
             self.show_info.setWindowTitle('更新软件中')
             self.update_show_time = self.global_config['update_info_show_time']
-            self.show_info.set_show_text(f'正在更新中,时间可能有点长,不要关闭弹出的窗口,可以正常使用电脑,等待提示更新完成即可,此提示窗口{self.update_show_time}秒后自动关闭')
+            self.show_info.set_show_text(f'正在更新中,时间可能有点长,不要关闭弹出的窗口,最好等待提示更新再使用电脑,此提示窗口{self.update_show_time}秒后自动关闭')
             self.show_info.show()
             self.update_timer = QTimer()
             time_count = 1000
@@ -734,7 +738,8 @@ class Main_Window(QMainWindow):
             # shutil.move(zip_file_path, os.path.join(name, 'dist', 'main', '模版', zip_file_path))
             shutil.move(os.path.join(name, 'dist', 'main'), os.path.join(os.path.dirname(root_floader), f'{save_name}{new_version}'))
             shutil.rmtree(name)   
-            os.remove(zip_file_path)       
+            if os.path.exists(zip_file_path):
+                os.remove(zip_file_path)       
             os.chdir(os.path.join(os.path.dirname(root_floader), f'{save_name}{new_version}'))
             shell_path = os.path.abspath(self.global_config['del_and_reopen_shell_path'])
             command = [
