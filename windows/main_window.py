@@ -5,7 +5,7 @@ from my_utils.utils import delete_specific_files_and_folders
 from uis.main_window_ui import Row_Zero, Row_One, Row_Two, Row_Catch
 from windows.show_info_window import Show_Info_Window
 from my_utils.threads import Pdf_to_Pic_Thread
-from my_utils.utils import get_data_str, open_floader, find_in_catch_pic, get_internal_path, unzip_file
+from my_utils.utils import get_data_str, open_floader, find_in_catch_pic, get_internal_path, unzip_file, download_zip, get_config
 from my_utils.operate_excel import read_sheets, get_kaidan_pairs, get_nahuo_pairs, get_zhuandan_pairs, get_nianfei_pairs, get_budan_pairs, get_buka_pairs, fill_information, check_excel
 from each_types import kaidan, nahuo, zhuandan, budan, nianfei, buka
 from PyQt6.QtGui import QDragEnterEvent, QIcon
@@ -643,49 +643,62 @@ class Main_Window(QMainWindow):
         if current_os == "Windows":
             name = '身份证照片识别'
             zip_file_path = f'{name}.zip'
-            if os.path.exists(zip_file_path):
-                root_floader = os.path.abspath('.')
-                old_version = os.path.split(root_floader)[-1].lstrip(name)
-                new_version = self.merge_version(old_version)
-                #解压文件
-                if not os.path.exists(name):
-                    unzip_file(zip_file_path, '.')
-                try:
-                    os.chdir(name)
-                except:
-                    self.show_info.set_show_text(f'解压错误，尝试手动解压{zip_file_path}再次尝试。')
+            root_floader = os.path.abspath('.')
+            old_version = os.path.split(root_floader)[-1].lstrip(name)
+            new_version = self.merge_version(old_version)
+            if not os.path.exists(zip_file_path):
+                self.show_info.set_show_text(f'正在下载源代码，请稍等......')
+                self.show_info.show()
+                tip = download_zip(self.global_config, name)
+                if tip != True:
+                    self.show_info.set_show_text(f'更新包下载失败，也未在软件根目录下发现{zip_file_path}，无法更新，请联系作者')
                     self.show_info.show()
                     return
-                self.hide()
-                QApplication.processEvents()
-                shutil.copy(os.path.join('模版', '配置和记录', 'new', 'main_new.spec'), './main_new.spec')
-                shell_path = os.path.abspath(self.global_config['update_shell_path'])
-                conda_env = self.global_config['conda_env_name']
-                try:
-                    os.chmod(shell_path, 0o755)
-                except:
-                    pass
-                command = [
-                    "cmd",  # 调用 PowerShell
-                    "/c",  # 不加载用户配置文件，避免干扰
-                    shell_path,  # 指定脚本路径
-                    conda_env
-                ]
-                self.show_info.row_one.exit_button.hide()
-                self.show_info.row_one.tip_label.setFixedSize(self.show_info.width() - 2 * self.show_info.shape.round_gap, self.show_info.row_one.tip_label.height())
-                self.show_info.setWindowTitle('更新软件中')
-                self.update_show_time = self.global_config['update_info_show_time']
-                self.show_info.set_show_text(f'正在更新中,时间可能有点长,不要关闭弹出的窗口,可以正常使用电脑,等待提示更新完成即可,此提示窗口{self.update_show_time}秒后自动关闭')
+                else:
+                    unzip_file(zip_file_path, '.')
+                    try:
+                        shutil.move(self.global_config['repo'], name)
+                        os.chdir(name)
+                    except:
+                        self.show_info.set_show_text(f'解压错误，尝试手动解压{zip_file_path}再次尝试。还是不行的话，就是下载更新包有问题，请联系作者')
+                        self.show_info.show()
+                        return
+            config_check = get_config(f'./{name}/模版/配置和记录/conf.yaml')
+            if config_check['version'] == old_version:
+                shutil.rmtree(name)
+                os.remove(zip_file_path)
+                self.show_info.set_show_text(f'已是最新版本，不需要更新')
                 self.show_info.show()
-                self.update_timer = QTimer()
-                time_count = 1000
-                self.update_timer.timeout.connect(lambda: self.end_pyinstaller(time_count, name, root_floader, new_version, zip_file_path))
-                self.pyinstaller_process = subprocess.Popen(command)
-                self.update_counter = 0
-                self.update_timer.start(time_count)
-            else:
-                self.show_info.set_show_text(f'并未在软件根目录下发现{zip_file_path}，无法更新')
-                self.show_info.show()
+                return
+            self.hide()
+            QApplication.processEvents()
+            shutil.copy(os.path.join('模版', '配置和记录', 'new', 'main_new.spec'), './main_new.spec')
+            shell_path = os.path.abspath(self.global_config['update_shell_path'])
+            conda_env = self.global_config['conda_env_name']
+            try:
+                os.chmod(shell_path, 0o755)
+            except:
+                pass
+            command = [
+                "cmd",  # 调用 PowerShell
+                "/c",  # 不加载用户配置文件，避免干扰
+                shell_path,  # 指定脚本路径
+                conda_env
+            ]
+            self.show_info.row_one.exit_button.hide()
+            self.show_info.row_one.tip_label.setFixedSize(self.show_info.width() - 2 * self.show_info.shape.round_gap, self.show_info.row_one.tip_label.height())
+            self.show_info.setWindowTitle('更新软件中')
+            self.update_show_time = self.global_config['update_info_show_time']
+            self.show_info.set_show_text(f'正在更新中,时间可能有点长,不要关闭弹出的窗口,可以正常使用电脑,等待提示更新完成即可,此提示窗口{self.update_show_time}秒后自动关闭')
+            self.show_info.show()
+            self.update_timer = QTimer()
+            time_count = 1000
+            self.update_timer.timeout.connect(lambda: self.end_pyinstaller(time_count, name, root_floader, new_version, zip_file_path))
+            self.pyinstaller_process = subprocess.Popen(command)
+            self.update_counter = 0
+            self.update_timer.start(time_count)
+            # else:
+
         # elif current_os == "Darwin":  # macOS
         else:  # macOS
             self.show_info.set_show_text(f'此功能暂不支持在非windows系统上更新')

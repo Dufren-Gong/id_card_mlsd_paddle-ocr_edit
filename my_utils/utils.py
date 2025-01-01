@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 import os, math, json, sys
-import shutil, yaml
+import shutil, yaml, requests
 # import PIL
 # import PIL.Image
 # import PIL.ImageEnhance
@@ -19,8 +19,7 @@ def rgb_to_gray_with_three_channels(image):
     gray_3_channels = cv2.merge([gray, gray, gray])
     return gray_3_channels
 
-def get_config():
-    config_path = './模版/配置和记录/conf.yaml'
+def get_config(config_path = './模版/配置和记录/conf.yaml'):
     with open(config_path, 'r', encoding='utf-8') as file:
         global_config = yaml.load(file, Loader=yaml.SafeLoader)  # 使用 SafeLoader 更安全
     return global_config
@@ -346,3 +345,25 @@ def draw_fan(image, center, inner_radius, outer_radius, start_angle, end_angle, 
 #     hsv = hsv.astype(np.uint8)
 #     adjusted_image = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
 #     return adjusted_image
+
+def download_zip(global_config, name, files = []):
+    owner = global_config['owner']
+    repo = global_config['repo']
+    access_token = global_config['access_token']
+    ref = global_config['ref']
+    if files == []:
+        tip = 'zipball'
+    zip_url = f'https://gitee.com/api/v5/repos/{owner}/{repo}/{tip}?access_token={access_token}&ref={ref}'
+    try:
+        print("正在下载仓库 ZIP 文件...")
+        response = requests.get(zip_url, stream=True)
+
+        if response.status_code == 200:
+            with open(f"./{name}.zip", "wb") as file:
+                for chunk in response.iter_content(chunk_size=1024):
+                    file.write(chunk)
+            return True
+        else:
+            return f"下载失败，状态码：{response.status_code}\n详情：{response.text}"
+    except Exception as e:
+        return f"下载过程中出错：{e}"
