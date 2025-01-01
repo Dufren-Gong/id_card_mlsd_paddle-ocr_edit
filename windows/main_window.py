@@ -641,29 +641,33 @@ class Main_Window(QMainWindow):
     def update_software(self):
         current_os = platform.system()
         if current_os == "Windows":
-            name = '身份证照片识别'
-            zip_file_path = f'{name}.zip'
+            result_name = '身份证照片识别'
+            name = self.global_config['repo']
+            ref = self.global_config['ref']
+            name = f'{name}-{ref}'
+            zip_file_path = f'{result_name}.zip'
             root_floader = os.path.abspath('.')
-            old_version = os.path.split(root_floader)[-1].lstrip(name)
+            old_version = os.path.split(root_floader)[-1].lstrip(result_name)
             new_version = self.merge_version(old_version)
             if not os.path.exists(zip_file_path):
                 self.show_info.set_show_text(f'正在下载源代码，请稍等......')
                 self.show_info.show()
-                tip = download_zip(self.global_config, name)
+                QApplication.processEvents()
+                tip = download_zip(self.global_config, result_name)
                 if tip != True:
                     self.show_info.set_show_text(f'更新包下载失败，也未在软件根目录下发现{zip_file_path}，无法更新，请联系作者')
                     self.show_info.show()
                     return
-                else:
-                    unzip_file(zip_file_path, '.')
-                    try:
-                        shutil.move(self.global_config['repo'], name)
-                        os.chdir(name)
-                    except:
-                        self.show_info.set_show_text(f'解压错误，尝试手动解压{zip_file_path}再次尝试。还是不行的话，就是下载更新包有问题，请联系作者')
-                        self.show_info.show()
-                        return
-            config_check = get_config(f'./{name}/模版/配置和记录/conf.yaml')
+            if os.path.exists(name):
+                shutil.rmtree(name)
+            unzip_file(zip_file_path, '.')
+            try:
+                os.chdir(name)
+            except:
+                self.show_info.set_show_text(f'解压错误，尝试手动解压{zip_file_path}再次尝试。还是不行的话，就是下载更新包有问题，请联系作者')
+                self.show_info.show()
+                return
+            config_check = get_config(f'./模版/配置和记录/conf.yaml')
             if config_check['version'] == old_version:
                 shutil.rmtree(name)
                 os.remove(zip_file_path)
@@ -693,18 +697,17 @@ class Main_Window(QMainWindow):
             self.show_info.show()
             self.update_timer = QTimer()
             time_count = 1000
-            self.update_timer.timeout.connect(lambda: self.end_pyinstaller(time_count, name, root_floader, new_version, zip_file_path))
+            self.update_timer.timeout.connect(lambda: self.end_pyinstaller(time_count, name, result_name, root_floader, new_version, zip_file_path))
             self.pyinstaller_process = subprocess.Popen(command)
             self.update_counter = 0
             self.update_timer.start(time_count)
-            # else:
 
         # elif current_os == "Darwin":  # macOS
         else:  # macOS
             self.show_info.set_show_text(f'此功能暂不支持在非windows系统上更新')
             self.show_info.show()
 
-    def end_pyinstaller(self, time_count, name, root_floader, new_version, zip_file_path):
+    def end_pyinstaller(self, time_count, name, save_name, root_floader, new_version, zip_file_path):
         self.update_counter += 1
         if self.update_counter == self.update_show_time:
             self.show_info.hide()
@@ -729,10 +732,10 @@ class Main_Window(QMainWindow):
             if os.path.exists(os.path.join(name, 'dist', 'main', '模版', zip_file_path)):
                 os.remove(os.path.join(name, 'dist', 'main', '模版', zip_file_path))
             # shutil.move(zip_file_path, os.path.join(name, 'dist', 'main', '模版', zip_file_path))
-            shutil.move(os.path.join(name, 'dist', 'main'), os.path.join(os.path.dirname(root_floader), f'{name}{new_version}'))
-            shutil.rmtree(name)     
+            shutil.move(os.path.join(name, 'dist', 'main'), os.path.join(os.path.dirname(root_floader), f'{save_name}{new_version}'))
+            shutil.rmtree(name)   
             os.remove(zip_file_path)       
-            os.chdir(os.path.join(os.path.dirname(root_floader), f'{name}{new_version}'))
+            os.chdir(os.path.join(os.path.dirname(root_floader), f'{save_name}{new_version}'))
             shell_path = os.path.abspath(self.global_config['del_and_reopen_shell_path'])
             command = [
                 "powershell",  # 调用 PowerShell
@@ -742,7 +745,7 @@ class Main_Window(QMainWindow):
                 "Bypass",  # 绕过脚本执行限制
                 "-File", shell_path,  # 指定脚本路径
                 "-flag_file", self.flag_file,
-                "-exe_name", f'{name}.exe'
+                "-exe_name", f'{save_name}.exe'
             ]
             subprocess.Popen(command)
             sys.exit(0)

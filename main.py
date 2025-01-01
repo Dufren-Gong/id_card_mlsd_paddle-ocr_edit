@@ -1,6 +1,7 @@
 import sys, os
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QApplication, QApplication, QMessageBox
-from my_utils.utils import get_config
+from my_utils.utils import get_config, get_internal_path
 from windows.main_window import Main_Window
 from my_utils.utils import delete_specific_files_and_folders
 from windows.pic_operate_window import Pic_Operate_Windows
@@ -41,7 +42,7 @@ def global_exception_handler(exc_type, exc_value, exc_traceback):
     
     # 创建消息框
     msg_box = QMessageBox()
-    msg_box.setIcon(QMessageBox.Icon.Critical)
+    msg_box.setWindowIcon(QIcon(get_internal_path('./files/icon/icon.ico')))
     msg_box.setWindowTitle("程序错误")
     msg_box.setText("程序发生了异常，请联系开发者！")
     msg_box.setDetailedText(error_details)  # 展示详细错误信息

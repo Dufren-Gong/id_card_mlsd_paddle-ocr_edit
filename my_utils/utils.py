@@ -53,7 +53,7 @@ def delete_specific_files_and_folders(target_dir, del_dirname = None, del_filena
                 for dir_name in dirs:
                     if dir_name == del_dirname:
                         dir_path = os.path.join(root, dir_name)
-                        send2trash(dir_path)  # 删除整个文件夹
+                        shutil.rmtree(dir_path)  # 删除整个文件夹
 
             if del_filename != None:
                 # 删除 .DS_Store 文件
@@ -355,9 +355,7 @@ def download_zip(global_config, name, files = []):
         tip = 'zipball'
     zip_url = f'https://gitee.com/api/v5/repos/{owner}/{repo}/{tip}?access_token={access_token}&ref={ref}'
     try:
-        print("正在下载仓库 ZIP 文件...")
         response = requests.get(zip_url, stream=True)
-
         if response.status_code == 200:
             with open(f"./{name}.zip", "wb") as file:
                 for chunk in response.iter_content(chunk_size=1024):
