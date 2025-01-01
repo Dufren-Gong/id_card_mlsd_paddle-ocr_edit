@@ -35,7 +35,6 @@ class Main_Window(QMainWindow):
         self.pdf_to_pic_count = 0
         self.pdf_to_pic_finished = 0
         self.flag_file = './flag_file'  # 标志文件路径
-        self.update_flag = False
         # 启用拖放
         self.setAcceptDrops(True)
         self.shape.layout([self.shape.combobox_height, self.shape.combobox_height, self.shape.button_height, 27],
@@ -43,17 +42,6 @@ class Main_Window(QMainWindow):
         self.setWindowIcon(QIcon(get_internal_path('./files/icon/icon.ico')))
         self.init_ui()
         self.init_events()
-        if os.path.exists(self.flag_file):
-            os.remove(self.flag_file)
-            self.check_version()
-
-    def check_version(self):
-        name = '身份证照片识别'
-        self.now_version = os.path.split(os.path.abspath('.'))[-1].lstrip(name)
-        self.previous_version = self.merge_version(self.now_version, -1)
-        if self.previous_version == '':
-            self.previous_version = '1.0'
-        self.update_flag = True
 
     def dragEnterEvent(self, event: QDragEnterEvent):
         # 只要拖拽内容包含 URL，就接受拖拽
@@ -622,22 +610,6 @@ class Main_Window(QMainWindow):
             if duration > 0:
                 self.combbox_change_tips_timer.start(duration)
 
-    def merge_version(self, version, mode = 1):
-        if version != '':
-            if not (mode == -1 and version == '1.1'):
-                # 将字符串转换为浮点数
-                number = float(version)
-                # 加 0.1
-                result = number + 0.1 * mode
-            else:
-                return ''
-        else:
-            if mode == 1:
-                result = 1.1
-            else:
-                return None
-        return f"{result:.1f}"
-
     def update_software(self):
         current_os = platform.system()
         if current_os == "Windows":
@@ -647,8 +619,7 @@ class Main_Window(QMainWindow):
             name = f'{name}-{ref}'
             zip_file_path = f'{result_name}.zip'
             root_floader = os.path.abspath('.')
-            old_version = os.path.split(root_floader)[-1].lstrip(result_name)
-            new_version = self.merge_version(old_version)
+            old_version = self.global_config['version']
             if not os.path.exists(name) and not os.path.exists(zip_file_path):
                 self.show_info.set_show_text(f'正在下载源代码，请稍等......')
                 self.show_info.show()
@@ -676,7 +647,8 @@ class Main_Window(QMainWindow):
                 self.show_info.set_show_text(f'提供的源代码或者云端下载的源代码有问题，请联系作者')
                 self.show_info.show()
                 return
-            if str(config_check['version']) == old_version:
+            new_version = str(config_check['version'])
+            if new_version == old_version:
                 shutil.rmtree(name)
                 if os.path.exists(zip_file_path):
                     os.remove(zip_file_path)
