@@ -619,12 +619,12 @@ class Main_Window(QMainWindow):
             name = f'{name}-{ref}'
             zip_file_path = f'{result_name}.zip'
             root_floader = os.path.abspath('.')
-            old_version = str(self.global_config['version'])
+            old_version = self.global_config['version']
             conf_path = '模版/配置和记录/conf.yaml'
             if not os.path.exists(name) and not os.path.exists(zip_file_path):
                 download_single_file(self.global_config, conf_path, 'conf.yaml')
                 config_check = get_config('conf.yaml')
-                new_version = str(config_check['version'])
+                new_version = config_check['version']
                 os.remove('conf.yaml')
                 if new_version == old_version:
                     self.show_info.set_show_text(f'已是最新版本，不需要更新')
@@ -645,13 +645,11 @@ class Main_Window(QMainWindow):
                 try:
                     config_check = get_config(f'{name}/{conf_path}')
                 except:
-                    self.show_info.set_show_text(f'提供的源代码或者云端下载的源代码有问题，请联系作者')
+                    self.show_info.set_show_text(f'提供的源代码或者云端下载的源代码有问题，压缩包名应该为"身份证照片识别.zip", 其内的文件夹名应为{name}，如还有问题请联系作者')
                     self.show_info.show()
                     return
-                new_version = str(config_check['version'])
+                new_version = config_check['version']
                 if new_version == old_version:
-                    self.row_one.function_combobox.clear()
-                    self.row_one.function_combobox.addItem(self.row_one.mode_options[:-1])
                     self.show_info.set_show_text(f'已是最新版本，不需要更新')
                     self.show_info.show()
                     return
@@ -696,7 +694,6 @@ class Main_Window(QMainWindow):
         self.pyinstaller_process = subprocess.Popen(command)
         self.update_counter = 0
         self.update_timer.start(time_count)
-
 
     def end_pyinstaller(self, time_count, name, save_name, root_floader, new_version, zip_file_path):
         self.update_counter += 1

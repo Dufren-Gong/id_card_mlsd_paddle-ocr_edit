@@ -2,6 +2,8 @@
 
 set conda_env=%1
 
-call conda activate %conda_env%
+conda activate %conda_env%
 
 pyinstaller main_new.spec
+
+exit 0
