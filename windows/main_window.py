@@ -861,7 +861,7 @@ class Main_Window(QMainWindow):
                     send2trash(path)
                 except:
                     os.makedirs(path, exist_ok=True)
-                    self.show_info.set_show_text('“照片编辑结果”正在被其他应用占用，可能清空失败，再次单击打开这个文件检查是否被清空。未清空就手动清空')
+                    self.show_info.set_show_text('清空失败，你打开了“照片编辑结果”里的照片或者word文档，请先关闭打开的文件再次尝试，或者手动清空')
                     self.show_info.show()
                     return
             os.makedirs(path, exist_ok=True)

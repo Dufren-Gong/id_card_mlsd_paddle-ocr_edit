@@ -1,5 +1,5 @@
 import os
-os.environ['FLAGS_use_cuda_allocator'] = '0'
+# os.environ['FLAGS_use_cuda_allocator'] = '0'
 from cv2 import resize as cv2resize
 from cv2 import INTER_AREA as cv2INTER_AREA
 import re, gc
@@ -387,12 +387,13 @@ def get_infos_hk(infos, catch):
                         if catch[1] == None:
                             catch[1] = '女'
             continue
-        if ('(' in line or ')' in line or '（' in line or '（' in line) and list(line).count('-') == 2:
-            if '（' in line or '（' in line:
-                line = line.replace('（', '(').replace('）', ')')
-            match = re.search(r'[a-zA-Z]', line)
-            if match:
-                line = match.group(0) + line.split(match.group(0), maxsplit = 1)[1]  # 返回找到的第一个英文字母
+        if ('(' in line or ')' in line or '（' in line or '（' in line) and (list(line).count('-') == 2 or list(line).count('-') == 0):
+            line = line.replace('（', '(').replace('）', ')')
+            if '-' in line:
+                line = line.split('-')[-1]
+                match = re.search(r'[a-zA-Z]', line)
+                if match:
+                    line = match.group(0) + line.split(match.group(0), maxsplit = 1)[1]  # 返回找到的第一个英文字母
             if catch[5] == None:
                 catch[5] = line
             else:

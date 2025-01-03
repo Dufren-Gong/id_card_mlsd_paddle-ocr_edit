@@ -623,8 +623,8 @@ def read_openpyxl_by_str(ws):
 def check_excel(file_path, pic_floader, sheet_name = None):
     passed_flag = True
     # 设置绿色字体
-    green_font = Font(color="FF0000")  # 红色字体
-    black_font = Font(color="000000")  # 红色字体
+    red_font = Font(color="FF0000")  # 红色字体
+    black_font = Font(color="000000")  # 黑色字体
     #高频信息里面找
     cache_path = os.path.join('模版', '高频照片')
     #照片缓存信息里面找
@@ -663,7 +663,7 @@ def check_excel(file_path, pic_floader, sheet_name = None):
                         check_r = column_names[c_name](value)
                         if c_name != '姓名':
                             if check_r == None:
-                                ws[f"{letter}{i}"].font = green_font
+                                ws[f"{letter}{i}"].font = red_font
                                 passed_flag = False
                             else:
                                 ws[f"{letter}{i}"] = check_r
@@ -708,12 +708,12 @@ def check_excel(file_path, pic_floader, sheet_name = None):
                                                         if check_name_index == 1:
                                                             name_passed_flag = False
                                                             passed_flag = False
-                                                            ws[f"{letter}{i}"].font = green_font
+                                                            ws[f"{letter}{i}"].font = red_font
                                             else:
                                                 if check_name_index == 1:
                                                     name_passed_flag = False
                                                     passed_flag = False
-                                                    ws[f"{letter}{i}"].font = green_font
+                                                    ws[f"{letter}{i}"].font = red_font
                             #名字通过，开始检查地址
                             if name_passed_flag:
                                 ws[f"{letter}{i}"] = check_r
@@ -724,7 +724,7 @@ def check_excel(file_path, pic_floader, sheet_name = None):
                                 #香港人需要地址
                                 if info['籍贯'] == '香港':
                                     if pd.isna(address) or address.strip().replace(' ', '') == '':
-                                        ws[f"{address_column_letters}{i}"].font = green_font
+                                        ws[f"{address_column_letters}{i}"].font = red_font
                                         passed_flag = False
                                         ws[f"{address_column_letters}{i}"] = '未填写地址'
                                 #再检查如果有地址是否有错
@@ -732,7 +732,7 @@ def check_excel(file_path, pic_floader, sheet_name = None):
                                     if address.strip().replace(' ', '') != '':
                                         address = column_names['住址(内地人不用填，如果要更换就填)'](address)
                                         if pd.isna(address):
-                                            ws[f"{address_column_letters}{i}"].font = green_font
+                                            ws[f"{address_column_letters}{i}"].font = red_font
                                             passed_flag = False
                                         else:
                                             ws[f"{address_column_letters}{i}"] = address
