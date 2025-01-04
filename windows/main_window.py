@@ -634,9 +634,9 @@ class Main_Window(QMainWindow):
                     self.show_info.set_show_text(f'正在下载源代码，请稍等......')
                     self.show_info.show()
                     QApplication.processEvents()
-                    download_source_code_thread = Download_Sourcecode(self.global_config, name, zip_file_path, result_name, root_floader, new_version)
-                    download_source_code_thread.resSignal.connect(self.end_get_source_code)
-                    download_source_code_thread.start()
+                    self.download_source_code_thread = Download_Sourcecode(self.global_config, name, zip_file_path, result_name, root_floader, new_version)
+                    self.download_source_code_thread.resSignal.connect(self.end_get_source_code)
+                    self.download_source_code_thread.start()
             else:
                 if os.path.exists(name):
                     pass
@@ -654,7 +654,7 @@ class Main_Window(QMainWindow):
                     self.show_info.show()
                     return
                 else:
-                    self.end_get_source_code(self, name, zip_file_path, result_name, root_floader, new_version)
+                    self.end_get_source_code(name, zip_file_path, result_name, root_floader, new_version)
         # elif current_os == "Darwin":  # macOS
         else:
             self.show_info.set_show_text(f'此功能暂不支持在非windows系统上更新')
