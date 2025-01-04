@@ -68,7 +68,7 @@ paddleocr_conf:
     right: green #正确文本的颜色
     error: red #错误文本的颜色
 
-version: '1.3.1'
+version: '1.3'
 pic_shape: [856, 540] #[width, height]， 最终生成照片的尺寸
 catch_days: 30 #制作的照片缓存几天，填写0代表一直缓存, 正整数比如1，就缓存当天的照片，第二天再打开软件，前一天的缓存就删掉了
 button_timer_duration: 500 #长按按钮的执行时间，单位为ms
