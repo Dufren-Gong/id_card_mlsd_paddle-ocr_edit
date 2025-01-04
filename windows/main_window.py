@@ -4,7 +4,7 @@ from uis.shapes import Ui_Shapes
 from my_utils.utils import delete_specific_files_and_folders
 from uis.main_window_ui import Row_Zero, Row_One, Row_Two, Row_Catch
 from windows.show_info_window import Show_Info_Window
-from my_utils.threads import Pdf_to_Pic_Thread#, Download_Sourcecode
+from my_utils.threads import Pdf_to_Pic_Thread, Download_Sourcecode
 from my_utils.utils import get_data_str, open_floader, find_in_catch_pic, get_internal_path, unzip_file, get_config, download_single_file, download_zip
 from my_utils.operate_excel import read_sheets, get_kaidan_pairs, get_nahuo_pairs, get_zhuandan_pairs, get_nianfei_pairs, get_budan_pairs, get_buka_pairs, fill_information, check_excel
 from each_types import kaidan, nahuo, zhuandan, budan, nianfei, buka
@@ -634,11 +634,9 @@ class Main_Window(QMainWindow):
                     self.show_info.set_show_text(f'正在下载源代码，请稍等......')
                     self.show_info.show()
                     QApplication.processEvents()
-                    # self.download_source_code_thread = Download_Sourcecode(self.global_config, name, zip_file_path, result_name, root_floader, new_version)
-                    # self.download_source_code_thread.resSignal.connect(self.end_get_source_code)
-                    # self.download_source_code_thread.start()
-                    _ = download_zip(self.global_config, result_name)
-                    unzip_file(zip_file_path, '.')
+                    self.download_source_code_thread = Download_Sourcecode(self.global_config, name, zip_file_path, result_name, root_floader, new_version)
+                    self.download_source_code_thread.resSignal.connect(self.end_get_source_code)
+                    self.download_source_code_thread.start()
             else:
                 cache = os.listdir('.')
                 if os.path.exists(name):
@@ -671,7 +669,7 @@ class Main_Window(QMainWindow):
                     self.show_info.set_show_text(f'已是最新版本，不需要更新')
                     self.show_info.show()
                     return
-            self.end_get_source_code(name, zip_file_path, result_name, root_floader, new_version)
+                self.end_get_source_code(name, zip_file_path, result_name, root_floader, new_version)
         # elif current_os == "Darwin":  # macOS
         else:
             self.show_info.set_show_text(f'此功能暂不支持在非windows系统上更新')
@@ -724,7 +722,7 @@ class Main_Window(QMainWindow):
             self.show_info.row_one.tip_label.appendPlainText('更新即将完成，请稍等......')
             os.chdir('..')
             shutil.copytree('./模版/', os.path.join(name, 'dist', 'main', '模版'))
-            if not os.path.exists(os.path.join(name, 'dist', 'main', '_internal', '_tk_data')):
+            if not os.path.exists(os.path.join(name, 'dist', 'main', '_internal', '_tk_data')) and os.path.exists(os.path.join('_internal', '_tk_data')):
                 shutil.copytree(os.path.join('_internal', '_tk_data'), os.path.join(name, 'dist', 'main', '_internal', '_tk_data'))
             os.chdir(name)
             shutil.rmtree(os.path.join('dist', 'main', '模版', '配置和记录'))
