@@ -386,9 +386,8 @@ def download_single_file(global_config, path_in_cloud, to_path):
         file_info = response.json()
         file_content = base64.b64decode(file_info['content'])  # 文件内容是 Base64 编码的
         # 保存到本地
-        print("当前工作目录：", os.getcwd())
         with open(to_path, "wb") as file:
             file.write(file_content)
         return True
     else:
-        print(f"文件下载失败，状态码：{response.status_code}, 错误信息：{response.text}")
+        return False
