@@ -99,12 +99,14 @@ class Row_One():
                  centralwidget,
                  tip_label_shape: tuple,
                  select_function_combobox_shape: tuple,
+                 pic_here_shape: tuple,
                  enable_update) -> None:
         self.centralwidget = centralwidget
         self.enable_update = enable_update
         self.mode_options = ["截图识别", '文字识别', '查询信息', '合并信息到最新', "开单", "拿货", "转单", "年费", "补单", "补卡", "所有类型", "PDF转照片", '更新软件']
         self.init_one_tip_label(tip_label_shape)
         self.init_one_column_two_select_function_combobox(select_function_combobox_shape)
+        self.init_one_pic_here_checkbox(pic_here_shape)
 
     def init_one_tip_label(self, shape):
         self.tip_label = QtWidgets.QLabel(parent=self.centralwidget)
@@ -136,6 +138,14 @@ class Row_One():
             }
         """)
 
+    def init_one_pic_here_checkbox(self, shape):
+        self.pic_here_checkbox = QtWidgets.QCheckBox(parent=self.centralwidget)
+        self.pic_here_checkbox.setGeometry(QtCore.QRect(*shape))
+        self.pic_here_checkbox.setObjectName("select_newest_checkbox")
+        self.pic_here_checkbox.setText("选照片放这里")
+        self.pic_here_checkbox.setToolTip("默认选择照片放这里文件夹，就不用再选择了，直接制作word，如果要选择其他文件夹，取消选中")
+        self.pic_here_checkbox.setChecked(True)
+
 class Row_Two():
     def __init__(self,
                  centralwidget,
@@ -152,8 +162,8 @@ class Row_Two():
         self.select_files_button = QtWidgets.QPushButton(parent=self.centralwidget)
         self.select_files_button.setGeometry(QtCore.QRect(*shape))
         self.select_files_button.setObjectName("select_files_button")
-        self.select_files_button.setText("选择文件/文件夹")
-        self.select_files_button.setToolTip('选择文件或者文件夹直接跳转开始编辑')
+        self.select_files_button.setText("确认制作")
+        self.select_files_button.setToolTip('默认使用照片放这里的照片来编辑')
         self.select_files_button.setStyleSheet("""
             QPushButton {
                 border-width: 1px;          /* 边缘宽度 */

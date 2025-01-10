@@ -38,7 +38,7 @@ class Main_Window(QMainWindow):
         # 启用拖放
         self.setAcceptDrops(True)
         self.shape.layout([self.shape.combobox_height, self.shape.combobox_height, self.shape.button_height, 27],
-                          [[60, 234]] + [[60, 135, 95]] * 2 + [[298]])
+                          [[60, 135, 95]] * 3 + [[298]])
         self.setWindowIcon(QIcon(get_internal_path('./files/icon/icon.ico')))
         self.init_ui()
         self.init_events()
@@ -121,6 +121,7 @@ class Main_Window(QMainWindow):
         return flag
 
     def open_folder_dialog(self, floader_path = None):
+        print(floader_path)
         selected_options = self.row_one.function_combobox.currentIndex()
         if selected_options != 11:
             # 打开文件夹选择对话框
@@ -345,7 +346,8 @@ class Main_Window(QMainWindow):
     def show_error(self, errors):
         if len(errors) != 0:
             name_str = '，'.join(errors)
-            self.show_info.set_show_text(f'制作完成\n{name_str}\n信息缺失或照片缺失\n其所在内组的word未制作')
+            self.show_info.set_show_text(f"部分制作完成\n{name_str}\n信息缺失或照片缺失\n注意红色部分信息填写完整\n如果不知道怎么填看第一页的模版\n其所在内组的word未制作")
+            self.show_info.show()
             self.have_error_flag = True
 
     def creat_zhuandan(self, mode):
@@ -523,6 +525,7 @@ class Main_Window(QMainWindow):
             central_widget,
             self.shape.shape_tuples[0][0],
             self.shape.shape_tuples[0][1],
+            self.shape.shape_tuples[0][2],
             self.global_config['enable_update']
         )
 
@@ -548,12 +551,10 @@ class Main_Window(QMainWindow):
             self.row_two.open_newest_button.released.disconnect()
         current_index = self.row_one.function_combobox.currentIndex()
         if current_index == 0 or current_index == 1:
+            self.row_one.pic_here_checkbox.setEnabled(True)
             self.row_zero.tip_label.setText('文件类型:')
             self.row_two.open_newest_button.setText('打开最新/删除所有编辑')
-            self.row_two.select_files_button.setText('选择文件/文件夹')
-            self.row_two.select_files_button.setToolTip('选择文件或者文件夹直接跳转开始编辑')
             self.row_two.open_newest_button.setToolTip('短按打开编辑结果中最新生成结果的文件夹，长按删除"照片编辑结果"中所有编辑')
-            self.row_two.select_files_button.clicked.connect(lambda: self.open_folder_dialog())
             self.row_two.open_newest_button.pressed.connect(self.open_newest_pressed)
             self.row_two.open_newest_button.released.connect(self.open_newest_released)
             self.row_zero.tip_label.show()
@@ -561,7 +562,13 @@ class Main_Window(QMainWindow):
             self.row_zero.file_type_combobox.show()
             self.row_zero.pic_name_lineedit.hide()
             self.row_zero.select_newest_checkbox.hide()
+            if current_index == 1:
+                self.row_one.pic_here_checkbox.setChecked(False)
+            else:
+                self.row_one.pic_here_checkbox.setChecked(True)
+            self.change_moren_pic()
         elif current_index == 2:
+            self.row_one.pic_here_checkbox.setDisabled(True)
             self.row_zero.tip_label.setText('输入名字:')
             self.row_two.open_newest_button.setText('繁体转简体')
             self.row_two.select_files_button.setText('查询')
@@ -575,6 +582,7 @@ class Main_Window(QMainWindow):
             self.row_zero.select_newest_checkbox.hide()
             self.row_zero.pic_name_lineedit.setFocus()
         elif current_index == self.concat_index or current_index == 11 or current_index == 12:
+            self.row_one.pic_here_checkbox.setDisabled(True)
             self.row_two.open_newest_button.setText('打开最新/删除所有编辑')
             self.row_zero.tip_label.setText('文件类型:')
             self.row_two.open_newest_button.setToolTip('短按打开编辑结果中最新生成结果的文件夹，长按删除"照片编辑结果"中所有编辑')
@@ -594,6 +602,7 @@ class Main_Window(QMainWindow):
                 self.row_two.select_files_button.setToolTip('开始更新程序')
                 self.row_two.select_files_button.clicked.connect(self.update_software)
         else:
+            self.row_one.pic_here_checkbox.setDisabled(True)
             self.row_two.open_newest_button.setText('打开最新/删除所有编辑')
             self.row_two.open_newest_button.setToolTip('短按打开编辑结果中最新生成结果的文件夹，长按删除"照片编辑结果"中所有编辑')
             self.row_two.open_newest_button.pressed.connect(self.open_newest_pressed)
@@ -640,7 +649,6 @@ class Main_Window(QMainWindow):
             else:
                 cache = os.listdir('.')
                 if os.path.exists(name):
-                    pass
                     del_flag = False
                 else:
                     unzip_file(zip_file_path, '.')
@@ -762,6 +770,10 @@ class Main_Window(QMainWindow):
         os.makedirs(path, exist_ok=True)
         self.open_folder_dialog(path)
 
+    def operate_on_moren_pic(self):
+        floader_path = './照片放这里'
+        self.open_folder_dialog(floader_path)
+
     def fan_zhuan_jian(self):
         text = self.row_zero.pic_name_lineedit.text().replace(' ', '')
         if text:
@@ -818,6 +830,21 @@ class Main_Window(QMainWindow):
         else:
             self.row_two.select_files_button.setText('选择保存路径')
             self.row_two.select_files_button.setToolTip('选择将制作的word与使用的照片和信息放到那个路径下')
+            self.row_two.select_files_button.clicked.connect(lambda: self.open_folder_dialog())
+
+    def change_moren_pic(self):
+        try:
+            self.row_two.select_files_button.clicked.disconnect()
+        except:
+            pass
+        if self.row_one.pic_here_checkbox.isChecked():
+            self.row_zero.file_type_combobox.setCurrentIndex(0)
+            self.row_two.select_files_button.setText('确认制作')
+            self.row_two.select_files_button.setToolTip('默认使用照片放这里的照片来编辑')
+            self.row_two.select_files_button.clicked.connect(lambda: self.operate_on_moren_pic())
+        else:
+            self.row_two.select_files_button.setText('选择文件/文件夹')
+            self.row_two.select_files_button.setToolTip('选择文件或者文件夹直接跳转开始编辑')
             self.row_two.select_files_button.clicked.connect(lambda: self.open_folder_dialog())
 
     def open_pic_floader(self):
@@ -915,9 +942,10 @@ class Main_Window(QMainWindow):
         self.row_zero.exit_button.pressed.connect(self.black_pressed)
         self.row_zero.exit_button.released.connect(self.black_released)
         self.row_one.function_combobox.currentIndexChanged.connect(self.change_function_index)
-        self.row_two.select_files_button.clicked.connect(lambda: self.open_folder_dialog())
+        self.row_two.select_files_button.clicked.connect(lambda: self.operate_on_moren_pic())
         self.row_two.open_newest_button.pressed.connect(self.open_newest_pressed)
         self.row_two.open_newest_button.released.connect(self.open_newest_released)
         self.row_two.open_excel_button.clicked.connect(self.open_excel)
         self.row_zero.select_newest_checkbox.stateChanged.connect(self.change_moren)
+        self.row_one.pic_here_checkbox.stateChanged.connect(self.change_moren_pic)
         self.row_catch.pic_name_lineedit.doubleClickedSignal.connect(self.change_height)
