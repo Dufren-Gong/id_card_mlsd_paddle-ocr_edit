@@ -743,7 +743,7 @@ class Main_Window(QMainWindow):
             if os.path.exists(zip_file_path):
                 shutil.move(zip_file_path, os.path.join(name, 'dist', 'main', '模版', zip_file_path))
             shutil.move(os.path.join(name, 'dist', 'main'), os.path.join(os.path.dirname(root_floader), f'{save_name}{new_version}'))
-            shutil.rmtree(name)   
+            pwd_cache = os.getcwd()
             os.chdir(os.path.join(os.path.dirname(root_floader), f'{save_name}{new_version}'))
             shell_path = os.path.abspath(self.global_config['del_and_reopen_shell_path'])
             command = [
@@ -757,6 +757,11 @@ class Main_Window(QMainWindow):
                 "-exe_name", f'{save_name}.exe'
             ]
             subprocess.Popen(command)
+            os.chdir(pwd_cache)
+            try:
+                shutil.rmtree(name)
+            except:
+                pass
             sys.exit(0)
 
     def operate_on_moren(self):
