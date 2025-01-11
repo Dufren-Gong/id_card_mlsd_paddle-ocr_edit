@@ -1,7 +1,4 @@
 
-# import paddle
-
-
 class ClsPostProcess(object):
     """ Convert between text-label and text-index """
 

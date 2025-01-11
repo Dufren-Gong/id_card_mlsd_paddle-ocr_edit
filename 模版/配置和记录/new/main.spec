@@ -1,16 +1,15 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-
 a = Analysis(
     ['main.py'],
-    pathex=['D:\Always_softwares\Miniconda\envs\paddle-ocr\Lib\site-packages\paddleocr','D:\Always_softwares\Miniconda\envs\paddle-ocr\Lib\site-packages\paddle\libs'],
-    binaries=[('D:\Always_softwares\Miniconda\envs\paddle-ocr\Lib\site-packages\paddle\libs','.')],
-    datas=[('D:\Always_Softwares\Miniconda\envs\paddle-ocr\Lib\site-packages\paddleocr\ppocr','ppocr')],
+    pathex=[],
+    binaries=[],
+    datas=[('./files', './files')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=['torch', 'torchvision', 'scipy', 'matplotlib', 'paddle', 'paddle-ocr'],  # 在这里排除 torch 和 torchvision
     noarchive=False,
     optimize=0,
 )

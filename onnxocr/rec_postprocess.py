@@ -1,10 +1,7 @@
 import numpy as np
-
-# import paddle
-paddle = None
-# from paddle.nn import functional as F
 import re
 
+paddle = None
 
 class BaseRecLabelDecode(object):
     """Convert between text-label and text-index"""

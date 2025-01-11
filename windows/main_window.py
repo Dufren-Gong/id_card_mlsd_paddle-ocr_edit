@@ -5,7 +5,7 @@ from my_utils.utils import delete_specific_files_and_folders
 from uis.main_window_ui import Row_Zero, Row_One, Row_Two, Row_Catch
 from windows.show_info_window import Show_Info_Window
 from my_utils.threads import Pdf_to_Pic_Thread, Download_Sourcecode
-from my_utils.utils import get_data_str, open_floader, find_in_catch_pic, get_internal_path, unzip_file, get_config, download_single_file, download_zip
+from my_utils.utils import get_data_str, open_floader, find_in_catch_pic, get_internal_path, unzip_file, get_config, download_single_file
 from my_utils.operate_excel import read_sheets, get_kaidan_pairs, get_nahuo_pairs, get_zhuandan_pairs, get_nianfei_pairs, get_budan_pairs, get_buka_pairs, fill_information, check_excel
 from each_types import kaidan, nahuo, zhuandan, budan, nianfei, buka
 from PyQt6.QtGui import QDragEnterEvent, QIcon
@@ -692,7 +692,7 @@ class Main_Window(QMainWindow):
             return
         self.hide()
         QApplication.processEvents()
-        shutil.copy(os.path.join('模版', '配置和记录', 'new', 'main_new.spec'), './main_new.spec')
+        shutil.copy(os.path.join('模版', '配置和记录', 'new', 'main.spec'), './main.spec')
         shell_path = os.path.abspath(self.global_config['update_shell_path'])
         conda_env = self.global_config['conda_env_name']
         try:
