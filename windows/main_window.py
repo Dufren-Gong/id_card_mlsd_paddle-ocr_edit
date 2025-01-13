@@ -847,7 +847,7 @@ class Main_Window(QMainWindow):
         if self.row_zero.select_newest_checkbox.isChecked():
             self.row_two.select_files_button.setText('确认制作')
             self.row_two.select_files_button.setToolTip('将制作的word默认保存到最新编辑结果文件夹中')
-            self.row_two.select_files_button.clicked.connect(lambda: self.operate_on_moren())
+            self.row_two.select_files_button.clicked.connect(self.operate_on_moren)
         else:
             self.row_two.select_files_button.setText('选择保存路径')
             self.row_two.select_files_button.setToolTip('选择将制作的word与使用的照片和信息放到那个路径下')
@@ -862,7 +862,7 @@ class Main_Window(QMainWindow):
             self.row_zero.file_type_combobox.setCurrentIndex(0)
             self.row_two.select_files_button.setText('确认制作')
             self.row_two.select_files_button.setToolTip('默认使用照片放这里的照片来编辑')
-            self.row_two.select_files_button.clicked.connect(lambda: self.operate_on_moren_pic())
+            self.row_two.select_files_button.clicked.connect(self.operate_on_moren_pic)
         else:
             self.row_two.select_files_button.setText('选择文件/文件夹')
             self.row_two.select_files_button.setToolTip('选择文件或者文件夹直接跳转开始编辑')
