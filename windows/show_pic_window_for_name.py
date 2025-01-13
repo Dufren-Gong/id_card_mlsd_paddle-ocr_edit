@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QMainWindow, QWidget, QApplication
+from PyQt6.QtWidgets import QMainWindow, QWidget
 from uis.function_and_info_ui import Row_Zero, Row_One, Row_Two, Row_Three, Row_Four, Row_Five, Row_Six, Row_Seven, Row_Eight, Row_Nine
 from PyQt6.QtGui import QPainter
 from uis.shapes import Ui_Shapes
@@ -9,19 +9,10 @@ class Show_Pic_Window(QMainWindow):
     def __init__(self, show_info: Show_Info_Window, global_config, init_edge_color, height_gap):
         super().__init__()
         self.height_gap = height_gap
-        self.screen_size = QApplication.primaryScreen().size()
-        self.max_size = (self.screen_size.width()*0.8, self.screen_size.height()*0.8)
         self.show_info_window = show_info
         self.global_config = global_config
         self.map_color = copy.deepcopy(self.global_config['mlsd_conf']['map_color'])
         self.map_color[3] = int(255 * self.map_color[3])
-        self.points = []
-        self.scale = 1
-        self.middle_points = []
-        self.dragging_point = None
-        self.dragging_middle = None
-        self.selected_point = None
-        self.selected_middle_point = None
         self.pixmap = None
         self.show_pic_shape = Ui_Shapes(round_gap=5)
         self.show_pic_shape.layout([50], [[80]])
@@ -30,7 +21,7 @@ class Show_Pic_Window(QMainWindow):
         self.shape = Ui_Shapes(start_width=870, start_height=50, round_gap=10)
         line_shift = 4
         self.shape.layout([self.shape.label_height] * 4 + [self.shape.label_height * 3] + [self.shape.label_height] + [self.shape.label_height * 7] +[self.shape.label_height] * 3,
-                            [[30, 94] + [20] * 4] * 2 + [[30, 25, 28, 63] + [20] * 3] + [[30, 124, 80]] + [[30, 210 + line_shift]] + [[30, 150 ,50 + line_shift]] + [[30, 210 + line_shift]] + [[80] * 3] * 3)
+                            [[30, 100] + [20] * 4] * 2 + [[30, 25, 28, 69] + [20] * 3] + [[30, 100] + [50] * 2] + [[30, 216 + line_shift]] + [[30, 156 ,50 + line_shift]] + [[30, 216 + line_shift]] + [[82] * 3] * 3)
         self.init_ui()
 
     def clear_content(self):
@@ -100,6 +91,7 @@ class Show_Pic_Window(QMainWindow):
             self.shape.shape_tuples[3][0],
             self.shape.shape_tuples[3][1],
             self.shape.shape_tuples[3][2],
+            self.shape.shape_tuples[3][3],
             self.init_edge_color,
             keyboard_shift,
             init_neidi_position.get('birth', None),

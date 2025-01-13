@@ -1,9 +1,7 @@
 import pandas as pd
-import os
+import os, json, shutil
 from natsort import natsorted
-import json
 import numpy as np
-import shutil
 from my_utils.Traditional_to_Simplified_Chinese import fan_to_jian
 from openpyxl import load_workbook
 from openpyxl.styles import Font
@@ -325,8 +323,8 @@ def get_zhuandan_pairs(df, base_path):
     obj3 = None
     for index, row in df.iterrows():
         if index % 4 != 3:
-            or_name = row['姓名']
-            name = fan_to_jian(row['姓名'])
+            name = row['姓名']
+            or_name = fan_to_jian(row['姓名'])
             info_path = os.path.join(base_path, f"{name}.info")
             info = load_json_data(info_path)
             #如果没读取到这个人的信息
@@ -373,8 +371,8 @@ def get_kaidan_pairs(df, base_path):
     pairs = []
     objs = []
     for index, row in df.iterrows():
-        or_name = row['姓名']
-        name = fan_to_jian(row['姓名'])
+        name = row['姓名']
+        or_name = fan_to_jian(row['姓名'])
         #如果不是空行
         if isinstance(name, str):
             info_path = os.path.join(base_path, f"{name}.info")
@@ -415,8 +413,8 @@ def get_nahuo_pairs(df, base_path):
     pairs = []
     objs = []
     for index, row in df.iterrows():
-        or_name = row['姓名']
-        name = fan_to_jian(row['姓名'])
+        name = row['姓名']
+        or_name = fan_to_jian(row['姓名'])
         #如果不是空行
         if isinstance(name, str):
             info_path = os.path.join(base_path, f"{name}.info")
@@ -457,8 +455,8 @@ def get_nianfei_pairs(df, base_path):
     pairs = []
     objs = []
     for index, row in df.iterrows():
-        or_name = row['姓名']
-        name = fan_to_jian(row['姓名'])
+        name = row['姓名']
+        or_name = fan_to_jian(row['姓名'])
         #如果不是空行
         if isinstance(name, str):
             info_path = os.path.join(base_path, f"{name}.info")
@@ -498,8 +496,8 @@ def get_budan_pairs(df, base_path):
     pairs = []
     objs = []
     for index, row in df.iterrows():
-        or_name = row['姓名']
-        name = fan_to_jian(row['姓名'])
+        name = row['姓名']
+        or_name = fan_to_jian(row['姓名'])
         #如果不是空行
         if isinstance(name, str):
             info_path = os.path.join(base_path, f"{name}.info")
@@ -540,8 +538,8 @@ def get_buka_pairs(df, base_path):
     pairs = []
     objs = []
     for index, row in df.iterrows():
-        or_name = row['姓名']
-        name = fan_to_jian(row['姓名'])
+        name = row['姓名']
+        or_name = fan_to_jian(row['姓名'])
         #如果不是空行
         if isinstance(name, str):
             info_path = os.path.join(base_path, f"{name}.info")

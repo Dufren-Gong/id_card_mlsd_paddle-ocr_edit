@@ -688,6 +688,7 @@ class Row_Four():
                  centralwidget,
                  tip_label_shape: tuple,
                  info_lineedit_shape: tuple,
+                 regin_shape:tuple,
                  color_shape:tuple,
                  init_edge_color,
                  keyboard_shift = 6,
@@ -699,9 +700,11 @@ class Row_Four():
         self.init_pos = init_pos
         self.init_pos_hk = init_pos_hk
         self.colors = ['黑', '偏黑', '灰', '暗灰', '偏白', '白']
+        self.regins = ["内地", '香港']
         self.centralwidget = centralwidget
         self.init_one_tip_label(tip_label_shape)
         self.init_one_pic_name_lineedit(info_lineedit_shape)
+        self.init_one_column_regin_combobox(regin_shape)
         self.init_one_column_two_select_border_color_combobox(color_shape)
 
     def init_one_tip_label(self, shape):
@@ -719,8 +722,31 @@ class Row_Four():
         self.pic_name_lineedit.setObjectName("pic_name_lineedit4")
         self.pic_name_lineedit.setValidator(QRegularExpressionValidator(QRegularExpression(r"^[^\n]*$")))
 
-    def init_one_column_two_select_border_color_combobox(self, shape):
+    def init_one_column_regin_combobox(self, shape):
         shape_temp = tuple([shape[0] + self.keyboard_shift] + list(shape[1:]))
+        self.rigin_combobox = QtWidgets.QComboBox(parent=self.centralwidget)
+        self.rigin_combobox.setGeometry(QtCore.QRect(*shape_temp))
+        self.rigin_combobox.setObjectName("rigin_combobox")
+        self.rigin_combobox.setToolTip("身份证归属地类型，可以控制默认位置，如果识别错误，就在这里更改")
+        self.rigin_combobox.addItems(self.regins)
+        self.rigin_combobox.setStyleSheet("""
+            QComboBox {
+                border-width: 1px;          /* 边缘宽度 */
+                border-style: solid;        /* 边缘样式 */
+                border-color: black;          /* 边缘颜色 */
+                background-color: white;/* 背景颜色 */
+                color: blue;              /* 字体颜色 */
+            }
+            QToolTip {
+                    background-color: white;
+                    color: black;
+                    border: 1px solid black;
+                    font-size: 12px;
+                }
+        """)
+
+    def init_one_column_two_select_border_color_combobox(self, shape):
+        shape_temp = tuple([shape[0] + self.keyboard_shift * 2] + list(shape[1:]))
         self.border_color_combobox = QtWidgets.QComboBox(parent=self.centralwidget)
         self.border_color_combobox.setGeometry(QtCore.QRect(*shape_temp))
         self.border_color_combobox.setObjectName("border_color_combobox")

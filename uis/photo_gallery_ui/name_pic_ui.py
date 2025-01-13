@@ -197,6 +197,8 @@ class Name_Pic(QMainWindow):
                 self.large_image_label.row_one.pic_name_lineedit.setReadOnly(False)
                 self.large_image_label.row_two.pic_name_lineedit.setReadOnly(False)
                 self.large_image_label.row_four.pic_name_lineedit.setReadOnly(False)
+                self.large_image_label.row_four.rigin_combobox.setEnabled(True)
+                # self.large_image_label.row_six.all_moved_button.setEnabled(True)
                 if catch[6] != '香港':
                     self.large_image_label.row_two.two_pic_name_lineedit.setReadOnly(False)
                     self.large_image_label.row_five.pic_name_lineedit.setReadOnly(False)
@@ -216,11 +218,13 @@ class Name_Pic(QMainWindow):
                 self.large_image_label.row_two.two_pic_name_lineedit.setReadOnly(True)
                 self.large_image_label.row_four.pic_name_lineedit.setReadOnly(True)
                 self.large_image_label.row_five.pic_name_lineedit.setReadOnly(True)
+                self.large_image_label.row_four.rigin_combobox.setDisabled(True)
                 self.large_image_label.row_six.pic_name_lineedit.setReadOnly(True)
                 self.large_image_label.row_nine.comfire_info_button.setDisabled(True)
-            # if self.this_index % 2 == 0:
+                # self.large_image_label.row_six.all_moved_button.setDisabled(True)
             self.change_info()
             self.large_image_label.row_seven.pic_name_lineedit.setPlainText('\n'.join(pic_info_dict))
+            self.large_image_label.row_four.rigin_combobox.setCurrentText(self.scroll_area.labels[self.this_index].info[6])
             self.scroll_area.scroll_to_label(self.this_index)
             self.display_flag = False
             self.move_to_moren_position(self.scroll_area.labels[index].info[6])
@@ -697,6 +701,19 @@ class Name_Pic(QMainWindow):
         self.large_image_label.row_six.all_moved_button.setText(self.position_mode_text[not self.position_mode])
         self.move_to_moren_position(self.scroll_area.labels[self.this_index].info[6])
 
+    def change_regin(self):
+        if self.this_index % 2 == 0:
+            regin = self.large_image_label.row_four.rigin_combobox.currentText()
+            self.scroll_area.labels[self.this_index].info[6] = regin
+            self.scroll_area.labels[self.this_index + 1].info[6] = regin
+            if regin == '香港':
+                mode = 2
+            elif regin == '内地':
+                mode = 1
+            for obj in self.obj_index:
+                if obj.moved_flag or self.position_mode:
+                    obj.change_pos(mode)
+
     def init_event(self):
         self.init_black_button_timer()
         self.init_combbox_change_tips_timer()
@@ -728,4 +745,5 @@ class Name_Pic(QMainWindow):
         self.large_image_label.row_zero.border_width_plus_button.clicked.connect(lambda: self.change_edge_ipx(0))
         self.large_image_label.row_one.border_width_minues_pushbutton.clicked.connect(lambda: self.change_edge_ipx(1))
         self.large_image_label.row_four.border_color_combobox.currentIndexChanged.connect(self.change_edge_color)
+        self.large_image_label.row_four.rigin_combobox.currentIndexChanged.connect(self.change_regin)
         self.large_image_label.row_six.all_moved_button.clicked.connect(self.change_moren_position_mode)

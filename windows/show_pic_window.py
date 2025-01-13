@@ -66,7 +66,6 @@ class Show_Pic_Window(QMainWindow):
     def set_points(self, points, shou_flag = True):
         #在第四象限，从原点最近的点起，顺时针排序
         if len(points) == 4:
-
             if shou_flag:
                 width = (calculate_distance(points[0], points[1]) + calculate_distance(points[2], points[3])) / 2
                 height= (calculate_distance(points[2], points[1]) + calculate_distance(points[0], points[3])) / 2

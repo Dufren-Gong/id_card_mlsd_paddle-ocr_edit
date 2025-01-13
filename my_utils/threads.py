@@ -60,6 +60,14 @@ class Get_line_detect(QtCore.QRunnable):
         self.tiny_first_flag = tiny_first_flag
         self.signals = LDSignals()
 
+    def in_pic(self, pic_shape, points):
+        final_point = []
+        final_point.append([max(points[0][0], 0), max(points[0][1], 0)])
+        final_point.append([min(points[1][0], pic_shape[1]), max(points[1][1], 0)])
+        final_point.append([min(points[2][0], pic_shape[1]), min(points[2][1], pic_shape[0])])
+        final_point.append([max(points[3][0], 0), min(points[3][1], pic_shape[0])])
+        return np.array(final_point)
+
     def run(self):  # 重写run  比较耗时的后台任务可以在这里运行
         points = []
         max_flags = []
@@ -86,7 +94,7 @@ class Get_line_detect(QtCore.QRunnable):
             squares_lines = sorted(squares_lines, key=lambda x:x[4], reverse=False)
             first_step = [i[:4] for i in squares_lines]
             second_step = [[j[0][0], j[0][1], j[2][0], j[2][1]] for j in first_step]
-            final_point = np.array(second_step[-1])
+            final_point = self.in_pic((h, w), second_step[-1])
             points.append(final_point)
             max_flags.append(max_flag)
         self.signals.finished.emit(self.cv_pairs, self.pair_paths, points, max_flags, self.scales)  # 任务完成后，发送信号

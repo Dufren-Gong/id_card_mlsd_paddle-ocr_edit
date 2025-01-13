@@ -149,10 +149,10 @@ class Cut_Pic(QMainWindow):
     def merge_scaled_dot(self, points, scale):
         if len(points) == 4:
             points_temp = [[]] * 4
-            points_temp[0] = [int(np.ceil(points[0][0] * scale)), int(np.ceil(points[0][1] * scale))]
-            points_temp[1] = [int(np.floor(points[1][0] * scale)), int(np.ceil(points[1][1] * scale))]
-            points_temp[2] = [int(np.floor(points[2][0] * scale)), int(np.floor(points[2][1] * scale))]
-            points_temp[3] = [int(np.ceil(points[3][0] * scale)), int(np.floor(points[3][1] * scale))]
+            points_temp[0] = [int(points[0][0] * scale), int(points[0][1] * scale)]
+            points_temp[1] = [int(points[1][0] * scale), int(points[1][1] * scale)]
+            points_temp[2] = [int(points[2][0] * scale), int(points[2][1] * scale)]
+            points_temp[3] = [int(points[3][0] * scale), int(points[3][1] * scale)]
             return np.array(points_temp)
         else:
             return points
@@ -278,39 +278,6 @@ class Cut_Pic(QMainWindow):
             self.this_index = this_index_catch
             self.scroll_area.scroll_to_label(self.this_index)
 
-    def point_rotate_90(self, point1, point_center, mode):
-        if self.this_index != None:
-            """
-            计算点 B(x2, y2) 围绕点 A(x1, y1) 旋转 90 度后的坐标。
-
-            :param x1: A 点的 x 坐标
-            :param y1: A 点的 y 坐标
-            :param x2: B 点的 x 坐标
-            :param y2: B 点的 y 坐标
-            :param mode: 旋转模式，0 表示顺时针旋转，1 表示逆时针旋转
-            :return: 旋转后的点 B 的新坐标 (x2', y2')
-            """
-            # 平移坐标系
-            x1, y1 = point_center[0], point_center[1]
-            x2, y2 = point1[0], point1[1]
-            x_prime = x2 - x1
-            y_prime = y2 - y1
-
-            if mode == 0:
-                # 顺时针旋转 90 度
-                x_double_prime = y_prime
-                y_double_prime = -x_prime
-            elif mode == 1:
-                # 逆时针旋转 90 度
-                x_double_prime = -y_prime
-                y_double_prime = x_prime
-
-            # 还原坐标系
-            x2_new = x_double_prime + x1
-            y2_new = y_double_prime + y1
-
-            return [x2_new, y2_new]
-
     def rotate(self, mode):
         if self.this_index != None:
             img_before = self.scroll_area.labels[self.this_index].img
@@ -358,7 +325,6 @@ class Cut_Pic(QMainWindow):
             scaled_height = int(pixmap.height() * fixed_width / pixmap.width())  # 使用 int() 确保高度是整数
             scaled_pixmap = pixmap.scaled(fixed_width, scaled_height, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
             self.scroll_area.labels[self.this_index].setPixmap(scaled_pixmap)
-            self.scroll_area.labels[self.this_index].setPixmap(scaled_pixmap)
             self.scroll_area.labels[self.this_index].setFixedSize(fixed_width + shift, scaled_height)  # 设置每张图片的固定宽度
 
     def read_cut_info(self, obj:ClickableLabel):
@@ -388,18 +354,18 @@ class Cut_Pic(QMainWindow):
         return obj
 
     def change_position(self, mode):
-        if mode == 0:
-            shift = -1
-        else:
-            shift = 1
         if self.this_index != None:
+            if mode == 0:
+                shift = -1
+            else:
+                shift = 1
             if (self.this_index != 0 and mode == 0) or (self.this_index != len(self.scroll_area.labels) - 1 and mode == 1):
                 #信息互换
                 _, photo_path, points, points_cache, scale, scale_cache, img, img_cache, moved_flag, max_flag = self.read_cut_info(self.scroll_area.labels[self.this_index])
                 _, photo_path1, points1, points_cache1, scale1, scale_cache1, img1, img_cache1, moved_flag1, max_flag1 = self.read_cut_info(self.scroll_area.labels[self.this_index + shift])
                 self.scroll_area.labels[self.this_index] = self.write_cut_info(self.scroll_area.labels[self.this_index], self.this_index, photo_path1, points1, points_cache1, scale1, scale_cache1, img1, img_cache1, moved_flag1, max_flag1)
                 self.scroll_area.labels[self.this_index + shift] = self.write_cut_info(self.scroll_area.labels[self.this_index + shift], self.this_index + shift, photo_path, points, points_cache, scale, scale_cache, img, img_cache, moved_flag, max_flag)
-                shift_t = self.zheng_fan_shift * ((self.this_index + shift) in self.viewed)
+                shift_t = self.zheng_fan_shift * (self.this_index in self.viewed)
                 fixed_width = self.fixed_width - shift_t
                 pixmap = cv_to_qpixmap(self.scroll_area.labels[self.this_index + shift].img)
                 scaled_height = int(pixmap.height() * fixed_width / pixmap.width())  # 使用 int() 确保高度是整数
@@ -407,7 +373,7 @@ class Cut_Pic(QMainWindow):
                 self.scroll_area.labels[self.this_index + shift].setPixmap(scaled_pixmap)
                 self.scroll_area.labels[self.this_index + shift].setFixedSize(fixed_width + shift_t, scaled_height)  # 设置每张图片的固定宽度
 
-                shift_t = self.zheng_fan_shift * (self.this_index in self.viewed)
+                shift_t = self.zheng_fan_shift * ((self.this_index + shift) in self.viewed)
                 fixed_width = self.fixed_width - shift_t
                 pixmap = cv_to_qpixmap(self.scroll_area.labels[self.this_index].img)
                 scaled_height = int(pixmap.height() * fixed_width / pixmap.width())  # 使用 int() 确保高度是整数
