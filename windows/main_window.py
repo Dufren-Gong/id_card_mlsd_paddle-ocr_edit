@@ -121,7 +121,6 @@ class Main_Window(QMainWindow):
         return flag
 
     def open_folder_dialog(self, floader_path = None):
-        print(floader_path)
         selected_options = self.row_one.function_combobox.currentIndex()
         if selected_options != 11:
             # 打开文件夹选择对话框
@@ -261,7 +260,7 @@ class Main_Window(QMainWindow):
             pass_flag = '请先关闭excel!'
         if pass_flag == True:
             try:
-                self.which_func(mode)
+                self.which_func(mode, True)
             except:
                 self.shwo_total_error()
         else:
@@ -306,19 +305,19 @@ class Main_Window(QMainWindow):
             self.show_info.set_show_text(show_s)
             self.show_info.show_window() 
 
-    def which_func(self, mode):
+    def which_func(self, mode, check=False):
         if mode == '开单':
-            return self.creat_kaidan(mode)
+            return self.creat_kaidan(mode, check)
         if mode == '拿货':
-            return self.creat_nahuo(mode)
+            return self.creat_nahuo(mode, check)
         if mode == '转单':
-            return self.creat_zhuandan(mode)
+            return self.creat_zhuandan(mode, check)
         if mode == '年费':
-            return self.creat_nianfei(mode)
+            return self.creat_nianfei(mode, check)
         if mode == '补单':
-            return self.creat_budan(mode)
+            return self.creat_budan(mode, check)
         if mode == '补卡':
-            return self.creat_buka(mode)
+            return self.creat_buka(mode, check)
 
     def shwo_total_error(self):
         self.show_info.set_show_text('制作失败或部分成功\n提供的信息缺失或excel未关闭\n如果检查无误\n就是代码有问题\n请联系作者')
@@ -350,163 +349,186 @@ class Main_Window(QMainWindow):
             self.show_info.show()
             self.have_error_flag = True
 
-    def creat_zhuandan(self, mode):
+    def show_excel_none(self, mode):
+        self.have_error_flag = True
+        self.show_info.set_show_text(f'excel里没有填写<{mode}>的任何信息，请先填写信息再制作.')
+        self.show_info.show()
+
+    def creat_zhuandan(self, mode, check_none = False):
         df = read_sheets(f'./模版/{self.excel_name}', mode)
         kaidan_pairs, errors = get_zhuandan_pairs(df, self.folder_path)
-        for kaidan_pair in kaidan_pairs:
-            words = ['转让', '授权', '年费']
-            #如果被委托人的卡号为空就不需要办年费，不为空就办
-            if not isinstance(kaidan_pair.beiweituo.sail_card_id, str):
-                words.pop()
-            for word in words:
-                name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name + '_' + kaidan_pair.beiweituo.name
+        if check_none and len(kaidan_pairs) == 0 and len(errors) == 0:
+            self.show_excel_none(mode)
+        else:
+            for kaidan_pair in kaidan_pairs:
+                words = ['转让', '授权', '年费']
+                #如果被委托人的卡号为空就不需要办年费，不为空就办
+                if not isinstance(kaidan_pair.beiweituo.sail_card_id, str):
+                    words.pop()
+                for word in words:
+                    name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name + '_' + kaidan_pair.beiweituo.name
+                    count = 0
+                    if kaidan_pair.client.native == '香港':
+                        count += 1
+                    if kaidan_pair.entrusted.native == '香港':
+                        count += 1
+                    kaidan_path = copy_template(mode, self.folder_path, name_concat, count, word)
+                    shift = 0
+                    if word == '转让':
+                        changes, obj = zhuandan.get_sub_arr_zhuanrang(kaidan_pair)
+                        shift = -4
+                    elif word == '授权':
+                        changes, obj = zhuandan.get_sub_arr_shouquan(kaidan_pair)
+                        shift = 4
+                    elif word == '年费':
+                        changes, obj = zhuandan.get_sub_arr_nianfei(kaidan_pair)
+                        shift = 2
+                    doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
+                    doc = replace_pic(doc, obj, 18 + shift, kaidan_path, 0, 6, self.pic_scale)
+                    doc = replace_pic(doc, obj, 16 + shift, kaidan_path, 1, 6, self.pic_scale)
+                    try:
+                        fill_information(obj, f'./模版/{self.excel_name}', mode, cache_all_flag=True)
+                    except:
+                        pass
+                    doc.save(kaidan_path)
+                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path), 3)
+            self.show_error(errors)
+            return errors
+
+    def creat_nahuo(self, mode, check_none = False):
+        df = read_sheets(f'./模版/{self.excel_name}', mode)
+        kaidan_pairs, errors = get_nahuo_pairs(df, self.folder_path)
+        if check_none and len(kaidan_pairs) == 0 and len(errors) == 0:
+            self.show_excel_none(mode)
+        else:
+            for kaidan_pair in kaidan_pairs:
+                name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
                 count = 0
                 if kaidan_pair.client.native == '香港':
                     count += 1
                 if kaidan_pair.entrusted.native == '香港':
                     count += 1
-                kaidan_path = copy_template(mode, self.folder_path, name_concat, count, word)
-                shift = 0
-                if word == '转让':
-                    changes, obj = zhuandan.get_sub_arr_zhuanrang(kaidan_pair)
-                    shift = -4
-                elif word == '授权':
-                    changes, obj = zhuandan.get_sub_arr_shouquan(kaidan_pair)
-                    shift = 4
-                elif word == '年费':
-                    changes, obj = zhuandan.get_sub_arr_nianfei(kaidan_pair)
-                    shift = 2
+                kaidan_path = copy_template(mode, self.folder_path, name_concat, count)
+                changes = nahuo.get_sub_arr(kaidan_pair)
                 doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
-                doc = replace_pic(doc, obj, 18 + shift, kaidan_path, 0, 6, self.pic_scale)
-                doc = replace_pic(doc, obj, 16 + shift, kaidan_path, 1, 6, self.pic_scale)
+                doc = replace_pic(doc, kaidan_pair,18, kaidan_path, 0, 6, self.pic_scale)
+                doc = replace_pic(doc, kaidan_pair, 16, kaidan_path, 1, 6, self.pic_scale)
                 try:
-                    fill_information(obj, f'./模版/{self.excel_name}', mode, cache_all_flag=True)
+                    fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
                 except:
                     pass
                 doc.save(kaidan_path)
-            kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path), 3)
-        self.show_error(errors)
-        return errors
-
-    def creat_nahuo(self, mode):
-        df = read_sheets(f'./模版/{self.excel_name}', mode)
-        kaidan_pairs, errors = get_nahuo_pairs(df, self.folder_path)
-        for kaidan_pair in kaidan_pairs:
-            name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
-            count = 0
-            if kaidan_pair.client.native == '香港':
-                count += 1
-            if kaidan_pair.entrusted.native == '香港':
-                count += 1
-            kaidan_path = copy_template(mode, self.folder_path, name_concat, count)
-            changes = nahuo.get_sub_arr(kaidan_pair)
-            doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
-            doc = replace_pic(doc, kaidan_pair,18, kaidan_path, 0, 6, self.pic_scale)
-            doc = replace_pic(doc, kaidan_pair, 16, kaidan_path, 1, 6, self.pic_scale)
-            try:
-                fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
-            except:
-                pass
-            doc.save(kaidan_path)
-            kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path))
-        self.show_error(errors)
-        return errors
+                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path))
+            self.show_error(errors)
+            return errors
     
-    def creat_nianfei(self, mode):
+    def creat_nianfei(self, mode, check_none = False):
         df = read_sheets(f'./模版/{self.excel_name}', mode)
         kaidan_pairs, errors = get_nianfei_pairs(df, self.folder_path)
-        for kaidan_pair in kaidan_pairs:
-            name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
-            count = 0
-            if kaidan_pair.client.native == '香港':
-                count += 1
-            if kaidan_pair.entrusted.native == '香港':
-                count += 1
-            kaidan_path = copy_template(mode, self.folder_path, name_concat, count)
-            changes = nianfei.get_sub_arr_nianfei(kaidan_pair)
-            doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
-            doc = replace_pic(doc, kaidan_pair,20, kaidan_path, 0, 6, self.pic_scale)
-            doc = replace_pic(doc, kaidan_pair, 18, kaidan_path, 1, 6, self.pic_scale)
-            try:
-                fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
-            except:
-                pass
-            doc.save(kaidan_path)
-            kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path))
-        self.show_error(errors)
-        return errors
+        if check_none and len(kaidan_pairs) == 0 and len(errors) == 0:
+            self.show_excel_none(mode)
+        else:
+            for kaidan_pair in kaidan_pairs:
+                name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
+                count = 0
+                if kaidan_pair.client.native == '香港':
+                    count += 1
+                if kaidan_pair.entrusted.native == '香港':
+                    count += 1
+                kaidan_path = copy_template(mode, self.folder_path, name_concat, count)
+                changes = nianfei.get_sub_arr_nianfei(kaidan_pair)
+                doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
+                doc = replace_pic(doc, kaidan_pair,20, kaidan_path, 0, 6, self.pic_scale)
+                doc = replace_pic(doc, kaidan_pair, 18, kaidan_path, 1, 6, self.pic_scale)
+                try:
+                    fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
+                except:
+                    pass
+                doc.save(kaidan_path)
+                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path))
+            self.show_error(errors)
+            return errors
 
-    def creat_kaidan(self, mode):
+    def creat_kaidan(self, mode, check_none = False):
         df = read_sheets(f'./模版/{self.excel_name}', mode)
         kaidan_pairs, errors = get_kaidan_pairs(df, self.folder_path)
-        for kaidan_pair in kaidan_pairs:
-            name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
-            count = 0
-            if kaidan_pair.client.native == '香港':
-                count += 1
-            if kaidan_pair.entrusted.native == '香港':
-                count += 1
-            kaidan_path = copy_template(mode, self.folder_path, name_concat, count)
-            changes = kaidan.get_sub_arr(kaidan_pair)
-            doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
-            doc = replace_pic(doc, kaidan_pair, 20, kaidan_path, 0, 6, self.pic_scale)
-            doc = replace_pic(doc, kaidan_pair, 18, kaidan_path, 1, 6, self.pic_scale)
-            try:
-                fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
-            except:
-                pass
-            doc.save(kaidan_path)
-            kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path))
-        self.show_error(errors)
-        return errors
+        if check_none and len(kaidan_pairs) == 0 and len(errors) == 0:
+            self.show_excel_none(mode)
+        else:
+            for kaidan_pair in kaidan_pairs:
+                name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
+                count = 0
+                if kaidan_pair.client.native == '香港':
+                    count += 1
+                if kaidan_pair.entrusted.native == '香港':
+                    count += 1
+                kaidan_path = copy_template(mode, self.folder_path, name_concat, count)
+                changes = kaidan.get_sub_arr(kaidan_pair)
+                doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
+                doc = replace_pic(doc, kaidan_pair, 20, kaidan_path, 0, 6, self.pic_scale)
+                doc = replace_pic(doc, kaidan_pair, 18, kaidan_path, 1, 6, self.pic_scale)
+                try:
+                    fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
+                except:
+                    pass
+                doc.save(kaidan_path)
+                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path))
+            self.show_error(errors)
+            return errors
     
-    def creat_budan(self, mode):
+    def creat_budan(self, mode, check_none = False):
         df = read_sheets(f'./模版/{self.excel_name}', mode)
         kaidan_pairs, errors = get_budan_pairs(df, self.folder_path)
-        for kaidan_pair in kaidan_pairs:
-            name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
-            count = 0
-            if kaidan_pair.client.native == '香港':
-                count += 1
-            if kaidan_pair.entrusted.native == '香港':
-                count += 1
-            kaidan_path = copy_template(mode, self.folder_path, name_concat, count)
-            changes = budan.get_sub_arr_budan(kaidan_pair)
-            doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
-            doc = replace_pic(doc, kaidan_pair, 14, kaidan_path, 0, 6, self.pic_scale)
-            doc = replace_pic(doc, kaidan_pair, 12, kaidan_path, 1, 6, self.pic_scale)
-            try:
-                fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
-            except:
-                pass
-            doc.save(kaidan_path)
-            kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path))
-        self.show_error(errors)
-        return errors
+        if check_none and len(kaidan_pairs) == 0 and len(errors) == 0:
+            self.show_excel_none(mode)
+        else:
+            for kaidan_pair in kaidan_pairs:
+                name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
+                count = 0
+                if kaidan_pair.client.native == '香港':
+                    count += 1
+                if kaidan_pair.entrusted.native == '香港':
+                    count += 1
+                kaidan_path = copy_template(mode, self.folder_path, name_concat, count)
+                changes = budan.get_sub_arr_budan(kaidan_pair)
+                doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
+                doc = replace_pic(doc, kaidan_pair, 14, kaidan_path, 0, 6, self.pic_scale)
+                doc = replace_pic(doc, kaidan_pair, 12, kaidan_path, 1, 6, self.pic_scale)
+                try:
+                    fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
+                except:
+                    pass
+                doc.save(kaidan_path)
+                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path))
+            self.show_error(errors)
+            return errors
     
-    def creat_buka(self, mode):
-        df = read_sheets(f'./模版/{self.excel_name}', mode)
-        kaidan_pairs, errors = get_buka_pairs(df, self.folder_path)
-        for kaidan_pair in kaidan_pairs:
-            name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
-            count = 0
-            if kaidan_pair.client.native == '香港':
-                count += 1
-            if kaidan_pair.entrusted.native == '香港':
-                count += 1
-            kaidan_path = copy_template(mode, self.folder_path, name_concat, count)
-            changes = buka.get_sub_arr_buka(kaidan_pair)
-            doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
-            doc = replace_pic(doc, kaidan_pair, 15, kaidan_path, 0, 6, self.pic_scale)
-            doc = replace_pic(doc, kaidan_pair, 13, kaidan_path, 1, 6, self.pic_scale)
-            try:
-                fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
-            except:
-                pass
-            doc.save(kaidan_path)
-            kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path))
-        self.show_error(errors)
-        return errors
+    def creat_buka(self, mode, check_none = False):
+        if check_none and len(kaidan_pairs) == 0 and len(errors) == 0:
+            self.show_excel_none(mode)
+        else:
+            df = read_sheets(f'./模版/{self.excel_name}', mode)
+            kaidan_pairs, errors = get_buka_pairs(df, self.folder_path)
+            for kaidan_pair in kaidan_pairs:
+                name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
+                count = 0
+                if kaidan_pair.client.native == '香港':
+                    count += 1
+                if kaidan_pair.entrusted.native == '香港':
+                    count += 1
+                kaidan_path = copy_template(mode, self.folder_path, name_concat, count)
+                changes = buka.get_sub_arr_buka(kaidan_pair)
+                doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
+                doc = replace_pic(doc, kaidan_pair, 15, kaidan_path, 0, 6, self.pic_scale)
+                doc = replace_pic(doc, kaidan_pair, 13, kaidan_path, 1, 6, self.pic_scale)
+                try:
+                    fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
+                except:
+                    pass
+                doc.save(kaidan_path)
+                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path))
+            self.show_error(errors)
+            return errors
 
     def init_ui(self):
         self.setWindowTitle("选择功能")
