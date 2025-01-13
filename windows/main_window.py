@@ -611,6 +611,7 @@ class Main_Window(QMainWindow):
             self.row_zero.pic_name_lineedit.hide()
             self.row_zero.tip_label.hide()
             self.row_zero.select_newest_checkbox.show()
+            self.change_moren()
 
     def update_software(self):
         current_os = platform.system()
@@ -940,7 +941,7 @@ class Main_Window(QMainWindow):
         self.row_zero.exit_button.pressed.connect(self.black_pressed)
         self.row_zero.exit_button.released.connect(self.black_released)
         self.row_one.function_combobox.currentIndexChanged.connect(self.change_function_index)
-        self.row_two.select_files_button.clicked.connect(lambda: self.operate_on_moren_pic())
+        self.row_two.select_files_button.clicked.connect(self.operate_on_moren_pic)
         self.row_two.open_newest_button.pressed.connect(self.open_newest_pressed)
         self.row_two.open_newest_button.released.connect(self.open_newest_released)
         self.row_two.open_excel_button.clicked.connect(self.open_excel)

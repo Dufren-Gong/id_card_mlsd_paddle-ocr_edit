@@ -47,7 +47,7 @@ paddleocr_conf:
   defalut_position_mode: true #默认将所有对比信息文本框移动到照片默认位置比较
   info_checks: #下面为识别文字时各种信息前缀的模糊搜索单词
     name_checks: ['姓名', '姓多', '姓名多']
-    sex_checks: ['性别', '性到', '性刻', '住别']
+    sex_checks: ['性别', '性到', '性刻', '住别', '性列']
     birth_checks: ['出生', '由生', '出年']
     nation_checks: ['民族', '民旅', '民旗']
     address_checks: ['住址', '佳址', '往址', '生址']
