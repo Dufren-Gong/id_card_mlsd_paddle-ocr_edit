@@ -611,13 +611,6 @@ class Main_Window(QMainWindow):
             self.row_zero.pic_name_lineedit.hide()
             self.row_zero.tip_label.hide()
             self.row_zero.select_newest_checkbox.show()
-            duration = self.global_config['main_show_tip_timer_duration']
-            if duration > 0:
-                self.show_info.set_show_text(f'记得先保存和关闭excel文件\n此窗口在{str(duration/1000)}秒后自动关闭')
-                self.show_info.show()
-            self.change_moren()
-            if duration > 0:
-                self.combbox_change_tips_timer.start(duration)
 
     def update_software(self):
         current_os = platform.system()

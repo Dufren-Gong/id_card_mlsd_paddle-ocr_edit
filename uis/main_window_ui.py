@@ -55,7 +55,7 @@ class Row_Zero():
         self.file_type_combobox = QtWidgets.QComboBox(parent=self.centralwidget)
         self.file_type_combobox.setGeometry(QtCore.QRect(*shape))
         self.file_type_combobox.setObjectName("file_type_combobox")
-        self.file_type_combobox.setToolTip("添加的文件夹或压缩包只能含照片，并且是双数。添加的照片数量也必须是双数。")
+        self.file_type_combobox.setToolTip("添加的文件夹或压缩包包含照片为双数。添加的照片数量也必须是双数。")
         self.file_type_combobox.addItems(self.file_types)
         self.file_type_combobox.setCurrentIndex(0)
         self.file_type_combobox.setStyleSheet("""

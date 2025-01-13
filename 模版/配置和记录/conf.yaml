@@ -73,7 +73,6 @@ pic_shape: [856, 540] #[width, height]， 最终生成照片的尺寸
 catch_days: 30 #制作的照片缓存几天，填写0代表一直缓存, 正整数比如1，就缓存当天的照片，第二天再打开软件，前一天的缓存就删掉了
 button_timer_duration: 500 #长按按钮的执行时间，单位为ms
 show_tip_timer_duration: 1500 #展示提示的窗口的执行时间，单位为ms,0就是不显示
-main_show_tip_timer_duration: 0 #主窗口展示提示关闭excel的窗口的执行时间，单位为ms,0就是不显示
 conda_env_name: paddle-ocr #更新程序的时候，需要激活的conda环境名
 update_shell_path: ./模版/配置和记录/update_windows.bat
 del_and_reopen_shell_path: ./模版/配置和记录/del_and_reopen.ps1
