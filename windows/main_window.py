@@ -708,7 +708,7 @@ class Main_Window(QMainWindow):
             return
         self.hide()
         QApplication.processEvents()
-        shutil.copy(os.path.join('模版', '配置和记录', 'new', 'main.spec'), './main.spec')
+        shutil.copy(os.path.join(name, '模版', '配置和记录', 'new', 'main.spec'), './main.spec')
         shell_path = os.path.abspath(self.global_config['update_shell_path'])
         conda_env = self.global_config['conda_env_name']
         try:
