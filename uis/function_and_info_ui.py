@@ -44,6 +44,7 @@ class DraggableLineEdit(QtWidgets.QLineEdit):
             delta = event.position().toPoint() - self.initial_pos
             # 计算控件的新位置
             new_pos = self.current_pos + delta
+            print(new_pos)
             # 获取父窗口的几何范围
             parent_widget = self.parent()  # 获取父控件
             if parent_widget:
@@ -389,7 +390,7 @@ class Row_One():
         self.tip_label.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)
 
     def init_one_pic_name_lineedit(self, shape):
-        self.pic_name_lineedit = DraggableLineEdit(shape, parent=self.centralwidget, scale_width=135, init_pos=self.init_pos, font_size=26, init_hk_pas=self.init_hk_pos)
+        self.pic_name_lineedit = DraggableLineEdit(shape, parent=self.centralwidget, scale_width=230, init_pos=self.init_pos, font_size=26, init_hk_pas=self.init_hk_pos)
         self.pic_name_lineedit.setValidator(QRegularExpressionValidator(QRegularExpression(r"^[^\n]*$")))
         self.pic_name_lineedit.setObjectName("pic_name_lineedit")
 
@@ -995,7 +996,7 @@ class Row_Six():
         self.tip_label.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)
 
     def init_one_pic_name_lineedit(self, shape):
-        self.pic_name_lineedit = DraggableLineEdit(shape, parent=self.centralwidget, scale_width=475, space_flag=True, font_size=28, init_pos=self.init_pos, init_hk_pas=self.init_pos_hk)
+        self.pic_name_lineedit = DraggableLineEdit(shape, parent=self.centralwidget, scale_width=500, space_flag=True, font_size=28, init_pos=self.init_pos, init_hk_pas=self.init_pos_hk)
         self.pic_name_lineedit.setObjectName("pic_name_lineedit6")
         self.pic_name_lineedit.setValidator(QRegularExpressionValidator(QRegularExpression(r"^[^\n]*$")))
 
