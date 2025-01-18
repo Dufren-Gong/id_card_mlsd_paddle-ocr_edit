@@ -12,7 +12,7 @@ pip install -r ./模版/配置和记录/requirments.txt
 
 cp ./模版/配置和记录/new/main.spec ./main.spec
 
-## 根据./模版/配置和记录/安装使用记录.txt修改main_new.spec内容
+## 根据./模版/配置和记录/安装使用记录.txt修改main.spec内容
 
 pip install pyinstaller
 
@@ -28,6 +28,6 @@ git config --global https.proxy 127.0.0.1:port
 
 git add .
 
-git commit -m "..."
+git commit -m "<更改描述>"
 
 git push -u origin main

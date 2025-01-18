@@ -21,6 +21,18 @@ column_names = dict(姓名=check.check_name,
                     余额=check.check_cash)
 column_names['住址(内地人不用填，如果要更换就填)'] = check.check_address
 
+def set_kaidan_moren_pay(in_moren_pay):
+    global kaidan_moren_pay
+    kaidan_moren_pay = str(in_moren_pay)
+
+def set_kaidan_moren_buy(in_moren_buy):
+    global kaidan_moren_buy
+    kaidan_moren_buy = str(in_moren_buy)
+
+def set_moren_annual_fee(in_annual_fee):
+    global moren_annual_fee
+    moren_annual_fee = str(in_annual_fee)
+
 class People_Info():
     def __init__(self,
                  raw_index_in_excel,

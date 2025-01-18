@@ -5,6 +5,14 @@ import shutil, os
 moren_pay = 62569
 moren_buy = 84513
 
+def set_moren_pay(in_moren_pay):
+    global moren_pay
+    moren_pay = in_moren_pay
+
+def set_moren_buy(in_moren_buy):
+    global moren_buy
+    moren_buy = in_moren_buy
+
 def get_name_id_str(obj:People_Info):
     if obj.native == "香港":
         return f"{obj.name}(香港永久性居民身份证号码：{obj.id})"

@@ -16,6 +16,8 @@ ethnic_groups = [
 
 sex_group = ['男', '女']
 
+max_cash = 84513
+
 def trans_to_str_and_strip(str_t:str, trans_str:str=''):
     str_t = re.sub(r'\s+', trans_str, str(str_t))
     return str_t
@@ -141,6 +143,10 @@ def check_phone_number(str_t:str, mode:str='内地'):
                 return telephone
     return None
 
+def set_max_cash(in_max_cash):
+    global max_cash
+    max_cash = in_max_cash
+
 def check_cash(str_t:str, mode:str='内地'):
     if not pd.isna(str_t) and str_t != None and str_t != '':
         if bool(re.fullmatch(r'[0]+', str_t)):
@@ -150,8 +156,10 @@ def check_cash(str_t:str, mode:str='内地'):
         if bool(re.fullmatch(r'[0-9.]+', cash)):
             try:
                 cash = int(eval(cash))
-                if cash >= 0:
+                if cash >= 0 and cash <= max_cash:
                     return str(cash)
+                else:
+                    return None
             except:
                 return None
     return None
