@@ -9,9 +9,7 @@ from my_utils import check
 from my_utils.utils import find_in_catch_pic
 
 sheet_names = ['开单', '拿货', '转单', '年费', '补单', '补卡']
-kaidan_moren_pay = '62569'
-kaidan_moren_buy = '84513'
-moren_annual_fee = '210'
+
 column_names = dict(姓名=check.check_name,
                     联系电话=check.check_phone_number,
                     提取金额=check.check_cash,
@@ -21,18 +19,6 @@ column_names = dict(姓名=check.check_name,
                     余额=check.check_cash)
 column_names['住址(内地人不用填，如果要更换就填)'] = check.check_address
 
-def set_kaidan_moren_pay(in_moren_pay):
-    global kaidan_moren_pay
-    kaidan_moren_pay = str(in_moren_pay)
-
-def set_kaidan_moren_buy(in_moren_buy):
-    global kaidan_moren_buy
-    kaidan_moren_buy = str(in_moren_buy)
-
-def set_moren_annual_fee(in_annual_fee):
-    global moren_annual_fee
-    moren_annual_fee = str(in_annual_fee)
-
 class People_Info():
     def __init__(self,
                  raw_index_in_excel,
@@ -41,13 +27,13 @@ class People_Info():
                  sex:str = '',
                  birth:str = '',
                  id:str = '',
-                 pay:str = '',
-                 buy:str = '0',
+                 pay:int = 0,
+                 buy:int = 0,
                  address:str = '',
                  native:str = '',
                  regin:str = '',
                  extract = '10000',
-                 annual_fee = '210',
+                 annual_fee:int = 0,
                  sail_card_id = '0',
                  sail_id = '',
                  open_date = '',
@@ -58,13 +44,13 @@ class People_Info():
         self.sex = sex
         self.birth = birth
         self.id = id
-        self.pay = pay
-        self.buy = buy
+        self.pay = str(pay)
+        self.buy = str(buy)
         self.extract = extract
         self.address = address
         self.native = native
         self.regin = regin
-        self.annual_fee = annual_fee
+        self.annual_fee = str(annual_fee)
         self.sail_card_id = sail_card_id
         self.sail_id = sail_id
         self.open_date = open_date
@@ -142,13 +128,13 @@ def get_info(index, excel_row, info_json, add_flag=False):
                         info_json['性别'],
                         info_json['出生日期'],
                         info_json['身份证号码'],
-                        kaidan_moren_pay,
-                        kaidan_moren_buy,
+                        check.moren_pay,
+                        check.moren_buy,
                         info_json['住址'],
                         info_json['籍贯'],
                         info_json['民族'],
                         excel_row['提取金额'],
-                        moren_annual_fee)
+                        check.annual_fee)
     except:
         return None
 
@@ -219,7 +205,7 @@ def get_zhuandan_info(index, excel_row, info_json, add_flag=False, end_flag=Fals
                        info_json['籍贯'],
                        info_json['民族'],
                        '0',
-                       moren_annual_fee,
+                       check.annual_fee,
                        excel_row['独立经销商卡号'],
                        excel_row['货单号码'],
                        excel_row['开单日期'],
@@ -255,7 +241,7 @@ def get_budan_info(index, excel_row, info_json, add_flag=False):
                        info_json['籍贯'],
                        info_json['民族'],
                        '0',
-                       moren_annual_fee,
+                       check.annual_fee,
                        excel_row['独立经销商卡号'],
                        excel_row['货单号码'])
     except:
@@ -289,7 +275,7 @@ def get_buka_info(index, excel_row, info_json, add_flag = False):
                        info_json['籍贯'],
                        info_json['民族'],
                        '0',
-                       moren_annual_fee,
+                       check.annual_fee,
                        excel_row['独立经销商卡号'],
                        excel_row['货单号码'])
     except:
@@ -321,7 +307,7 @@ def get_nianfei_info(index, excel_row, info_json):
                        info_json['籍贯'],
                        info_json['民族'],
                        '0',
-                       moren_annual_fee,
+                       check.annual_fee,
                        excel_row['独立经销商卡号'])
     except:
         return None

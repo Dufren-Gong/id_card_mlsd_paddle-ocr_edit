@@ -6,7 +6,7 @@ from uis.main_window_ui import Row_Zero, Row_One, Row_Two, Row_Catch
 from windows.show_info_window import Show_Info_Window
 from my_utils.threads import Pdf_to_Pic_Thread, Download_Sourcecode
 from my_utils.utils import get_data_str, open_floader, find_in_catch_pic, get_internal_path, unzip_file, get_config, download_single_file
-from my_utils.operate_excel import read_sheets, get_kaidan_pairs, get_nahuo_pairs, get_zhuandan_pairs, get_nianfei_pairs, get_budan_pairs, get_buka_pairs, fill_information, check_excel, set_kaidan_moren_buy, set_kaidan_moren_pay, set_moren_annual_fee
+from my_utils.operate_excel import read_sheets, get_kaidan_pairs, get_nahuo_pairs, get_zhuandan_pairs, get_nianfei_pairs, get_budan_pairs, get_buka_pairs, fill_information, check_excel
 from each_types import kaidan, nahuo, zhuandan, budan, nianfei, buka
 from PyQt6.QtGui import QDragEnterEvent, QIcon
 from PyQt6.QtCore import QFileInfo, QThreadPool, QTimer
@@ -16,7 +16,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from my_utils.Traditional_to_Simplified_Chinese import fan_to_jian
 import subprocess, platform
 from send2trash import send2trash
-from my_utils.check import set_max_cash
         
 class Main_Window(QMainWindow):
     def __init__(self, open_pic_operate_window, global_config, flag_file):
@@ -170,12 +169,6 @@ class Main_Window(QMainWindow):
                                 self.show_info.set_show_text('还未操作过照片，请先操作照片。')
                         self.show_info.show_window()
                     else:
-                        set_max_cash(self.global_config['max_cash'])
-                        kaidan.set_moren_pay(self.global_config['moren_pay'])
-                        kaidan.set_moren_buy(self.global_config['moren_buy'])
-                        set_moren_annual_fee(self.global_config['moren_annual_fee'])
-                        set_kaidan_moren_buy(self.global_config['moren_buy'])
-                        set_kaidan_moren_pay(self.global_config['moren_pay'])
                         self.excel_name = '非身份证信息需求.xlsx'
                         if not os.path.exists(os.path.join('模版', self.excel_name)):
                             self.show_info.set_show_text(f'缺少"{self.excel_name}"文件')

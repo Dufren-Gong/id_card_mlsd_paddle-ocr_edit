@@ -2,7 +2,13 @@ import re
 from datetime import datetime
 import pandas as pd
 from my_utils.Traditional_to_Simplified_Chinese import fan_to_jian
-# from my_utils.ocr_by_paddleocr import remove_first_char_if_symbol_or_digit
+from my_utils.utils import get_config
+
+config = get_config()
+moren_pay = config['moren_pay']
+moren_buy = config['moren_buy']
+annual_fee = config['moren_annual_fee']
+max_cash = config['max_cash']
 
 ethnic_groups = [
     "汉族", "壮族", "满族", "回族", "苗族", "维吾尔族", "土家族", "彝族", "蒙古族", "藏族", 
@@ -15,8 +21,6 @@ ethnic_groups = [
 ]
 
 sex_group = ['男', '女']
-
-max_cash = 84513
 
 def trans_to_str_and_strip(str_t:str, trans_str:str=''):
     str_t = re.sub(r'\s+', trans_str, str(str_t))
@@ -142,10 +146,6 @@ def check_phone_number(str_t:str, mode:str='内地'):
             if len(telephone) == 11 and bool(re.fullmatch(r'[0-9]+', telephone)):
                 return telephone
     return None
-
-def set_max_cash(in_max_cash):
-    global max_cash
-    max_cash = in_max_cash
 
 def check_cash(str_t:str, mode:str='内地'):
     if not pd.isna(str_t) and str_t != None and str_t != '':
