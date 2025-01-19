@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QLi
 from PyQt6.QtGui import QIcon
 from my_utils.utils import get_all_pic_path, cv_to_qpixmap, cv_imread, cv_imwrite, rgb_to_gray_with_three_channels, check_catch_pic, get_internal_path, add_edge #, calculate_brightness, adjust_brightness
 from PyQt6.QtCore import Qt, QThreadPool, QTimer
-from uis.photo_gallery_ui.scroll_area import Scroll_Area  # 导入 Scroll_Area 模块
+from uis.photo_gallery_ui.scroll_area import Scroll_Area, ClickableLabel  # 导入 Scroll_Area 模块
 from windows.show_info_window import Show_Info_Window
 from windows.show_pic_window_for_name import Show_Pic_Window
 from my_utils.threads import Get_Ocr
@@ -60,7 +60,6 @@ class Name_Pic(QMainWindow):
                                        display_large_image_function=self.display_large_image,
                                        init_edge_ipx=copy.copy(self.global_config['paddleocr_conf']['edge_ipx']),
                                        init_edge_color=self.get_color_tuple(copy.copy(self.global_config['paddleocr_conf']['edge_color'])))   
-
 
         # 将 Scroll_Area 和 QLabel 添加到主布局
         main_layout.addWidget(self.scroll_area)
@@ -198,6 +197,7 @@ class Name_Pic(QMainWindow):
                 self.large_image_label.row_two.pic_name_lineedit.setReadOnly(False)
                 self.large_image_label.row_four.pic_name_lineedit.setReadOnly(False)
                 self.large_image_label.row_four.rigin_combobox.setEnabled(True)
+                self.large_image_label.row_two.change_button.setEnabled(True)
                 # self.large_image_label.row_six.all_moved_button.setEnabled(True)
                 if catch[6] != '香港':
                     self.large_image_label.row_two.two_pic_name_lineedit.setReadOnly(False)
@@ -221,6 +221,7 @@ class Name_Pic(QMainWindow):
                 self.large_image_label.row_four.rigin_combobox.setDisabled(True)
                 self.large_image_label.row_six.pic_name_lineedit.setReadOnly(True)
                 self.large_image_label.row_nine.comfire_info_button.setDisabled(True)
+                self.large_image_label.row_two.change_button.setDisabled(True)
                 # self.large_image_label.row_six.all_moved_button.setDisabled(True)
             self.change_info()
             self.large_image_label.row_seven.pic_name_lineedit.setPlainText('\n'.join(pic_info_dict))
@@ -424,14 +425,17 @@ class Name_Pic(QMainWindow):
                 self.scroll_area.labels[self.this_index + 1].info[index] = text_now
                 if cue == '姓名':
                     self.large_image_label.row_zero.pic_name_lineedit.setText(text_now + self.save_formate)
-                if text_now != '无':
-                    text = check.card_info_check[cue](text_now, self.scroll_area.labels[self.this_index].info[6])
-                else:
-                    text = text_now
-                if text != None or text == '无':
-                    color = self.global_config['paddleocr_conf']['color']['right']
-                else:
+                if text_now == "未" or text_now == '未识别出来':
                     color = self.global_config['paddleocr_conf']['color']['error']
+                else:
+                    if text_now != '无':
+                        text = check.card_info_check[cue](text_now, self.scroll_area.labels[self.this_index].info[6])
+                    else:
+                        text = text_now
+                    if text != None or text == '无':
+                        color = self.global_config['paddleocr_conf']['color']['right']
+                    else:
+                        color = self.global_config['paddleocr_conf']['color']['error']
                 if obj_now.moved_flag:
                     obj_now.setStyleSheet(f'{type_t}{{background-color: rgba(255, 255, 255, 0);border: none;color:{color};}}QToolTip{{background-color: white;color: black;border: 1px solid black;font-size: 12px;}}')
                 else:
@@ -638,7 +642,7 @@ class Name_Pic(QMainWindow):
                                       self.angle_rate,
                                       ipx,
                                       self.scroll_area.labels[self.this_index].edge_color,
-                                        now_borders)
+                                      now_borders)
                 pixmap = cv_to_qpixmap(img_border)
                 #显示大图
                 self.large_image_label.set_pic(pixmap)
@@ -714,6 +718,95 @@ class Name_Pic(QMainWindow):
                 if obj.moved_flag or self.position_mode:
                     obj.change_pos(mode)
 
+    def read_cut_info(self, obj:ClickableLabel):
+        index = obj.index
+        photo_path = obj.photo_path
+        img = obj.img
+        liangdu_shift = obj.liangdu_shift
+        duibidu_shift = obj.duibidu_shift
+        color = obj.color
+        edge_ipx = obj.edge_ipx
+        add_to_gaopin = obj.add_to_gaopin
+        borders = obj.borders
+        edge_color = obj.edge_color
+        return index, photo_path, img, liangdu_shift, duibidu_shift, color, edge_ipx, add_to_gaopin, borders, edge_color
+
+    def write_cut_info(self, obj:ClickableLabel, index, photo_path, img, liangdu_shift, duibidu_shift, color, edge_ipx, add_to_gaopin, borders, edge_color):
+        obj.index = index
+        obj.photo_path = photo_path
+        obj.img = img
+        obj.liangdu_shift = liangdu_shift
+        obj.duibidu_shift = duibidu_shift
+        obj.color = color
+        obj.edge_ipx = edge_ipx
+        obj.add_to_gaopin = add_to_gaopin
+        obj.borders = borders
+        obj.edge_color = edge_color
+        return obj
+
+    def change_pic_position(self):
+        if self.this_index != None:
+            self.large_image_label.row_two.change_button.setDisabled(True)
+            self.first_index = int(self.this_index / 2 ) * 2
+            temp_path = self.photo_paths[self.first_index + 1]
+            self.photo_paths[self.first_index + 1] = self.photo_paths[self.first_index]
+            self.photo_paths[self.first_index] = temp_path
+            if self.first_index in self.checked:
+                self.checked.remove(self.first_index)
+            _, photo_path, img, liangdu_shift, duibidu_shift, color, edge_ipx, add_to_gaopin, borders, edge_color = self.read_cut_info(self.scroll_area.labels[self.first_index])
+            _, photo_path1, img1, liangdu_shift1, duibidu_shift1, color1, edge_ipx1, add_to_gaopin1, borders1, edge_color1 = self.read_cut_info(self.scroll_area.labels[self.first_index + 1])
+            self.scroll_area.labels[self.first_index] = self.write_cut_info(self.scroll_area.labels[self.first_index], self.first_index, photo_path1, img1, liangdu_shift1, duibidu_shift1, color1, edge_ipx1, add_to_gaopin1, borders1, edge_color1)
+            self.scroll_area.labels[self.first_index + 1] = self.write_cut_info(self.scroll_area.labels[self.first_index + 1], self.first_index + 1, photo_path, img, liangdu_shift, duibidu_shift, color, edge_ipx, add_to_gaopin, borders, edge_color)
+            
+            for index in [self.first_index, self.first_index + 1]:
+                show_borders = self.scroll_area.labels[index].borders
+                if len(show_borders) != 0:
+                    img_border = add_edge(self.scroll_area.labels[index].img, 
+                                            self.angle_rate,
+                                            self.scroll_area.labels[index].edge_ipx,
+                                            self.scroll_area.labels[index].edge_color,
+                                            show_borders)
+                else:
+                    img_border = self.scroll_area.labels[index].img
+                pixmap = cv_to_qpixmap(img_border)
+                #显示大图
+                if index == self.first_index:
+                    self.large_image_label.set_pic(pixmap)
+                    self.large_image_label.update()
+                #显示小图
+                fixed_width = self.fixed_width
+                scaled_height = int(pixmap.height() * fixed_width / pixmap.width())  # 使用 int() 确保高度是整数
+                scaled_pixmap = pixmap.scaled(fixed_width, scaled_height, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio)
+                self.scroll_area.labels[index].setPixmap(scaled_pixmap)
+                self.scroll_area.scroll_to_label(index)
+
+            self.large_image_label.row_four.border_color_combobox.setCurrentIndex(int(edge_color1[0] / 50))
+            self.ocr_model = get_ocr_model(self.global_config)
+            self.thread_pool = QThreadPool.globalInstance()
+            self.thread_pool.setMaxThreadCount(self.global_config['paddleocr_conf']['max_threads'])
+            ocr_thread = Get_Ocr(cv_imread(temp_path), self.ocr_model, temp_path, scale=copy.copy(self.global_config['paddleocr_conf']['scale']), 
+                                    pic_shape=tuple(self.global_config['pic_shape']), 
+                                    times=self.global_config['paddleocr_conf']['times'], 
+                                    pic_type=self.global_config['paddleocr_conf']['ocr_pic_type'],
+                                    info_checks=self.global_config['paddleocr_conf']['info_checks'],
+                                    one_line_scale=self.global_config['paddleocr_conf']['one_line_scale'])
+            ocr_thread.signals.finished.connect(self.single_end_ocr)  # 把任务完成的信号与任务完成后处理的槽函数绑定
+            self.thread_pool.start(ocr_thread)
+
+    def single_end_ocr(self, catch, pic_info_dict, _):
+        for index in [self.first_index, self.first_index + 1]:
+            self.scroll_area.labels[index].info = catch
+            self.scroll_area.labels[index].print = pic_info_dict
+        self.change_info()
+        regin = catch[6]
+        if regin == '香港':
+            self.large_image_label.row_four.rigin_combobox.setCurrentText('香港')
+        elif regin == '内地':
+            self.large_image_label.row_four.rigin_combobox.setCurrentText('内地')
+        self.release()
+        clear_gpu_cache()
+        self.large_image_label.row_two.change_button.setEnabled(True)
+
     def init_event(self):
         self.init_black_button_timer()
         self.init_combbox_change_tips_timer()
@@ -747,3 +840,4 @@ class Name_Pic(QMainWindow):
         self.large_image_label.row_four.border_color_combobox.currentIndexChanged.connect(self.change_edge_color)
         self.large_image_label.row_four.rigin_combobox.currentIndexChanged.connect(self.change_regin)
         self.large_image_label.row_six.all_moved_button.clicked.connect(self.change_moren_position_mode)
+        self.large_image_label.row_two.change_button.clicked.connect(self.change_pic_position)

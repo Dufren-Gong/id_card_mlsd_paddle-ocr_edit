@@ -572,6 +572,11 @@ class Main_Window(QMainWindow):
             self.row_two.open_newest_button.pressed.disconnect()
             self.row_two.open_newest_button.released.disconnect()
         current_index = self.row_one.function_combobox.currentIndex()
+        if current_index == 0:
+            self.row_one.pic_here_checkbox.setChecked(True)
+        else:
+            self.row_one.pic_here_checkbox.setChecked(False)
+        self.row_one.pic_here_checkbox.setDisabled(True)
         if current_index == 0 or current_index == 1:
             self.row_one.pic_here_checkbox.setEnabled(True)
             self.row_zero.tip_label.setText('文件类型:')
@@ -584,13 +589,8 @@ class Main_Window(QMainWindow):
             self.row_zero.file_type_combobox.show()
             self.row_zero.pic_name_lineedit.hide()
             self.row_zero.select_newest_checkbox.hide()
-            if current_index == 1:
-                self.row_one.pic_here_checkbox.setChecked(False)
-            else:
-                self.row_one.pic_here_checkbox.setChecked(True)
             self.change_moren_pic()
         elif current_index == 2:
-            self.row_one.pic_here_checkbox.setDisabled(True)
             self.row_zero.tip_label.setText('输入名字:')
             self.row_two.open_newest_button.setText('繁体转简体')
             self.row_two.select_files_button.setText('查询')
@@ -604,7 +604,6 @@ class Main_Window(QMainWindow):
             self.row_zero.select_newest_checkbox.hide()
             self.row_zero.pic_name_lineedit.setFocus()
         elif current_index == self.concat_index or current_index == 11 or current_index == 12:
-            self.row_one.pic_here_checkbox.setDisabled(True)
             self.row_two.open_newest_button.setText('打开最新/删除所有编辑')
             self.row_zero.tip_label.setText('文件类型:')
             self.row_two.open_newest_button.setToolTip('短按打开编辑结果中最新生成结果的文件夹，长按删除"照片编辑结果"中所有编辑')
@@ -624,7 +623,6 @@ class Main_Window(QMainWindow):
                 self.row_two.select_files_button.setToolTip('开始更新程序')
                 self.row_two.select_files_button.clicked.connect(self.update_software)
         else:
-            self.row_one.pic_here_checkbox.setDisabled(True)
             self.row_two.open_newest_button.setText('打开最新/删除所有编辑')
             self.row_two.open_newest_button.setToolTip('短按打开编辑结果中最新生成结果的文件夹，长按删除"照片编辑结果"中所有编辑')
             self.row_two.open_newest_button.pressed.connect(self.open_newest_pressed)

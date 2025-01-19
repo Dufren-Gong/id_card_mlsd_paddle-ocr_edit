@@ -21,7 +21,7 @@ class Show_Pic_Window(QMainWindow):
         self.shape = Ui_Shapes(start_width=870, start_height=50, round_gap=10)
         line_shift = 4
         self.shape.layout([self.shape.label_height] * 4 + [self.shape.label_height * 3] + [self.shape.label_height] + [self.shape.label_height * 7] +[self.shape.label_height] * 3,
-                            [[30, 100] + [20] * 4] * 2 + [[30, 25, 28, 69] + [20] * 3] + [[30, 100] + [50] * 2] + [[30, 216 + line_shift]] + [[30, 156 ,50 + line_shift]] + [[30, 216 + line_shift]] + [[82] * 3] * 3)
+                            [[30, 100] + [20] * 4] * 2 + [[30, 25, 28, 39] + [20] * 4] + [[30, 100] + [50] * 2] + [[30, 216 + line_shift]] + [[30, 156 ,50 + line_shift]] + [[30, 216 + line_shift]] + [[82] * 3] * 3)
         self.init_ui()
 
     def clear_content(self):
@@ -80,6 +80,7 @@ class Show_Pic_Window(QMainWindow):
             self.shape.shape_tuples[2][4],
             self.shape.shape_tuples[2][5],
             self.shape.shape_tuples[2][6],
+            self.shape.shape_tuples[2][7],
             keyboard_shift,
             init_neidi_position.get('sex', None),
             init_hk_position.get('sex', None),
@@ -132,14 +133,14 @@ class Show_Pic_Window(QMainWindow):
             central_widget,
             self.shape.shape_tuples[8][0],
             self.shape.shape_tuples[8][1],
-            self.shape.shape_tuples[8][2],
+            self.shape.shape_tuples[8][2]
         )
 
         self.row_nine = Row_Nine(
             central_widget,
             self.shape.shape_tuples[9][0],
             self.shape.shape_tuples[9][1],
-            self.shape.shape_tuples[9][2],
+            self.shape.shape_tuples[9][2]
         )
 
     def set_pic(self, pixmap):

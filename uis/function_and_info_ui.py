@@ -44,7 +44,6 @@ class DraggableLineEdit(QtWidgets.QLineEdit):
             delta = event.position().toPoint() - self.initial_pos
             # 计算控件的新位置
             new_pos = self.current_pos + delta
-            print(new_pos)
             # 获取父窗口的几何范围
             parent_widget = self.parent()  # 获取父控件
             if parent_widget:
@@ -489,6 +488,7 @@ class Row_Two():
                  info_lineedit_shape: tuple,
                  two_tip_label_shape: tuple,
                  two_info_lineedit_shape: tuple,
+                 change_shape: tuple,
                  done_left_shape: tuple,
                  down_shape: tuple,
                  down_right_shape: tuple,
@@ -506,6 +506,7 @@ class Row_Two():
         self.init_one_pic_name_lineedit(info_lineedit_shape)
         self.init_two_tip_label(two_tip_label_shape)
         self.init_two_pic_name_lineedit(two_info_lineedit_shape)
+        self.edge_change_pushbutton(change_shape)
         self.edge_down_left_pushbutton(done_left_shape)
         self.edge_down_pushbutton(down_shape)
         self.edge_down_right_pushbutton(down_right_shape)
@@ -541,8 +542,30 @@ class Row_Two():
         self.two_pic_name_lineedit.setObjectName("pic_name_lineedit3")
         self.pic_name_lineedit.setValidator(QRegularExpressionValidator(QRegularExpression(r"^[^\n]*$")))
 
-    def edge_down_left_pushbutton(self, shape):
+    def edge_change_pushbutton(self, shape):
         shape_temp = tuple([shape[0] + self.keyboard_shift * 1] + list(shape[1:]))
+        self.change_button = QtWidgets.QPushButton(parent=self.centralwidget)
+        self.change_button.setGeometry(QtCore.QRect(*shape_temp))
+        self.change_button.setObjectName("change_button")
+        self.change_button.setText("\u296E")
+        self.change_button.setToolTip("交换这组照片的位置，并且重新识别正面照片的文字")
+        self.change_button.setStyleSheet("""
+            QPushButton {
+                border-width: 1px;          /* 边缘宽度 */
+                border-style: solid;        /* 边缘样式 */
+                border-color: black;          /* 边缘颜色 */
+                background-color: lightgray;/* 背景颜色 */
+            }
+            QToolTip {
+                    background-color: white;
+                    color: black;
+                    border: 1px solid black;
+                    font-size: 12px;
+                }
+        """)
+
+    def edge_down_left_pushbutton(self, shape):
+        shape_temp = tuple([shape[0] + self.keyboard_shift * 2] + list(shape[1:]))
         self.border_down_left_button = QtWidgets.QPushButton(parent=self.centralwidget)
         self.border_down_left_button.setGeometry(QtCore.QRect(*shape_temp))
         self.border_down_left_button.setObjectName("border_down_left_button")
@@ -564,7 +587,7 @@ class Row_Two():
         """)
 
     def edge_down_pushbutton(self, shape):
-        shape_temp = tuple([shape[0] + self.keyboard_shift * 2] + list(shape[1:]))
+        shape_temp = tuple([shape[0] + self.keyboard_shift * 3] + list(shape[1:]))
         self.border_down_button = QtWidgets.QPushButton(parent=self.centralwidget)
         self.border_down_button.setGeometry(QtCore.QRect(*shape_temp))
         self.border_down_button.setObjectName("border_down_button")
@@ -586,7 +609,7 @@ class Row_Two():
         """)
 
     def edge_down_right_pushbutton(self, shape):
-        shape_temp = tuple([shape[0] + self.keyboard_shift * 3] + list(shape[1:]))
+        shape_temp = tuple([shape[0] + self.keyboard_shift * 4] + list(shape[1:]))
         self.border_down_right_button = QtWidgets.QPushButton(parent=self.centralwidget)
         self.border_down_right_button.setGeometry(QtCore.QRect(*shape_temp))
         self.border_down_right_button.setObjectName("border_down_right_button")

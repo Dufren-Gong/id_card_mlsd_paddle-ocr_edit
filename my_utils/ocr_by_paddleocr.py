@@ -52,7 +52,10 @@ def sort_boxes_by_line(boxes, threshold=10):
     infos = []
     this_line = []
     lengths = len(sort_by_y)
-    compare_y = sort_by_y[0][0][0][1]
+    try:
+        compare_y = sort_by_y[0][0][0][1]
+    except:
+        print(boxes)
     for line_index in range(lengths):
         this_y = sort_by_y[line_index][0][0][1]
         if abs(this_y - compare_y) <= threshold:
@@ -91,7 +94,7 @@ def pic_to_str(image, ocr, pass_flag=False, shape = (856, 540), scale = 0.8, tim
     nation = None
     length1 = 0
     results = ocr.ocr(img_temp)
-    if results != [None]:
+    if results != [None] and results != [[]]:
         texts = sort_boxes_by_line(results, shape[1] / one_line_scale)
         nation = check_nation(texts)
         catch = get_catch(texts, nation, catch, info_checks)
@@ -103,7 +106,7 @@ def pic_to_str(image, ocr, pass_flag=False, shape = (856, 540), scale = 0.8, tim
         texts1 = []
         length2 = 0
         results = ocr.ocr(img_temp)
-        if results != [None]:
+        if results != [None] and results != [[]]:
             texts = sort_boxes_by_line(results, shape[1] / one_line_scale)
             if nation != "香港":
                 nation = check_nation(texts1)
