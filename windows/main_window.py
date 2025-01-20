@@ -572,12 +572,12 @@ class Main_Window(QMainWindow):
             self.row_two.open_newest_button.pressed.disconnect()
             self.row_two.open_newest_button.released.disconnect()
         current_index = self.row_one.function_combobox.currentIndex()
-        if current_index == 0:
-            self.row_one.pic_here_checkbox.setChecked(True)
-        else:
-            self.row_one.pic_here_checkbox.setChecked(False)
         self.row_one.pic_here_checkbox.setDisabled(True)
         if current_index == 0 or current_index == 1:
+            if current_index == 0:
+                self.row_one.pic_here_checkbox.setChecked(True)
+            else:
+                self.row_one.pic_here_checkbox.setChecked(False)
             self.row_one.pic_here_checkbox.setEnabled(True)
             self.row_zero.tip_label.setText('文件类型:')
             self.row_two.open_newest_button.setText('打开最新/删除所有编辑')
