@@ -706,7 +706,7 @@ class Main_Window(QMainWindow):
             return
         self.hide()
         QApplication.processEvents()
-        shutil.copy(os.path.join(name, '模版', '配置和记录', 'new', 'main.spec'), './main.spec')
+        shutil.copy(os.path.join('模版', '配置和记录', 'new', 'main.spec'), './main.spec')
         shell_path = os.path.abspath(self.global_config['update_shell_path'])
         conda_env = self.global_config['conda_env_name']
         try:
@@ -741,7 +741,7 @@ class Main_Window(QMainWindow):
         if self.pyinstaller_process.poll() is None:
             self.update_timer.start(time_count)  # 继续定时器
         else:
-            self.show_info.row_one.tip_label.appendPlainText('更新即将完成，请稍等......')
+            # self.show_info.row_one.tip_label.appendPlainText('更新即将完成，请稍等......')
             os.chdir('..')
             shutil.copytree('./模版/', os.path.join(name, 'dist', 'main', '模版'))
             if not os.path.exists(os.path.join(name, 'dist', 'main', '_internal', '_tk_data')) and os.path.exists(os.path.join('_internal', '_tk_data')):
