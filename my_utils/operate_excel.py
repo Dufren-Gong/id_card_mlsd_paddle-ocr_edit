@@ -703,6 +703,7 @@ def check_excel(file_path, pic_floader, sheet_name = None):
         #将模版信息展平
         for i in range(2, row_count + 1):
             template_column_info = ws[f"{template_column_letters}{i}"].value
+            # ws[f"{template_column_letters}{i}"].value = ''
             if not pd.isna(template_column_info):
                 ws = map_info(ws, template_column_info, i, check_cloumns + ['地址'], column_letters + [address_column_letters])
 
