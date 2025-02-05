@@ -1,5 +1,5 @@
 import pandas as pd
-import os, json, shutil
+import os, json, shutil, re
 from natsort import natsorted
 import numpy as np
 from my_utils.Traditional_to_Simplified_Chinese import fan_to_jian
@@ -17,7 +17,10 @@ column_names = dict(姓名=check.check_name,
                     货单号码=check.check_sail_id,
                     开单日期=check.check_open_date,
                     余额=check.check_cash)
+
 column_names['住址(内地人不用填，如果要更换就填)'] = check.check_address
+
+info_names = list(column_names.keys())
 
 class People_Info():
     def __init__(self,
@@ -616,6 +619,52 @@ def read_openpyxl_by_str(ws):
             cell.value = str(cell.value) if cell.value is not None else None
     return ws
 
+def map_info(ws, template_column_info:str, i, check_cloumns, column_letters):
+    infos_t = re.sub(r' +', ' ', template_column_info)
+    infos_t = infos_t.split('\n')
+    infos = []
+    for tt in infos_t:
+        if tt != '' and tt != ' ':
+            infos.append(tt)
+    for name_index, j in enumerate(check_cloumns):
+        start_index = -1
+        for index, info in enumerate(infos):
+            if j in info:
+                start_index = index
+                break
+        if start_index == -1:
+            continue
+
+        temp_info_arr = [info]
+        if start_index != len(infos) - 1:
+            for k in range(start_index + 1, len(infos)):
+                if ':' in infos[k] or "：" in infos[k]:
+                    break
+                else:
+                    temp_info_arr.append(infos[k])
+        
+        result_str = ''
+        for m in temp_info_arr:
+            infos.remove(m)
+            if ':' in m:
+                a = m.split(':', maxsplit=1)[-1]
+                result_str += a.strip().replace(' ', '')
+            elif "：" in m:
+                a = m.split('：', maxsplit=1)[-1]
+                result_str += a.strip().replace(' ', '')
+            else:
+                result_str += m.strip().replace(' ', '')
+        if result_str != '':
+            if name_index != '地址':
+                name_t = column_letters[name_index]
+                try:
+                    ws[f"{name_t}{i}"].value = result_str
+                except:
+                    pass
+            else:
+                ws[f"{'住址(内地人不用填，如果要更换就填)'}{i}"].value = result_str
+    return ws
+
 def check_excel(file_path, pic_floader, sheet_name = None):
     passed_flag = True
     # 设置绿色字体
@@ -644,11 +693,19 @@ def check_excel(file_path, pic_floader, sheet_name = None):
         ws = read_openpyxl_by_str(ws)
         row_count = ws.max_row
         check_cloumns = [i for i in [cell.value for cell in ws[1]] if i in c_names]
-        column_letters = get_column_letter(ws, check_cloumns)
+        column_letters = get_column_letter(ws, check_cloumns + ['模版信息'])
         address_column_index = check_cloumns.index('住址(内地人不用填，如果要更换就填)')
         check_cloumns.remove('住址(内地人不用填，如果要更换就填)')
         address_column_letters = column_letters[address_column_index]
+        template_column_letters = column_letters[-1]
         column_letters.remove(address_column_letters)
+        column_letters.remove(template_column_letters)
+        #将模版信息展平
+        for i in range(2, row_count + 1):
+            template_column_info = ws[f"{template_column_letters}{i}"].value
+            if not pd.isna(template_column_info):
+                ws = map_info(ws, template_column_info, i, check_cloumns + ['地址'], column_letters + [address_column_letters])
+
         for index, letter in enumerate(column_letters):
             c_name = check_cloumns[index]
             for i in range(2, row_count + 1):
