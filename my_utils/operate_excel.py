@@ -16,7 +16,7 @@ column_names = dict(姓名=check.check_name,
                     独立经销商卡号=check.check_sail_card_id,
                     货单号码=check.check_sail_id,
                     开单日期=check.check_open_date,
-                    余额=check.check_cash)
+                    剩余货值=check.check_cash)
 
 column_names['住址(内地人不用填，如果要更换就填)'] = check.check_address
 
@@ -189,7 +189,7 @@ def get_zhuandan_info(index, excel_row, info_json, add_flag=False, end_flag=Fals
                 info_json['住址'] = excel_row['住址(内地人不用填，如果要更换就填)']
         if add_flag:
             assert excel_row['货单号码'] != '' and not pd.isna(excel_row['货单号码'])
-            assert excel_row['余额'] != '' and not pd.isna(excel_row['余额'])
+            assert excel_row['剩余货值'] != '' and not pd.isna(excel_row['剩余货值'])
             assert excel_row['开单日期'] != '' and not pd.isna(excel_row['开单日期'])
             # excel_row['开单日期'] = manage_data(excel_row['开单日期'])
         if not end_flag:
@@ -212,7 +212,7 @@ def get_zhuandan_info(index, excel_row, info_json, add_flag=False, end_flag=Fals
                        excel_row['独立经销商卡号'],
                        excel_row['货单号码'],
                        excel_row['开单日期'],
-                       excel_row['余额'])
+                       excel_row['剩余货值'])
     except:
         return None
     
@@ -655,14 +655,14 @@ def map_info(ws, template_column_info:str, i, check_cloumns, column_letters):
             else:
                 result_str += m.strip().replace(' ', '')
         if result_str != '':
-            if name_index != '地址':
+            if name_index == '地址':
+                ws[f"{'住址(内地人不用填，如果要更换就填)'}{i}"].value = result_str
+            else:
                 name_t = column_letters[name_index]
                 try:
                     ws[f"{name_t}{i}"].value = result_str
                 except:
                     pass
-            else:
-                ws[f"{'住址(内地人不用填，如果要更换就填)'}{i}"].value = result_str
     return ws
 
 def check_excel(file_path, pic_floader, sheet_name = None):
