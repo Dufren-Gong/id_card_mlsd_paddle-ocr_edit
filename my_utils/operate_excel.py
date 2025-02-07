@@ -16,11 +16,8 @@ column_names = dict(姓名=check.check_name,
                     独立经销商卡号=check.check_sail_card_id,
                     货单号码=check.check_sail_id,
                     开单日期=check.check_open_date,
-                    剩余货值=check.check_cash)
-
-column_names['住址(内地人不用填，如果要更换就填)'] = check.check_address
-
-info_names = list(column_names.keys())
+                    剩余货值=check.check_cash,
+                    地址=check.check_address)
 
 class People_Info():
     def __init__(self,
@@ -115,12 +112,12 @@ def get_info(index, excel_row, info_json, add_flag=False):
         assert excel_row['姓名'] != '' and not pd.isna(excel_row['姓名']) and isinstance(excel_row['姓名'], str)
         assert excel_row['联系电话'] != '' and not pd.isna(excel_row['联系电话'])
         if info_json['籍贯'] == '香港':
-            assert excel_row['住址(内地人不用填，如果要更换就填)'] != '' and not pd.isna(excel_row['住址(内地人不用填，如果要更换就填)'])
-            info_json['住址'] = excel_row['住址(内地人不用填，如果要更换就填)']
+            assert excel_row['地址'] != '' and not pd.isna(excel_row['地址'])
+            info_json['住址'] = excel_row['地址']
             info_json['民族'] = '无'
         else:
-            if isinstance(excel_row['住址(内地人不用填，如果要更换就填)'], str) and excel_row['住址(内地人不用填，如果要更换就填)'].replace(' ', '') != '':
-                info_json['住址'] = excel_row['住址(内地人不用填，如果要更换就填)']
+            if isinstance(excel_row['地址'], str) and excel_row['地址'].replace(' ', '') != '':
+                info_json['住址'] = excel_row['地址']
         if add_flag:
             assert excel_row['提取金额'] != '' and not pd.isna(excel_row['提取金额'])
     except:
@@ -147,12 +144,12 @@ def get_nahuo_info(index, excel_row, info_json, add_flag = False):
         assert excel_row['联系电话'] != '' and not pd.isna(excel_row['联系电话'])
         assert excel_row['独立经销商卡号'] != '' and not pd.isna(excel_row['独立经销商卡号'])
         if info_json['籍贯'] == '香港':
-            assert excel_row['住址(内地人不用填，如果要更换就填)'] != '' and not pd.isna(excel_row['住址(内地人不用填，如果要更换就填)'])
-            info_json['住址'] = excel_row['住址(内地人不用填，如果要更换就填)']
+            assert excel_row['地址'] != '' and not pd.isna(excel_row['地址'])
+            info_json['住址'] = excel_row['地址']
             info_json['民族'] = '无'
         else:
-            if isinstance(excel_row['住址(内地人不用填，如果要更换就填)'], str) and excel_row['住址(内地人不用填，如果要更换就填)'].replace(' ', '') != '':
-                info_json['住址'] = excel_row['住址(内地人不用填，如果要更换就填)']
+            if isinstance(excel_row['地址'], str) and excel_row['地址'].replace(' ', '') != '':
+                info_json['住址'] = excel_row['地址']
         if add_flag:
             assert excel_row['货单号码'] != '' and not pd.isna(excel_row['货单号码'])
             assert excel_row['提取金额'] != '' and not pd.isna(excel_row['提取金额'])
@@ -181,12 +178,12 @@ def get_zhuandan_info(index, excel_row, info_json, add_flag=False, end_flag=Fals
         assert excel_row['姓名'] != '' and not pd.isna(excel_row['姓名']) and isinstance(excel_row['姓名'], str)
         assert excel_row['联系电话'] != '' and not pd.isna(excel_row['联系电话'])
         if info_json['籍贯'] == '香港':
-            assert excel_row['住址(内地人不用填，如果要更换就填)'] != '' and not pd.isna(excel_row['住址(内地人不用填，如果要更换就填)'])
-            info_json['住址'] = excel_row['住址(内地人不用填，如果要更换就填)']
+            assert excel_row['地址'] != '' and not pd.isna(excel_row['地址'])
+            info_json['住址'] = excel_row['地址']
             info_json['民族'] = '无'
         else:
-            if isinstance(excel_row['住址(内地人不用填，如果要更换就填)'], str) and excel_row['住址(内地人不用填，如果要更换就填)'].replace(' ', '') != '':
-                info_json['住址'] = excel_row['住址(内地人不用填，如果要更换就填)']
+            if isinstance(excel_row['地址'], str) and excel_row['地址'].replace(' ', '') != '':
+                info_json['住址'] = excel_row['地址']
         if add_flag:
             assert excel_row['货单号码'] != '' and not pd.isna(excel_row['货单号码'])
             assert excel_row['剩余货值'] != '' and not pd.isna(excel_row['剩余货值'])
@@ -222,12 +219,12 @@ def get_budan_info(index, excel_row, info_json, add_flag=False):
         assert excel_row['联系电话'] != '' and not pd.isna(excel_row['联系电话'])
         assert excel_row['独立经销商卡号'] != '' and not pd.isna(excel_row['独立经销商卡号'])
         if info_json['籍贯'] == '香港':
-            assert excel_row['住址(内地人不用填，如果要更换就填)'] != '' and not pd.isna(excel_row['住址(内地人不用填，如果要更换就填)'])
-            info_json['住址'] = excel_row['住址(内地人不用填，如果要更换就填)']
+            assert excel_row['地址'] != '' and not pd.isna(excel_row['地址'])
+            info_json['住址'] = excel_row['地址']
             info_json['民族'] = '无'
         else:
-            if isinstance(excel_row['住址(内地人不用填，如果要更换就填)'], str) and excel_row['住址(内地人不用填，如果要更换就填)'].replace(' ', '') != '':
-                info_json['住址'] = excel_row['住址(内地人不用填，如果要更换就填)']
+            if isinstance(excel_row['地址'], str) and excel_row['地址'].replace(' ', '') != '':
+                info_json['住址'] = excel_row['地址']
         if add_flag:
             assert excel_row['货单号码'] != '' and not pd.isna(excel_row['货单号码'])
     except:
@@ -256,12 +253,12 @@ def get_buka_info(index, excel_row, info_json, add_flag = False):
         assert excel_row['联系电话'] != '' and not pd.isna(excel_row['联系电话'])
         assert excel_row['独立经销商卡号'] != '' and not pd.isna(excel_row['独立经销商卡号'])
         if info_json['籍贯'] == '香港':
-            assert excel_row['住址(内地人不用填，如果要更换就填)'] != '' and not pd.isna(excel_row['住址(内地人不用填，如果要更换就填)'])
-            info_json['住址'] = excel_row['住址(内地人不用填，如果要更换就填)']
+            assert excel_row['地址'] != '' and not pd.isna(excel_row['地址'])
+            info_json['住址'] = excel_row['地址']
             info_json['民族'] = '无'
         else:
-            if isinstance(excel_row['住址(内地人不用填，如果要更换就填)'], str) and excel_row['住址(内地人不用填，如果要更换就填)'].replace(' ', '') != '':
-                info_json['住址'] = excel_row['住址(内地人不用填，如果要更换就填)']
+            if isinstance(excel_row['地址'], str) and excel_row['地址'].replace(' ', '') != '':
+                info_json['住址'] = excel_row['地址']
         if add_flag:
             assert excel_row['货单号码'] != '' and not pd.isna(excel_row['货单号码'])
     except:
@@ -290,12 +287,12 @@ def get_nianfei_info(index, excel_row, info_json):
         assert excel_row['联系电话'] != '' and not pd.isna(excel_row['联系电话'])
         assert excel_row['独立经销商卡号'] != '' and not pd.isna(excel_row['独立经销商卡号'])
         if info_json['籍贯'] == '香港':
-            assert excel_row['住址(内地人不用填，如果要更换就填)'] != '' and not pd.isna(excel_row['住址(内地人不用填，如果要更换就填)'])
-            info_json['住址'] = excel_row['住址(内地人不用填，如果要更换就填)']
+            assert excel_row['地址'] != '' and not pd.isna(excel_row['地址'])
+            info_json['住址'] = excel_row['地址']
             info_json['民族'] = '无'
         else:
-            if isinstance(excel_row['住址(内地人不用填，如果要更换就填)'], str) and excel_row['住址(内地人不用填，如果要更换就填)'].replace(' ', '') != '':
-                info_json['住址'] = excel_row['住址(内地人不用填，如果要更换就填)']
+            if isinstance(excel_row['地址'], str) and excel_row['地址'].replace(' ', '') != '':
+                info_json['住址'] = excel_row['地址']
     except:
         return None
     try:
@@ -621,6 +618,7 @@ def read_openpyxl_by_str(ws):
 
 def map_info(ws, template_column_info:str, i, check_cloumns, column_letters):
     infos_t = re.sub(r' +', ' ', template_column_info)
+    infos_t = infos_t.replace(':', '：')
     infos_t = infos_t.split('\n')
     infos = []
     for tt in infos_t:
@@ -629,7 +627,7 @@ def map_info(ws, template_column_info:str, i, check_cloumns, column_letters):
     for name_index, j in enumerate(check_cloumns):
         start_index = -1
         for index, info in enumerate(infos):
-            if j in info:
+            if j + '：' in info or j + ' ：' in info:
                 start_index = index
                 break
         if start_index == -1:
@@ -638,7 +636,7 @@ def map_info(ws, template_column_info:str, i, check_cloumns, column_letters):
         temp_info_arr = [info]
         if start_index != len(infos) - 1:
             for k in range(start_index + 1, len(infos)):
-                if ':' in infos[k] or "：" in infos[k]:
+                if "：" in infos[k]:
                     break
                 else:
                     temp_info_arr.append(infos[k])
@@ -646,23 +644,17 @@ def map_info(ws, template_column_info:str, i, check_cloumns, column_letters):
         result_str = ''
         for m in temp_info_arr:
             infos.remove(m)
-            if ':' in m:
-                a = m.split(':', maxsplit=1)[-1]
-                result_str += a.strip().replace(' ', '')
-            elif "：" in m:
+            if "：" in m:
                 a = m.split('：', maxsplit=1)[-1]
                 result_str += a.strip().replace(' ', '')
             else:
                 result_str += m.strip().replace(' ', '')
         if result_str != '':
-            if name_index == '地址':
-                ws[f"{'住址(内地人不用填，如果要更换就填)'}{i}"].value = result_str
-            else:
-                name_t = column_letters[name_index]
-                try:
-                    ws[f"{name_t}{i}"].value = result_str
-                except:
-                    pass
+            name_t = column_letters[name_index]
+            try:
+                ws[f"{name_t}{i}"].value = result_str
+            except:
+                pass
     return ws
 
 def check_excel(file_path, pic_floader, sheet_name = None):
@@ -694,18 +686,15 @@ def check_excel(file_path, pic_floader, sheet_name = None):
         row_count = ws.max_row
         check_cloumns = [i for i in [cell.value for cell in ws[1]] if i in c_names]
         column_letters = get_column_letter(ws, check_cloumns + ['模版信息'])
-        address_column_index = check_cloumns.index('住址(内地人不用填，如果要更换就填)')
-        check_cloumns.remove('住址(内地人不用填，如果要更换就填)')
+        address_column_index = check_cloumns.index('地址')
         address_column_letters = column_letters[address_column_index]
         template_column_letters = column_letters[-1]
-        column_letters.remove(address_column_letters)
-        column_letters.remove(template_column_letters)
+        column_letters = column_letters[:-1]
         #将模版信息展平
         for i in range(2, row_count + 1):
             template_column_info = ws[f"{template_column_letters}{i}"].value
-            # ws[f"{template_column_letters}{i}"].value = ''
             if not pd.isna(template_column_info):
-                ws = map_info(ws, template_column_info, i, check_cloumns + ['地址'], column_letters + [address_column_letters])
+                ws = map_info(ws, template_column_info, i, check_cloumns, column_letters)
 
         for index, letter in enumerate(column_letters):
             c_name = check_cloumns[index]
@@ -784,7 +773,7 @@ def check_excel(file_path, pic_floader, sheet_name = None):
                                 #再检查如果有地址是否有错
                                 if not pd.isna(address):
                                     if address.strip().replace(' ', '') != '':
-                                        address = column_names['住址(内地人不用填，如果要更换就填)'](address)
+                                        address = column_names['地址'](address)
                                         if pd.isna(address):
                                             ws[f"{address_column_letters}{i}"].font = red_font
                                             passed_flag = False

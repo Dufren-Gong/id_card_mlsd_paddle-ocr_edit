@@ -79,7 +79,7 @@ update_shell_path: ./模版/配置和记录/update_windows.bat
 del_and_reopen_shell_path: ./模版/配置和记录/del_and_reopen.ps1
 
 update_info_show_time: 15 #秒
-enable_update: true #是否开启更新选项
+enable_update: false #是否开启更新选项
 
 # https://gitee.com/api/v5/repos/{owner}/{repo}/zipball?access_token={access_token}&ref={ref}
 access_token: 3d7b338f6b596cc32baf892157ac5f98 # gitee授权码
