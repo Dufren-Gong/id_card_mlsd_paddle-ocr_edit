@@ -138,8 +138,6 @@ def replace_pic(doc, pairs, num, kaidan_path, position, num_spaces, scale = 1.0)
     image_paths = get_image_paths(pairs, kaidan_path)
     image_paths = image_paths[2*position:2*(position + 1)]
     # 计算目标段落的索引
-    # 计算目标段落的索引
-    # 计算目标段落的索引
     target_index = len(doc.paragraphs) - num
     
     # 确保文档至少有三个段落

@@ -6,8 +6,8 @@ from uis.main_window_ui import Row_Zero, Row_One, Row_Two, Row_Catch
 from windows.show_info_window import Show_Info_Window
 from my_utils.threads import Pdf_to_Pic_Thread, Download_Sourcecode
 from my_utils.utils import get_data_str, open_floader, find_in_catch_pic, get_internal_path, unzip_file, get_config, download_single_file
-from my_utils.operate_excel import read_sheets, get_kaidan_pairs, get_nahuo_pairs, get_zhuandan_pairs, get_nianfei_pairs, get_budan_pairs, get_buka_pairs, fill_information, check_excel
-from each_types import kaidan, nahuo, zhuandan, budan, nianfei, buka
+from my_utils.operate_excel import read_sheets, get_kaidan_pairs, get_nahuo_pairs, get_zhuandan_pairs, get_nianfei_pairs, get_budan_pairs, get_buka_pairs, get_tuidan_pairs, fill_information, check_excel
+from each_types import kaidan, nahuo, zhuandan, budan, nianfei, buka, tuidan
 from PyQt6.QtGui import QDragEnterEvent, QIcon
 from PyQt6.QtCore import QFileInfo, QThreadPool, QTimer
 from my_utils.operate_word import copy_template, replace_text_with_same_format, replace_pic
@@ -57,7 +57,7 @@ class Main_Window(QMainWindow):
         index = self.row_one.function_combobox.currentIndex()
         pic_check_index = [0, 1]
         # floader_check_index = [3, 4, 5, 6, 7, 8, 9, 10]
-        no_event_arr = [2, 11, 12]
+        no_event_arr = [2, 12, 13]
         # 获取拖拽的所有文件或文件夹路径
         urls = event.mimeData().urls()
         if urls:
@@ -68,14 +68,14 @@ class Main_Window(QMainWindow):
                     if file_info.isFile():  # 如果是文件
                         # 检查文件扩展名
                         file_extension = file_info.suffix().lower()  # 获取文件后缀，并转为小写
-                        if index != 11 and index != 12:
+                        if index != 13 and index != 12:
                             if file_extension in self.formates[:-1]:
                                 shutil.copy(local_path, os.path.join('./照片放这里', get_data_str() + f'_{index_t}.' + file_extension))
-                        elif index == 11:
+                        elif index == 12:
                             if file_extension == 'pdf':
                                 self.pdf_to_pic_count += 1
                                 self.open_folder_dialog(local_path)
-                        elif index == 12:
+                        elif index == 13:
                             if file_extension == 'zip':
                                 shutil.move(local_path, '.')
                             else:
@@ -122,7 +122,7 @@ class Main_Window(QMainWindow):
 
     def open_folder_dialog(self, floader_path = None):
         selected_options = self.row_one.function_combobox.currentIndex()
-        if selected_options != 11:
+        if selected_options != 12:
             # 打开文件夹选择对话框
             if selected_options == 0 or selected_options == 1:
                 if self.row_zero.file_type_combobox.currentIndex() == 0:
@@ -190,6 +190,8 @@ class Main_Window(QMainWindow):
                             elif selected_options == 9:
                                 self.make_singe('补卡')
                             elif selected_options == 10:
+                                self.make_singe('退单')
+                            elif selected_options == 11:
                                 self.start_processing()
                             if not self.have_error_flag:
                                 duration = self.global_config['show_tip_timer_duration']
@@ -210,7 +212,7 @@ class Main_Window(QMainWindow):
             if selected_options == 0 or selected_options == 1:
                 self.hide()
                 self.open_pic_operate_window(natsorted(self.folder_path), selected_options)
-            elif selected_options == 11:
+            elif selected_options == 12:
                 if floader_path == None:
                     self.pdf_to_pic_count += 1
                 if self.pdf_to_pic_finished == 0:
@@ -308,16 +310,18 @@ class Main_Window(QMainWindow):
     def which_func(self, mode, check=False):
         if mode == '开单':
             return self.creat_kaidan(mode, check)
-        if mode == '拿货':
+        elif mode == '拿货':
             return self.creat_nahuo(mode, check)
-        if mode == '转单':
+        elif mode == '转单':
             return self.creat_zhuandan(mode, check)
-        if mode == '年费':
+        elif mode == '年费':
             return self.creat_nianfei(mode, check)
-        if mode == '补单':
+        elif mode == '补单':
             return self.creat_budan(mode, check)
-        if mode == '补卡':
+        elif mode == '补卡':
             return self.creat_buka(mode, check)
+        elif mode == '退单':
+            return self.creat_tuidan(mode, check)
 
     def shwo_total_error(self):
         self.show_info.set_show_text('制作失败或部分成功\n提供的信息缺失或excel未关闭\n如果检查无误\n就是代码有问题\n请联系作者')
@@ -504,11 +508,11 @@ class Main_Window(QMainWindow):
             return errors
     
     def creat_buka(self, mode, check_none = False):
+        df = read_sheets(f'./模版/{self.excel_name}', mode)
+        kaidan_pairs, errors = get_buka_pairs(df, self.folder_path)
         if check_none and len(kaidan_pairs) == 0 and len(errors) == 0:
             self.show_excel_none(mode)
         else:
-            df = read_sheets(f'./模版/{self.excel_name}', mode)
-            kaidan_pairs, errors = get_buka_pairs(df, self.folder_path)
             for kaidan_pair in kaidan_pairs:
                 name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
                 count = 0
@@ -521,6 +525,33 @@ class Main_Window(QMainWindow):
                 doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
                 doc = replace_pic(doc, kaidan_pair, 15, kaidan_path, 0, 6, self.pic_scale)
                 doc = replace_pic(doc, kaidan_pair, 13, kaidan_path, 1, 6, self.pic_scale)
+                try:
+                    fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
+                except:
+                    pass
+                doc.save(kaidan_path)
+                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path))
+            self.show_error(errors)
+            return errors
+
+    def creat_tuidan(self, mode, check_none = False):
+        df = read_sheets(f'./模版/{self.excel_name}', mode)
+        kaidan_pairs, errors = get_tuidan_pairs(df, self.folder_path)
+        if check_none and len(kaidan_pairs) == 0 and len(errors) == 0:
+            self.show_excel_none(mode)
+        else:
+            for kaidan_pair in kaidan_pairs:
+                name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
+                count = 0
+                if kaidan_pair.client.native == '香港':
+                    count += 1
+                if kaidan_pair.entrusted.native == '香港':
+                    count += 1
+                kaidan_path = copy_template(mode, self.folder_path, name_concat, count)
+                changes = tuidan.get_sub_arr_tuidan(kaidan_pair)
+                doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
+                doc = replace_pic(doc, kaidan_pair, 17, kaidan_path, 0, 6, self.pic_scale)
+                doc = replace_pic(doc, kaidan_pair, 15, kaidan_path, 1, 6, self.pic_scale)
                 try:
                     fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
                 except:
@@ -603,7 +634,7 @@ class Main_Window(QMainWindow):
             self.row_zero.file_type_combobox.hide()
             self.row_zero.select_newest_checkbox.hide()
             self.row_zero.pic_name_lineedit.setFocus()
-        elif current_index == self.concat_index or current_index == 11 or current_index == 12:
+        elif current_index == self.concat_index or current_index == 12 or current_index == 13:
             self.row_two.open_newest_button.setText('打开最新/删除所有编辑')
             self.row_zero.tip_label.setText('文件类型:')
             self.row_two.open_newest_button.setToolTip('短按打开编辑结果中最新生成结果的文件夹，长按删除"照片编辑结果"中所有编辑')
@@ -614,7 +645,7 @@ class Main_Window(QMainWindow):
             self.row_zero.file_type_combobox.setDisabled(True)
             self.row_zero.pic_name_lineedit.hide()
             self.row_zero.select_newest_checkbox.hide()
-            if current_index != 12:
+            if current_index != 13:
                 self.row_two.select_files_button.setText('选择文件/文件夹')
                 self.row_two.select_files_button.setToolTip('选择文件或者文件夹直接跳转开始编辑')
                 self.row_two.select_files_button.clicked.connect(lambda: self.open_folder_dialog())

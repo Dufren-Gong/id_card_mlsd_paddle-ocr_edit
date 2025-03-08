@@ -103,7 +103,7 @@ class Row_One():
                  enable_update) -> None:
         self.centralwidget = centralwidget
         self.enable_update = enable_update
-        self.mode_options = ["截图识别", '文字识别', '查询信息', '合并信息到最新', "开单", "拿货", "转单", "年费", "补单", "补卡", "所有类型", "PDF转照片", '更新软件']
+        self.mode_options = ["截图识别", '文字识别', '查询信息', '合并信息到最新', "开单", "拿货", "转单", "年费", "补单", "补卡", "退单", "所有类型", "PDF转照片", '更新软件']
         self.init_one_tip_label(tip_label_shape)
         self.init_one_column_two_select_function_combobox(select_function_combobox_shape)
         self.init_one_pic_here_checkbox(pic_here_shape)

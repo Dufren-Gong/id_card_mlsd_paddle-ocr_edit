@@ -281,6 +281,40 @@ def get_buka_info(index, excel_row, info_json, add_flag = False):
     except:
         return None
 
+def get_tuidan_info(index, excel_row, info_json, add_flag = False):
+    try:
+        assert excel_row['姓名'] != '' and not pd.isna(excel_row['姓名']) and isinstance(excel_row['姓名'], str)
+        assert excel_row['联系电话'] != '' and not pd.isna(excel_row['联系电话'])
+        if info_json['籍贯'] == '香港':
+            assert excel_row['地址'] != '' and not pd.isna(excel_row['地址'])
+            info_json['住址'] = excel_row['地址']
+            info_json['民族'] = '无'
+        else:
+            if isinstance(excel_row['地址'], str) and excel_row['地址'].replace(' ', '') != '':
+                info_json['住址'] = excel_row['地址']
+        if add_flag:
+            assert excel_row['独立经销商卡号'] != '' and not pd.isna(excel_row['独立经销商卡号'])
+            assert excel_row['货单号码'] != '' and not pd.isna(excel_row['货单号码'])
+    except:
+        return None
+    try:
+        return People_Info(index, excel_row['姓名'],
+                       excel_row['联系电话'],
+                       info_json['性别'],
+                       info_json['出生日期'],
+                       info_json['身份证号码'],
+                       '0',
+                       '0',
+                       info_json['住址'],
+                       info_json['籍贯'],
+                       info_json['民族'],
+                       '0',
+                       check.annual_fee,
+                       excel_row['独立经销商卡号'],
+                       excel_row['货单号码'])
+    except:
+        return None
+
 def get_nianfei_info(index, excel_row, info_json):
     try:
         assert excel_row['姓名'] != '' and not pd.isna(excel_row['姓名']) and isinstance(excel_row['姓名'], str)
@@ -572,6 +606,48 @@ def get_buka_pairs(df, base_path):
             objs = []
     return pairs, errors
 
+def get_tuidan_pairs(df, base_path):
+    peoples = 2
+    errors = []
+    pairs = []
+    objs = []
+    for index, row in df.iterrows():
+        name = row['姓名']
+        or_name = fan_to_jian(row['姓名'])
+        #如果不是空行
+        if isinstance(name, str):
+            info_path = os.path.join(base_path, f"{name}.info")
+            info = load_json_data(info_path)
+            #如果没读取到这个人的信息
+            if info == None:
+                #简体找不到可能是内地人名字含有繁体
+                info_path = os.path.join(base_path, f"{or_name}.info")
+                info = load_json_data(info_path)
+                if info == None:
+                    objs.append(None)
+                    if not pd.isna(name):
+                        errors.append(name)
+                    continue
+                else:
+                    name = or_name
+            add_flag = not pd.isna(df.iloc[index + 1]['姓名'])
+            obj_temp = get_tuidan_info(index, row, info, add_flag)
+            if obj_temp == None:
+                errors.append(name)
+            objs.append(obj_temp)
+        #如果检测到空行
+        elif pd.isna(name):
+            #如果行数够了
+            if len(objs) >= peoples:
+                #如果被委托人信息没错
+                if objs[-1] != None:
+                    for i in range(len(objs) - 1):
+                        #如果该被委托人信息正确
+                        if objs[i] != None:
+                            pairs.append(Pair(objs[i], objs[-1]))
+            objs = []
+    return pairs, errors
+
 def read_sheets(file_path, sheet_name = None, add_nan_line = True) -> pd.DataFrame:
     #sheet_name = None for all
     #{sheet_name: data}
@@ -651,10 +727,7 @@ def map_info(ws, template_column_info:str, i, check_cloumns, column_letters):
                 result_str += m.strip().replace(' ', '')
         if result_str != '':
             name_t = column_letters[name_index]
-            try:
-                ws[f"{name_t}{i}"].value = result_str
-            except:
-                pass
+            ws[f"{name_t}{i}"].value = result_str
     return ws
 
 def check_excel(file_path, pic_floader, sheet_name = None):
