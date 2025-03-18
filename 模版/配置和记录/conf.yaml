@@ -91,3 +91,8 @@ max_cash: 84513 #最大金额限制
 moren_pay: 62569 #设置默认支付金额
 moren_buy: 84513 #设置默认提货金额
 moren_annual_fee: 210 #设置默认年费
+
+#根据不同公司设置的选项
+company_name: 1 #['SIBELLAC HOLDINGS LIMITED', 'BASTION'], 给出公司名在列表中的位置
+zhuandan_before: '90' #时间点前转单的费用
+zhuandan_after: '60' #时间点后转单的费用

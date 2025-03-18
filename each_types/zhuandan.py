@@ -3,25 +3,25 @@ from my_utils.operate_word import number_to_chinese
 import each_types.kaidan as kaidan
 import copy
 
-def get_gap_flag(data_str):
+def get_gap_flag(data_str, before, after):
     data_str = data_str.strip().replace(' ', '')
     gap = [2023, 6, 30]
     info1 = data_str.split('年')
     year = eval(info1[0].replace(' ', '').lstrip('0'))
     if year > gap[0]:
-        return '60'
+        return after
     elif year == gap[0]:
         info2 = info1[1].split('月')
         yue = eval(info2[0].replace(' ', '').lstrip('0'))
         if yue > gap[1]:
-            return '60'
+            return after
         elif yue == gap[1]:
             ri = eval(info2[1].rstrip('日').replace(' ', '').lstrip('0'))
             if ri == gap[2]:
-                return '60'
-    return '90'
+                return after
+    return before
 
-def get_sub_arr_zhuanrang(kaidan_pair:Pair):
+def get_sub_arr_zhuanrang(kaidan_pair:Pair, before, after):
     changes = []
     client_str, entrusted_str = kaidan.page_two(kaidan_pair)
     changes.extend([client_str, entrusted_str])
@@ -33,7 +33,7 @@ def get_sub_arr_zhuanrang(kaidan_pair:Pair):
     changes.append(kaidan_pair.client.sail_id)
     changes.append(kaidan_pair.client.sail_card_id)
     changes.append(kaidan_pair.client.open_date)
-    gap = get_gap_flag(kaidan_pair.client.open_date)
+    gap = get_gap_flag(kaidan_pair.client.open_date, before, after)
     changes.append(gap)
     annual_fee = kaidan_pair.client.annual_fee
     annual_fee_ch = number_to_chinese(annual_fee)
@@ -49,7 +49,7 @@ def get_sub_arr_zhuanrang(kaidan_pair:Pair):
     changes.append(gap)
     return changes, kaidan_pair
 
-def get_sub_arr_shouquan(kaidan_pair:Pair):
+def get_sub_arr_shouquan(kaidan_pair:Pair, company_id):
     changes = []
     temp = copy.deepcopy(kaidan_pair)
     temp.swap_client_and_entrusted()
@@ -58,7 +58,10 @@ def get_sub_arr_shouquan(kaidan_pair:Pair):
     changes.extend([client_str, entrusted_str])
     client_str, entrusted_str = kaidan.page_three(temp)
     changes.extend([client_str, entrusted_str])
-    changes.append(temp.beiweituo.name)
+    if company_id == 1:
+        changes.append(temp.client.name)
+    elif company_id == 2:
+        changes.append(temp.beiweituo.name)
     changes.append(temp.beiweituo.sail_card_id)
     changes.append(temp.beiweituo.sail_id)
     client_str, entrusted_str = kaidan.page_five(temp)

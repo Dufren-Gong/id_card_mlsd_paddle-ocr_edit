@@ -379,10 +379,10 @@ class Main_Window(QMainWindow):
                     kaidan_path = copy_template(mode, self.folder_path, name_concat, count, word)
                     shift = 0
                     if word == '转让':
-                        changes, obj = zhuandan.get_sub_arr_zhuanrang(kaidan_pair)
+                        changes, obj = zhuandan.get_sub_arr_zhuanrang(kaidan_pair, self.global_config['zhuandan_before'], self.global_config['zhuandan_after'])
                         shift = -4
                     elif word == '授权':
-                        changes, obj = zhuandan.get_sub_arr_shouquan(kaidan_pair)
+                        changes, obj = zhuandan.get_sub_arr_shouquan(kaidan_pair, self.global_config['company_name'])
                         shift = 4
                     elif word == '年费':
                         changes, obj = zhuandan.get_sub_arr_nianfei(kaidan_pair)
