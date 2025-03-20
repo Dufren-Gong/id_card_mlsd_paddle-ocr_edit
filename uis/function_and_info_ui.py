@@ -227,13 +227,14 @@ class Row_Zero():
                  up_left_shape: tuple,
                  up_shape: tuple,
                  up_right_shape: tuple,
-                 keyboard_shift = 6
+                 keyboard_shift = 6,
                  ) -> None:
         self.centralwidget = centralwidget
         self.keyboard_shift = keyboard_shift
         self.init_one_tip_label(tip_label_shape)
         self.init_one_pic_name_lineedit(info_lineedit_shape)
         self.edge_border_width_plus_pushbutton(border_width_plus_shape)
+        self.enable_border_pushbutton(border_width_plus_shape)
         self.edge_up_left_pushbutton(up_left_shape)
         self.edge_up_pushbutton(up_shape)
         self.edge_up_right_pushbutton(up_right_shape)
@@ -267,6 +268,28 @@ class Row_Zero():
                 }
         """)
 
+    def enable_border_pushbutton(self, shape):
+        shape_temp = tuple([shape[0] + self.keyboard_shift] + [shape[1]] + [shape[2] * 4 + self.keyboard_shift * 5] + [shape[3]])
+        self.enable_border_button = QtWidgets.QPushButton(parent=self.centralwidget)
+        self.enable_border_button.setGeometry(QtCore.QRect(QtCore.QRect(*shape_temp)))
+        self.enable_border_button.setObjectName("enable_border_button")
+        self.enable_border_button.setText("开启添加边框功能")
+        self.enable_border_button.setToolTip("打开添加边框功能区域按键")
+        self.enable_border_button.setStyleSheet("""
+            QPushButton {
+                border-width: 1px;          /* 边缘宽度 */
+                border-style: solid;        /* 边缘样式 */
+                border-color: black;          /* 边缘颜色 */
+                background-color: lightgray;/* 背景颜色 */
+            }
+            QToolTip {
+                    background-color: white;
+                    color: black;
+                    border: 1px solid black;
+                    font-size: 12px;
+                }
+        """)
+
     def edge_border_width_plus_pushbutton(self, shape):
         shape_temp = tuple([shape[0] + self.keyboard_shift] + list(shape[1:]))
         self.border_width_plus_button = QtWidgets.QPushButton(parent=self.centralwidget)
@@ -274,6 +297,7 @@ class Row_Zero():
         self.border_width_plus_button.setObjectName("border_width_plus_button")
         self.border_width_plus_button.setText("+")
         self.border_width_plus_button.setToolTip("增加添加边框的宽度")
+        self.border_width_plus_button.hide()
         self.border_width_plus_button.setStyleSheet("""
             QPushButton {
                 border-width: 1px;          /* 边缘宽度 */
@@ -296,6 +320,7 @@ class Row_Zero():
         self.border_up_left_button.setObjectName("border_up_left_button")
         self.border_up_left_button.setText("↖")
         self.border_up_left_button.setToolTip("添加/删除左上边框")
+        self.border_up_left_button.hide()
         self.border_up_left_button.setStyleSheet("""
             QPushButton {
                 border-width: 1px;          /* 边缘宽度 */
@@ -318,6 +343,7 @@ class Row_Zero():
         self.border_up_button.setObjectName("border_up_button")
         self.border_up_button.setText("↑")
         self.border_up_button.setToolTip("添加/删除上边框")
+        self.border_up_button.hide()
         self.border_up_button.setStyleSheet("""
             QPushButton {
                 border-width: 1px;          /* 边缘宽度 */
@@ -340,6 +366,7 @@ class Row_Zero():
         self.border_up_right_button.setObjectName("border_up_right_button")
         self.border_up_right_button.setText("↗")
         self.border_up_right_button.setToolTip("添加/删除右上边框")
+        self.border_up_right_button.hide()
         self.border_up_right_button.setStyleSheet("""
             QPushButton {
                 border-width: 1px;          /* 边缘宽度 */
@@ -400,6 +427,7 @@ class Row_One():
         self.border_width_minues_pushbutton.setObjectName("border_width_minues_pushbutton")
         self.border_width_minues_pushbutton.setText("-")
         self.border_width_minues_pushbutton.setToolTip("减小添加边框的宽度")
+        self.border_width_minues_pushbutton.hide()
         self.border_width_minues_pushbutton.setStyleSheet("""
             QPushButton {
                 border-width: 1px;          /* 边缘宽度 */
@@ -422,6 +450,7 @@ class Row_One():
         self.border_left_button.setObjectName("border_left_button")
         self.border_left_button.setText("←")
         self.border_left_button.setToolTip("添加/删除左边框")
+        self.border_left_button.hide()
         self.border_left_button.setStyleSheet("""
             QPushButton {
                 border-width: 1px;          /* 边缘宽度 */
@@ -442,14 +471,18 @@ class Row_One():
         self.border_all_pushbutton = QtWidgets.QPushButton(parent=self.centralwidget)
         self.border_all_pushbutton.setGeometry(QtCore.QRect(*shape_temp))
         self.border_all_pushbutton.setObjectName("border_all_pushbutton")
-        self.border_all_pushbutton.setText("□")
-        self.border_all_pushbutton.setToolTip("添加/删除所有边框")
+        # self.border_all_pushbutton.setText("□")
+        self.border_all_pushbutton.setText("⏻")
+        self.border_all_pushbutton.setToolTip("关闭添加边框功能")
+        # self.border_all_pushbutton.setToolTip("添加/删除所有边框")
+        self.border_all_pushbutton.hide()
         self.border_all_pushbutton.setStyleSheet("""
             QPushButton {
                 border-width: 1px;          /* 边缘宽度 */
                 border-style: solid;        /* 边缘样式 */
                 border-color: black;          /* 边缘颜色 */
                 background-color: lightgray;/* 背景颜色 */
+                color: red
             }
             QToolTip {
                     background-color: white;
@@ -466,6 +499,7 @@ class Row_One():
         self.border_right_button.setObjectName("border_right_button")
         self.border_right_button.setText("→")
         self.border_right_button.setToolTip("添加/删除右边框")
+        self.border_right_button.hide()
         self.border_right_button.setStyleSheet("""
             QPushButton {
                 border-width: 1px;          /* 边缘宽度 */
@@ -571,6 +605,7 @@ class Row_Two():
         self.border_down_left_button.setObjectName("border_down_left_button")
         self.border_down_left_button.setText("↙")
         self.border_down_left_button.setToolTip("添加/删除左下边框")
+        self.border_down_left_button.hide()
         self.border_down_left_button.setStyleSheet("""
             QPushButton {
                 border-width: 1px;          /* 边缘宽度 */
@@ -593,6 +628,7 @@ class Row_Two():
         self.border_down_button.setObjectName("border_down_button")
         self.border_down_button.setText("↓")
         self.border_down_button.setToolTip("添加/删除下边框")
+        self.border_down_button.hide()
         self.border_down_button.setStyleSheet("""
             QPushButton {
                 border-width: 1px;          /* 边缘宽度 */
@@ -615,6 +651,7 @@ class Row_Two():
         self.border_down_right_button.setObjectName("border_down_right_button")
         self.border_down_right_button.setText("↘")
         self.border_down_right_button.setToolTip("添加/删除右下边框")
+        self.border_down_right_button.hide()
         self.border_down_right_button.setStyleSheet("""
             QPushButton {
                 border-width: 1px;          /* 边缘宽度 */
@@ -777,6 +814,7 @@ class Row_Four():
         self.border_color_combobox.setToolTip("选择边框颜色")
         self.border_color_combobox.addItems(self.colors)
         self.border_color_combobox.setCurrentIndex(self.colors.index(self.init_edge_color))
+        self.border_color_combobox.hide()
         self.border_color_combobox.setStyleSheet("""
             QComboBox {
                 border-width: 1px;          /* 边缘宽度 */

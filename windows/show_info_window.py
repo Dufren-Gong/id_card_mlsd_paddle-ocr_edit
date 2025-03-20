@@ -11,7 +11,7 @@ class Show_Info_Window(QMainWindow):
         self.shape = Ui_Shapes(round_gap=10)
         self.shape.layout([self.shape.label_height*5],
                           [[200, 35]])
-        self.setWindowIcon(QIcon(get_internal_path('./files/icon/icon.ico')))
+        self.setWindowIcon(QIcon(get_internal_path('./模版/files/icon/icon.ico')))
         self.init_ui()
         self.init_events()
 

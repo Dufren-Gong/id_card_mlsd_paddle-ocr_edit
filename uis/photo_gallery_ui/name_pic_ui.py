@@ -40,7 +40,7 @@ class Name_Pic(QMainWindow):
         self.gaopin_path = './模版/高频照片'
         self.setWindowTitle("照片信息编辑")
         self.setGeometry(0, 0, 800, 600)
-        self.setWindowIcon(QIcon(get_internal_path('./files/icon/icon.ico')))
+        self.setWindowIcon(QIcon(get_internal_path('./模版/files/icon/icon.ico')))
         self.position_mode = self.global_config['paddleocr_conf']['defalut_position_mode']
         self.position_mode_text = ['默认原位', '默认移动']
         self.previous_nation = '未知'
@@ -807,6 +807,36 @@ class Name_Pic(QMainWindow):
         clear_gpu_cache()
         self.large_image_label.row_two.change_button.setEnabled(True)
 
+    def disable_add_border(self):
+        self.large_image_label.row_zero.border_width_plus_button.hide()
+        self.large_image_label.row_zero.border_up_left_button.hide()
+        self.large_image_label.row_zero.border_up_button.hide()
+        self.large_image_label.row_zero.border_up_right_button.hide()
+        self.large_image_label.row_one.border_width_minues_pushbutton.hide()
+        self.large_image_label.row_one.border_left_button.hide()
+        self.large_image_label.row_one.border_right_button.hide()
+        self.large_image_label.row_one.border_all_pushbutton.hide()
+        self.large_image_label.row_two.border_down_left_button.hide()
+        self.large_image_label.row_two.border_down_button.hide()
+        self.large_image_label.row_two.border_down_right_button.hide()
+        self.large_image_label.row_four.border_color_combobox.hide()
+        self.large_image_label.row_zero.enable_border_button.show()
+
+    def enable_add_border(self):
+        self.large_image_label.row_zero.enable_border_button.hide()
+        self.large_image_label.row_zero.border_width_plus_button.show()
+        self.large_image_label.row_zero.border_up_left_button.show()
+        self.large_image_label.row_zero.border_up_button.show()
+        self.large_image_label.row_zero.border_up_right_button.show()
+        self.large_image_label.row_one.border_width_minues_pushbutton.show()
+        self.large_image_label.row_one.border_left_button.show()
+        self.large_image_label.row_one.border_right_button.show()
+        self.large_image_label.row_one.border_all_pushbutton.show()
+        self.large_image_label.row_two.border_down_left_button.show()
+        self.large_image_label.row_two.border_down_button.show()
+        self.large_image_label.row_two.border_down_right_button.show()
+        self.large_image_label.row_four.border_color_combobox.show()
+
     def init_event(self):
         self.init_black_button_timer()
         self.init_combbox_change_tips_timer()
@@ -830,12 +860,14 @@ class Name_Pic(QMainWindow):
         self.large_image_label.row_zero.border_up_button.clicked.connect(lambda: self.change_borders(1))
         self.large_image_label.row_zero.border_up_right_button.clicked.connect(lambda: self.change_borders(2))
         self.large_image_label.row_one.border_left_button.clicked.connect(lambda: self.change_borders(7))
-        self.large_image_label.row_one.border_all_pushbutton.clicked.connect(lambda: self.change_borders(9))
+        # self.large_image_label.row_one.border_all_pushbutton.clicked.connect(lambda: self.change_borders(9))
         self.large_image_label.row_one.border_right_button.clicked.connect(lambda: self.change_borders(3))
         self.large_image_label.row_two.border_down_left_button.clicked.connect(lambda: self.change_borders(6))
         self.large_image_label.row_two.border_down_button.clicked.connect(lambda: self.change_borders(5))
         self.large_image_label.row_two.border_down_right_button.clicked.connect(lambda: self.change_borders(4))
         self.large_image_label.row_zero.border_width_plus_button.clicked.connect(lambda: self.change_edge_ipx(0))
+        self.large_image_label.row_one.border_all_pushbutton.clicked.connect(self.disable_add_border)
+        self.large_image_label.row_zero.enable_border_button.clicked.connect(self.enable_add_border)
         self.large_image_label.row_one.border_width_minues_pushbutton.clicked.connect(lambda: self.change_edge_ipx(1))
         self.large_image_label.row_four.border_color_combobox.currentIndexChanged.connect(self.change_edge_color)
         self.large_image_label.row_four.rigin_combobox.currentIndexChanged.connect(self.change_regin)
