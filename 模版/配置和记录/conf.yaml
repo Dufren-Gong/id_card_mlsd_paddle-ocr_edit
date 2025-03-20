@@ -1,7 +1,7 @@
 mlsd_conf:
   device: cpu #[cpu, cuda:0]
-  tiny_model_path: ./模版/files/models/mlsd_models/onnx/mlsd_tiny_512_fp32.onnx
-  large_model_path: ./模版/files/models/mlsd_models/onnx/mlsd_large_512_fp32.onnx
+  tiny_model_path: ./files/models/mlsd_models/onnx/mlsd_tiny_512_fp32.onnx
+  large_model_path: ./files/models/mlsd_models/onnx/mlsd_large_512_fp32.onnx
   model_type: all #[tiny, large, all], 使用什么模型来识别方框，或者暴力模式，可以权衡资源消耗和识别性能
   tiny_first: true #如果是all的话，先tiny还是先large
   tiny_max_input_size: 768 #[512, 768, 1024] tiny 的图片输入尺寸,好像只能512，要不然会报错
@@ -33,10 +33,10 @@ paddleocr_conf:
   device: cpu #[cpu, gpu]
   times: 1 # 1就是用原图识别一遍，2就是再用灰度图识别一遍，可以权衡资源消耗和识别性能
   ocr_pic_type: origin # [origin, grey], disable when times == 2
-  det_path: ./模版/files/models/ppocrv4/det/det.onnx
-  rec_path: ./模版/files/models/ppocrv4/rec/rec.onnx
-  cls_path: ./模版/files/models/ppocrv4/cls/cls.onnx
-  ppocr_keys_v1.txt: ./模版/files/models/ppocrv4/ppocr_keys_v1.txt
+  det_path: ./files/models/ppocrv4/det/det.onnx
+  rec_path: ./files/models/ppocrv4/rec/rec.onnx
+  cls_path: ./files/models/ppocrv4/cls/cls.onnx
+  ppocr_keys_v1.txt: ./files/models/ppocrv4/ppocr_keys_v1.txt
   use_cls: false #是否使用方向检测
   scale: 1.0 #照片ocr时候缩放大小，可以平衡资源消耗和识别准确率
   max_threads: 1 #最大线程数

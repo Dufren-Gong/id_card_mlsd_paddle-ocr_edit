@@ -9,7 +9,7 @@ a = Analysis(
     ['operate.py'],
     pathex=['D:\Always_Softwares\Miniconda3\envs\paddle-ocr\Lib\site-packages\paddleocr','D:\Always_Softwares\Miniconda3\envs\paddle-ocr\Lib\site-packages\paddle\libs'],
     binaries=[('D:\Always_Softwares\Miniconda3\envs\paddle-ocr\Lib\site-packages\paddle\libs','.')],
-    datas=[('D:\Always_Softwares\Miniconda3\envs\paddle-ocr\Lib\site-packages\paddleocr\ppocr','ppocr'),('./模版/files/icon/icon.ico','icon')],
+    datas=[('D:\Always_Softwares\Miniconda3\envs\paddle-ocr\Lib\site-packages\paddleocr\ppocr','ppocr'),('./files/icon/icon.ico','icon')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -51,7 +51,7 @@ coll = COLLECT(
 需要更改三个数据
 pathex=['D:\Always_Softwares\Miniconda3\envs\paddle-ocr\Lib\site-packages\paddleocr','D:\Always_Softwares\Miniconda3\envs\paddle-ocr\Lib\site-packages\paddle\libs'],
 binaries=[('D:\Always_Softwares\Miniconda3\envs\paddle-ocr\Lib\site-packages\paddle\libs','.')],
-datas=[('D:\Always_Softwares\Miniconda3\envs\paddle-ocr\Lib\site-packages\paddleocr\ppocr','ppocr'),('./模版/files/icon/icon.ico','icon')],
+datas=[('D:\Always_Softwares\Miniconda3\envs\paddle-ocr\Lib\site-packages\paddleocr\ppocr','ppocr'),('./files/icon/icon.ico','icon')],
 分别是相对库的安装包和icon
 安装包有paddleocr, paddle等
 

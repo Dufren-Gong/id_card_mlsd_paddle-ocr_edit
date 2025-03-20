@@ -47,7 +47,7 @@ def global_exception_handler(exc_type, exc_value, exc_traceback):
     
     # 创建消息框
     msg_box = QMessageBox()
-    msg_box.setWindowIcon(QIcon(get_internal_path('./模版/files/icon/icon.ico')))
+    msg_box.setWindowIcon(QIcon(get_internal_path('./files/icon/icon.ico')))
     msg_box.setWindowTitle("程序错误")
     msg_box.setText("程序发生了异常，请联系开发者！")
     msg_box.setDetailedText(error_details)  # 展示详细错误信息

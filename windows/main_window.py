@@ -39,7 +39,7 @@ class Main_Window(QMainWindow):
         self.setAcceptDrops(True)
         self.shape.layout([self.shape.combobox_height, self.shape.combobox_height, self.shape.button_height, 27],
                           [[60, 135, 95]] * 3 + [[298]])
-        self.setWindowIcon(QIcon(get_internal_path('./模版/files/icon/icon.ico')))
+        self.setWindowIcon(QIcon(get_internal_path('./files/icon/icon.ico')))
         self.init_ui()
         self.init_events()
 
@@ -775,13 +775,11 @@ class Main_Window(QMainWindow):
             # self.show_info.row_one.tip_label.appendPlainText('更新即将完成，请稍等......')
             os.chdir('..')
             shutil.copytree('./模版/', os.path.join(name, 'dist', 'main', '模版'))
-            shutil.rmtree(os.path.join(name, 'dist', 'main', '模版', 'files'))
             if not os.path.exists(os.path.join(name, 'dist', 'main', '_internal', '_tk_data')) and os.path.exists(os.path.join('_internal', '_tk_data')):
                 shutil.copytree(os.path.join('_internal', '_tk_data'), os.path.join(name, 'dist', 'main', '_internal', '_tk_data'))
             os.chdir(name)
             shutil.rmtree(os.path.join('dist', 'main', '模版', '配置和记录'))
             shutil.move(os.path.join('模版', '配置和记录'), os.path.join('dist', 'main', '模版', '配置和记录'))
-            shutil.move(os.path.join('模版', 'files'), os.path.join('dist', 'main', '模版', 'files'))
             os.chdir('..')
             if os.path.exists("照片编辑结果"):
                 shutil.copytree('./照片编辑结果/', os.path.join(name, 'dist', 'main', '照片编辑结果'))

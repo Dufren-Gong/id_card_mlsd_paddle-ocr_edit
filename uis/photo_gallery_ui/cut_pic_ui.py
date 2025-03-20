@@ -33,7 +33,7 @@ class Cut_Pic(QMainWindow):
         self.max_size = (int(screen_size.width()*0.8), int(screen_size.height()*0.8))
         self.setWindowTitle("点击确认所有之前，所有正面照在前，且摆正")
         self.setGeometry(0, 0, 800, 600)
-        self.setWindowIcon(QIcon(get_internal_path('./模版/files/icon/icon.ico')))
+        self.setWindowIcon(QIcon(get_internal_path('./files/icon/icon.ico')))
         # 创建主布局，水平布局
         main_layout = QHBoxLayout()
         main_layout.setSpacing(20)  # 控件之间的间距为10像素
