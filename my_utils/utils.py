@@ -4,6 +4,7 @@ import shutil, requests
 # import PIL
 # import PIL.Image
 # import PIL.ImageEnhance
+from PIL import Image
 from PyQt6.QtGui import QImage, QPixmap
 from natsort import natsorted
 import platform
@@ -391,3 +392,30 @@ def download_single_file(global_config, path_in_cloud, to_path):
         return True
     else:
         return False
+
+#从上到下, 从左到右切割的比例，和切割的模式横向或者纵向， 0为分上下，1为分左右
+def split_image(input_image_path: str, output_image_path_1, output_image_path_2, proportion, toward_mode):
+    try:
+        pic_format = input_image_path.rsplit('.', maxsplit=1)[-1]
+        # 打开输入的图片
+        with Image.open(input_image_path) as img:
+            # 获取图片的宽度和高度
+            width, height = img.size
+            if toward_mode == 0:
+                # 计算分割的高度
+                mid_height = int(height * proportion) 
+                # 裁剪上下两部分
+                upper_half = img.crop((0, 0, width, mid_height))
+                lower_half = img.crop((0, mid_height, width, height))
+            elif toward_mode == 1:
+                # 计算分割的高度
+                mid_width = int(width * proportion) 
+                # 裁剪上下两部分
+                upper_half = img.crop((0, 0, mid_width, height))
+                lower_half = img.crop((mid_width, 0, width, height))
+            # 保存裁剪后的图片到指定路径
+            upper_half.save(f'{output_image_path_1}.{pic_format}', format=upper_half.format)
+            lower_half.save(f'{output_image_path_2}.{pic_format}', format=lower_half.format)
+            send2trash(input_image_path)
+    except:
+        pass

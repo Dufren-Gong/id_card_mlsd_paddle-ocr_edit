@@ -64,7 +64,7 @@ if __name__ == "__main__":
         sys.excepthook = global_exception_handler
     delete_specific_files_and_folders('.', '__pycache__', '.DS_Store')
     result_path = '照片编辑结果'
-    pic_path = '照片放这里'
+    pic_path = '照片放这里/横向中间截图'
     gaopin_catch = './模版/高频照片'
     date_catch = './模版/缓存照片'
     os.makedirs(result_path, exist_ok=True)
