@@ -823,20 +823,21 @@ class Main_Window(QMainWindow):
     def operate_on_moren_pic(self):
         floader_path = './照片放这里'
         need_to_cut_between_path = f'{floader_path}/横向中间截图'
-        cut_paths = os.listdir(need_to_cut_between_path)
-        if '.DS_Store' in cut_paths:
-            cut_paths.remove('.DS_Store')
-        cut_paths = [i for i in cut_paths if i.rsplit('.', maxsplit=1)[-1] in self.formates[:-1]]
-        if len(cut_paths) != 0:
-            proportion = self.global_config['cut_proportion']
-            cut_mode = self.global_config['cut_mode']
-            unix_date = get_data_str()
-            for index, i in enumerate(cut_paths):
-                split_image(os.path.join(need_to_cut_between_path, i),
-                            os.path.join(floader_path, f'{unix_date}-{index * 2 + 1}'),
-                            os.path.join(floader_path, f'{unix_date}-{index * 2 + 2}'),
-                            proportion,
-                            cut_mode)
+        if os.path.exists(need_to_cut_between_path):
+            cut_paths = os.listdir(need_to_cut_between_path)
+            if '.DS_Store' in cut_paths:
+                cut_paths.remove('.DS_Store')
+            cut_paths = [i for i in cut_paths if i.rsplit('.', maxsplit=1)[-1] in self.formates[:-1]]
+            if len(cut_paths) != 0:
+                proportion = self.global_config['cut_proportion']
+                cut_mode = self.global_config['cut_mode']
+                unix_date = get_data_str()
+                for index, i in enumerate(cut_paths):
+                    split_image(os.path.join(need_to_cut_between_path, i),
+                                os.path.join(floader_path, f'{unix_date}-{index * 2 + 1}'),
+                                os.path.join(floader_path, f'{unix_date}-{index * 2 + 2}'),
+                                proportion,
+                                cut_mode)
         self.open_folder_dialog(floader_path)
 
     def fan_zhuan_jian(self):

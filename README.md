@@ -18,7 +18,7 @@ pip install pyinstaller
 
 pyinstaller main.spec
 
-## 如果出现代理连接问题,获取代理ip端口
+## 如果出现代理连接问题,获取代理ip端口[port=29758 for upnet]
 
 git config --global http.proxy 127.0.0.1:port
 
