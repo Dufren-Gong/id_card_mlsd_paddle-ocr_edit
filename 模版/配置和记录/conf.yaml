@@ -71,7 +71,7 @@ paddleocr_conf:
     check_total_strs: ['中国', 'CHINA']
     check: blue #如果文本第一个字疑似为背景花纹识别出来的字，更改文本颜色为该颜色，注意检查
 
-version: '1.4.5' #版本号
+version: '1.4.6' #版本号
 pic_shape: [856, 540] #[width, height]， 最终生成照片的尺寸
 catch_days: 30 #制作的照片缓存几天，填写0代表一直缓存, 正整数比如1，就缓存当天的照片，第二天再打开软件，前一天的缓存就删掉了
 button_timer_duration: 500 #长按按钮的执行时间，单位为ms
