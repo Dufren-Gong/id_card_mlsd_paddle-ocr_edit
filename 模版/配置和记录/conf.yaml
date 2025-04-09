@@ -67,6 +67,9 @@ paddleocr_conf:
   color:
     right: green #正确文本的颜色
     error: red #错误文本的颜色
+    check_front_strs: ['上']
+    check_total_strs: ['中国', 'CHINA']
+    check: blue #如果文本第一个字疑似为背景花纹识别出来的字，更改文本颜色为该颜色，注意检查
 
 version: '1.4.5' #版本号
 pic_shape: [856, 540] #[width, height]， 最终生成照片的尺寸

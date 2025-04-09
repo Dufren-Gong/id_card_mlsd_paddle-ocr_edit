@@ -6,7 +6,7 @@ from PyQt6.QtGui import QRegularExpressionValidator, QFont, QPalette
 names = ['姓名', '性别', '民族', '生日', '住址', '卡号']
 
 class DraggableLineEdit(QtWidgets.QLineEdit):
-    def __init__(self, shape, parent=None, scale_width=None, space_flag = False, font_size = None, data_flag = False, init_pos = None, init_hk_pas = None):
+    def __init__(self, shape, parent=None, scale_width=None, space_flag = False, font_size = None, data_flag = False, init_pos = None, init_hk_pas = None, tip=None):
         super().__init__(parent)
         self.shape = shape
         self.setStyleSheet("""QLineEdit {border-width: 1px;border-style: solid;border-color: black;background-color:white;color: black;}QToolTip{background-color: white;color: black;border: 1px solid black;font-size: 12px;}""")
@@ -23,6 +23,8 @@ class DraggableLineEdit(QtWidgets.QLineEdit):
         self.init_flag = True
         self.current_pos = QtCore.QPoint(*shape[:2])
         self.initial_pos = None  # 初始位置
+        if tip != None:
+            self.setToolTip(tip)
 
     def get_font_color(self):
         # 使用调色板获取字体颜色
@@ -556,7 +558,7 @@ class Row_Two():
 
 
     def init_one_pic_name_lineedit(self, shape):
-        self.pic_name_lineedit = DraggableLineEdit(shape, parent=self.centralwidget, scale_width=45, init_pos=self.init_pos, init_hk_pas=self.init_hk_pos)
+        self.pic_name_lineedit = DraggableLineEdit(shape, parent=self.centralwidget, scale_width=45, init_pos=self.init_pos, init_hk_pas=self.init_hk_pos, tip='性别，男或者女')
         self.pic_name_lineedit.setObjectName("pic_name_lineedit2")
         self.pic_name_lineedit.setValidator(QRegularExpressionValidator(QRegularExpression(r"^[^\n]*$")))
         self.pic_name_lineedit.setMaxLength(1)
@@ -572,7 +574,7 @@ class Row_Two():
 
 
     def init_two_pic_name_lineedit(self, shape):
-        self.two_pic_name_lineedit = DraggableLineEdit(shape, parent=self.centralwidget, scale_width=135, init_pos=self.init_pos_two)
+        self.two_pic_name_lineedit = DraggableLineEdit(shape, parent=self.centralwidget, scale_width=135, init_pos=self.init_pos_two, tip='民族，中华56个民族均可')
         self.two_pic_name_lineedit.setObjectName("pic_name_lineedit3")
         self.pic_name_lineedit.setValidator(QRegularExpressionValidator(QRegularExpression(r"^[^\n]*$")))
 
@@ -779,7 +781,7 @@ class Row_Four():
 
 
     def init_one_pic_name_lineedit(self, shape):
-        self.pic_name_lineedit = DraggableLineEdit(shape, parent=self.centralwidget, scale_width=340, data_flag=True, init_pos=self.init_pos, init_hk_pas=self.init_pos_hk)
+        self.pic_name_lineedit = DraggableLineEdit(shape, parent=self.centralwidget, scale_width=340, data_flag=True, init_pos=self.init_pos, init_hk_pas=self.init_pos_hk, tip='生日，顺序年月日，只要以相同分隔符分割即可，会自适应，如2000/12/29')
         self.pic_name_lineedit.setObjectName("pic_name_lineedit4")
         self.pic_name_lineedit.setValidator(QRegularExpressionValidator(QRegularExpression(r"^[^\n]*$")))
 
@@ -833,7 +835,7 @@ class Row_Four():
 class CustomPlainTextEdit(QtWidgets.QPlainTextEdit):
     # # 定义信号，传递当前文本
     # textSubmitted = pyqtSignal(str)
-    def __init__(self, shape, parent=None, init_pos = None, init_hk_pos = None):
+    def __init__(self, shape, parent=None, init_pos = None, init_hk_pos = None, tip = None):
         super().__init__(parent)
         self.shape = shape
         self.setStyleSheet("""QPlainTextEdit {border-width: 1px;border-style: solid;border-color: black;background-color:white;color: black;}QToolTip{background-color: white;color: black;border: 1px solid black;font-size: 12px;}""")
@@ -848,6 +850,8 @@ class CustomPlainTextEdit(QtWidgets.QPlainTextEdit):
         self.init_flag = True
         self.current_pos = QtCore.QPoint(*shape[:2])
         self.initial_pos = None  # 初始位置
+        if tip != None:
+            self.setToolTip(tip)
 
     def keyPressEvent(self, event):
         # 检测回车键并发出自定义信号
@@ -1026,7 +1030,7 @@ class Row_Five():
         self.tip_label.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)
 
     def init_one_pic_name_lineedit(self, shape):
-        self.pic_name_lineedit = CustomPlainTextEdit(shape, parent=self.centralwidget, init_pos=self.init_pos)
+        self.pic_name_lineedit = CustomPlainTextEdit(shape, parent=self.centralwidget, init_pos=self.init_pos, tip='地址，有时候背景花纹会识别为"上"， 末尾会多"中国"字样等，\n文本会变成检查色，注意检查，出现检查色不更改也没问题。')
         self.pic_name_lineedit.setObjectName("pic_name_lineedit5")
 
 class Row_Six():

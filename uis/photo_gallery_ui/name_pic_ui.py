@@ -32,6 +32,8 @@ class Name_Pic(QMainWindow):
         self.height_gap = 60
         self.angle_rate = self.global_config['mlsd_conf']['angle_rate']
         self.fixed_width = self.global_config['paddleocr_conf']['small_pic_fixed_width']
+        self.address_front_check = self.global_config['paddleocr_conf']['color']['check_front_strs']
+        self.address_check = self.global_config['paddleocr_conf']['color']['check_total_strs']
         self.thread_pool = QThreadPool.globalInstance()
         self.thread_pool.setMaxThreadCount(self.global_config['paddleocr_conf']['max_threads'])
         screen_size = QApplication.primaryScreen().size()
@@ -433,7 +435,14 @@ class Name_Pic(QMainWindow):
                     else:
                         text = text_now
                     if text != None or text == '无':
-                        color = self.global_config['paddleocr_conf']['color']['right']
+                        #背景花纹可能检测为‘上’，变为检查颜色，注意检查
+                        if cue == '住址':
+                            if text.lstrip()[0] in self.address_front_check or any(m in text for m in self.address_check):
+                                color = self.global_config['paddleocr_conf']['color']['check']
+                            else:
+                                color = self.global_config['paddleocr_conf']['color']['right']
+                        else:
+                            color = self.global_config['paddleocr_conf']['color']['right']
                     else:
                         color = self.global_config['paddleocr_conf']['color']['error']
                 if obj_now.moved_flag:
