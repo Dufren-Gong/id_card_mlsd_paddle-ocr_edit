@@ -71,15 +71,15 @@ paddleocr_conf:
     check_total_strs: ['中国', 'CHINA']
     check: blue #如果文本第一个字疑似为背景花纹识别出来的字，更改文本颜色为该颜色，注意检查
 
-version: '1.4.6' #版本号
+version: '2.0' #版本号
 pic_shape: [856, 540] #[width, height]， 最终生成照片的尺寸
 catch_days: 30 #制作的照片缓存几天，填写0代表一直缓存, 正整数比如1，就缓存当天的照片，第二天再打开软件，前一天的缓存就删掉了
 button_timer_duration: 500 #长按按钮的执行时间，单位为ms
 show_tip_timer_duration: 1500 #展示提示的窗口的执行时间，单位为ms,0就是不显示
 
 conda_env_name: paddle-ocr #更新程序的时候，需要激活的conda环境名
-update_shell_path: ./模版/配置和记录/update_windows.bat
-del_and_reopen_shell_path: ./模版/配置和记录/del_and_reopen.ps1
+update_shell_path: 配置/update_windows.bat
+del_and_reopen_shell_path: 配置/del_and_reopen.ps1
 
 update_info_show_time: 15 #秒
 enable_update: false #是否开启更新选项
@@ -96,9 +96,13 @@ moren_buy: 84513 #设置默认提货金额
 moren_annual_fee: 210 #设置默认年费
 
 #根据不同公司设置的选项
-company_name: 1 #['SIBELLAC HOLDINGS LIMITED', 'BASTION'], 给出公司名在列表中的位置
-zhuandan_before: '60' #时间点前转单的费用
-zhuandan_after: '60' #时间点后转单的费用
+companys: ['BASTION', 'SIBELLAC_HOLDINGS_LIMITED']
+BASTION_config:
+  zhuandan_before: '90' #时间点前转单的费用
+  zhuandan_after: '60' #时间点后转单的费用
+SIBELLAC_HOLDINGS_LIMITED_config:
+  zhuandan_before: '60' #时间点前转单的费用
+  zhuandan_after: '60' #时间点后转单的费用
 
 #切割‘照片放这里/横向中间截图’中的照片的选项
 cut_proportion: 0.5 #从上到下，从左到右切割的比例

@@ -6,13 +6,13 @@ conda activate <your_conda_environment_name>
 
 ## 下载依赖库
 
-pip install -r ./模版/配置和记录/requirments.txt
+pip install -r 配置/requirments.txt
 
 ## 如果要打包windows软件
 
-cp ./模版/配置和记录/new/main.spec ./main.spec
+cp 配置/new/main.spec ./main.spec
 
-## 根据./模版/配置和记录/安装使用记录.txt修改main.spec内容
+## 根据配置安装使用记录.txt修改main.spec内容
 
 pip install pyinstaller
 

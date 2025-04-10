@@ -58,9 +58,9 @@ def get_sub_arr_shouquan(kaidan_pair:Pair, company_id):
     changes.extend([client_str, entrusted_str])
     client_str, entrusted_str = kaidan.page_three(temp)
     changes.extend([client_str, entrusted_str])
-    if company_id == 1:
+    if company_id == 'SIBELLAC_HOLDINGS_LIMITED':
         changes.append(temp.client.name)
-    elif company_id == 2:
+    elif company_id == 'BASTION':
         changes.append(temp.beiweituo.name)
     changes.append(temp.beiweituo.sail_card_id)
     changes.append(temp.beiweituo.sail_id)

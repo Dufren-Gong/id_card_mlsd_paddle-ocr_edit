@@ -21,7 +21,7 @@ def rgb_to_gray_with_three_channels(image):
     gray_3_channels = cv2.merge([gray, gray, gray])
     return gray_3_channels
 
-def get_config(config_path = './模版/配置和记录/conf.yaml'):
+def get_config(config_path = '配置/conf.yaml'):
     # 初始化 YAML 处理器
     yaml = YAML()
     yaml.preserve_quotes = True  # 保留引号（如果 YAML 中有引号）

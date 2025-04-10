@@ -2,7 +2,7 @@ import os, shutil, sys
 from PyQt6.QtWidgets import QMainWindow, QWidget, QFileDialog, QApplication
 from uis.shapes import Ui_Shapes
 from my_utils.utils import delete_specific_files_and_folders
-from uis.main_window_ui import Row_Zero, Row_One, Row_Two, Row_Catch
+from uis.main_window_ui import Row_Zero, Row_One, Row_Two, Select_Company, Row_Catch
 from windows.show_info_window import Show_Info_Window
 from my_utils.threads import Pdf_to_Pic_Thread, Download_Sourcecode
 from my_utils.utils import get_data_str, open_floader, find_in_catch_pic, get_internal_path, unzip_file, get_config, download_single_file, split_image
@@ -37,8 +37,8 @@ class Main_Window(QMainWindow):
         self.flag_file = flag_file  # 标志文件路径
         # 启用拖放
         self.setAcceptDrops(True)
-        self.shape.layout([self.shape.combobox_height, self.shape.combobox_height, self.shape.button_height, 27],
-                          [[60, 135, 95]] * 3 + [[298]])
+        self.shape.layout([self.shape.combobox_height, self.shape.combobox_height, self.shape.button_height, self.shape.combobox_height, 27],
+                          [[60, 234]] + [[60, 135, 95]] * 3 + [[298]])
         self.setWindowIcon(QIcon(get_internal_path('./files/icon/icon.ico')))
         self.init_ui()
         self.init_events()
@@ -379,7 +379,8 @@ class Main_Window(QMainWindow):
                     kaidan_path = copy_template(mode, self.folder_path, name_concat, count, word)
                     shift = 0
                     if word == '转让':
-                        changes, obj = zhuandan.get_sub_arr_zhuanrang(kaidan_pair, self.global_config['zhuandan_before'], self.global_config['zhuandan_after'])
+                        company = self.global_config['company_name']
+                        changes, obj = zhuandan.get_sub_arr_zhuanrang(kaidan_pair, self.global_config[f'{company}_zhuandan_before'], self.global_config[f'{company}_zhuandan_after'])
                         shift = -4
                     elif word == '授权':
                         changes, obj = zhuandan.get_sub_arr_shouquan(kaidan_pair, self.global_config['company_name'])
@@ -567,31 +568,38 @@ class Main_Window(QMainWindow):
         self.setFixedSize(self.shape.width, self.shape.height)
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
-        self.row_zero = Row_Zero(
+        self.row_company = Select_Company(
             central_widget,
-            self.shape.shape_tuples[1][0],
-            self.shape.shape_tuples[1][1],
-            self.shape.shape_tuples[1][2],
-        )
-
-        self.row_one = Row_One(
-            central_widget,
+            self.global_config['companys'],
             self.shape.shape_tuples[0][0],
-            self.shape.shape_tuples[0][1],
-            self.shape.shape_tuples[0][2],
-            self.global_config['enable_update']
+            self.shape.shape_tuples[0][1]
         )
 
-        self.row_two = Row_Two(
+        self.row_zero = Row_Zero(
             central_widget,
             self.shape.shape_tuples[2][0],
             self.shape.shape_tuples[2][1],
             self.shape.shape_tuples[2][2],
         )
 
-        self.row_catch = Row_Catch(
+        self.row_one = Row_One(
+            central_widget,
+            self.shape.shape_tuples[1][0],
+            self.shape.shape_tuples[1][1],
+            self.shape.shape_tuples[1][2],
+            self.global_config['enable_update']
+        )
+
+        self.row_two = Row_Two(
             central_widget,
             self.shape.shape_tuples[3][0],
+            self.shape.shape_tuples[3][1],
+            self.shape.shape_tuples[3][2],
+        )
+
+        self.row_catch = Row_Catch(
+            central_widget,
+            self.shape.shape_tuples[4][0],
             self.shape.label_height * self.global_config['main_window_conf']['catch_max_height']
         )
 
@@ -667,6 +675,7 @@ class Main_Window(QMainWindow):
     def update_software(self):
         current_os = platform.system()
         if current_os == "Windows":
+            os.chdir('..')
             result_name = '身份证照片识别'
             name = self.global_config['repo']
             ref = self.global_config['ref']
@@ -674,7 +683,7 @@ class Main_Window(QMainWindow):
             zip_file_path = f'{result_name}.zip'
             root_floader = os.path.abspath('.')
             old_version = self.global_config['version']
-            conf_path = '模版/配置和记录/conf.yaml'
+            conf_path = '配置/conf.yaml'
             if not os.path.exists(name) and not os.path.exists(zip_file_path):
                 download_single_file(self.global_config, conf_path, 'conf.yaml')
                 config_check = get_config('conf.yaml')
@@ -737,7 +746,7 @@ class Main_Window(QMainWindow):
             return
         self.hide()
         QApplication.processEvents()
-        shutil.copy(os.path.join('模版', '配置和记录', 'new', 'main.spec'), './main.spec')
+        shutil.copy(os.path.join('配置', 'new', 'main.spec'), './main.spec')
         shell_path = os.path.abspath(self.global_config['update_shell_path'])
         conda_env = self.global_config['conda_env_name']
         try:
@@ -778,8 +787,8 @@ class Main_Window(QMainWindow):
             if not os.path.exists(os.path.join(name, 'dist', 'main', '_internal', '_tk_data')) and os.path.exists(os.path.join('_internal', '_tk_data')):
                 shutil.copytree(os.path.join('_internal', '_tk_data'), os.path.join(name, 'dist', 'main', '_internal', '_tk_data'))
             os.chdir(name)
-            shutil.rmtree(os.path.join('dist', 'main', '模版', '配置和记录'))
-            shutil.move(os.path.join('模版', '配置和记录'), os.path.join('dist', 'main', '模版', '配置和记录'))
+            shutil.rmtree(os.path.join('dist', 'main', '配置'))
+            shutil.move(os.path.join('配置'), os.path.join('dist', 'main', '配置'))
             os.chdir('..')
             if os.path.exists("照片编辑结果"):
                 shutil.copytree('./照片编辑结果/', os.path.join(name, 'dist', 'main', '照片编辑结果'))
@@ -995,6 +1004,11 @@ class Main_Window(QMainWindow):
         self.combbox_change_tips_timer.setSingleShot(True)
         self.combbox_change_tips_timer.timeout.connect(self.change_tip)
 
+    def change_company(self):
+        company = self.row_company.company_combobox.currentText()
+        self.global_config['company_name'] = company
+        os.chdir(f'../{company}')
+
     def change_tip(self):
         self.show_info.hide()
 
@@ -1008,6 +1022,7 @@ class Main_Window(QMainWindow):
         self.row_zero.exit_button.pressed.connect(self.black_pressed)
         self.row_zero.exit_button.released.connect(self.black_released)
         self.row_one.function_combobox.currentIndexChanged.connect(self.change_function_index)
+        self.row_company.company_combobox.currentIndexChanged.connect(self.change_company)
         self.row_two.select_files_button.clicked.connect(self.operate_on_moren_pic)
         self.row_two.open_newest_button.pressed.connect(self.open_newest_pressed)
         self.row_two.open_newest_button.released.connect(self.open_newest_released)

@@ -2,7 +2,7 @@ import os
 # os.environ['FLAGS_use_cuda_allocator'] = '0'
 from cv2 import resize as cv2resize
 from cv2 import INTER_AREA as cv2INTER_AREA
-import re, gc
+import re, gc, os
 from onnxocr.onnx_paddleocr import ONNXPaddleOcr
 from my_utils.utils import rgb_to_gray_with_three_channels, change_three_channel
 from datetime import datetime
@@ -19,14 +19,18 @@ def clear_gpu_cache():
     gc.collect()
 
 def get_ocr_model(global_config):
+    pwd = os.getcwd()
+    os.chdir('..')
     use_angle_cls = global_config['paddleocr_conf']['use_cls']
     if global_config['paddleocr_conf']['device'] == 'gpu':
         try:
-            return ONNXPaddleOcr(use_angle_cls=use_angle_cls, use_gpu=True)
+            model = ONNXPaddleOcr(use_angle_cls=use_angle_cls, use_gpu=True)
         except:
-            pass
+            model = None
     else:
-        return ONNXPaddleOcr(use_angle_cls=use_angle_cls, use_gpu=False)
+        model = ONNXPaddleOcr(use_angle_cls=use_angle_cls, use_gpu=False)
+    os.chdir(pwd)
+    return model
 
 def check_nation(texts):
     nation = '内地'

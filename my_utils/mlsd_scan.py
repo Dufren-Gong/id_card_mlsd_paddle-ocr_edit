@@ -1,4 +1,4 @@
-import sys, gc
+import sys, gc, os
 import math
 import onnxruntime as ort
 from my_utils.utils import change_three_channel, get_internal_path
@@ -18,6 +18,8 @@ def release_model(model, model_large):
     gc.collect()
 
 def get_model(global_config):
+    pwd = os.getcwd()
+    os.chdir('..')
     # 使用 'cuda:1' 表示使用第二块 GPU（因为索引从 0 开始）
     device = global_config['mlsd_conf']['device']
     if device != 'cpu':
@@ -41,6 +43,7 @@ def get_model(global_config):
             large_model = ort.InferenceSession(large_model_path, providers=['CPUExecutionProvider'])
         if model_type == 'large':
             tiny_model = None
+    os.chdir(pwd)
     return tiny_model, large_model
 
 # def closest_power_of_two(n):

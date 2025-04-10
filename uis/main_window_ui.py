@@ -270,6 +270,43 @@ class ResizablePlainTextEdit(QtWidgets.QPlainTextEdit):
         if cursor.hasSelection():
             cursor.removeSelectedText()
 
+class Select_Company():
+    def __init__(self,
+                 centralwidget,
+                 companys,
+                 tip_shape,
+                 row_catch_shape: tuple) -> None:
+        self.centralwidget = centralwidget
+        self.companys = companys
+        self.init_one_tip_label(tip_shape)
+        self.init_one_company_name_lineedit(row_catch_shape)
+
+    def init_one_tip_label(self, shape):
+        self.tip_label = QtWidgets.QLabel(parent=self.centralwidget)
+        self.tip_label.setGeometry(QtCore.QRect(*shape))
+        self.tip_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignLeft)
+        self.tip_label.setObjectName("tip_label")
+        self.tip_label.setText("选择公司:")
+        # 设置 QLabel 文本可以通过鼠标选择
+        self.tip_label.setTextInteractionFlags(QtCore.Qt.TextInteractionFlag.TextSelectableByMouse)
+
+    def init_one_company_name_lineedit(self, shape):
+        self.company_combobox = QtWidgets.QComboBox(parent=self.centralwidget)
+        self.company_combobox.setGeometry(QtCore.QRect(*shape))
+        self.company_combobox.setObjectName("company_combobox")
+        self.company_combobox.setToolTip("选择公司名称.")
+        self.company_combobox.addItems(self.companys)
+        self.company_combobox.setCurrentIndex(0)
+        self.company_combobox.setStyleSheet("""
+            QComboBox {
+                border-width: 1px;
+                border-style: solid;
+                border-color: black;
+                background-color: white;
+                color: black;  /* 设置字体颜色为红色 */
+            }
+        """)
+
 class Row_Catch():
     def __init__(self,
                  centralwidget,
