@@ -28,10 +28,12 @@ class MainApp:
             if errors == ['no_company']:
                 self.main_window.show_info.set_show_text('没有提供任何公司列表\n或未提供任何公司的模版信息\n添加公司列表和模版后重启软件。')
                 self.main_window.show_info.show()
+                self.main_window.show_info.row_one.exit_button.hide()
                 self.main_window.setDisabled(True)
             elif errors == ['all']:
                 self.main_window.show_info.set_show_text('所有公司都没有添加模版信息\n可添加模版信息后重启软件。')
                 self.main_window.show_info.show()
+                self.main_window.show_info.row_one.exit_button.hide()
                 self.main_window.hide()
                 self.main_window.setDisabled(True)
             else:
@@ -107,6 +109,10 @@ if __name__ == "__main__":
     if len(errors) == 0:
         if not at_lest_one_company:
             errors = ['no_company']
+        else:
+            global_config['companys'] = companys
+            global_config['company_name'] = companys[0]
+            os.chdir(companys[0])
     else:
         if at_lest_one_company:
             companys = list(set(companys) - set(errors))

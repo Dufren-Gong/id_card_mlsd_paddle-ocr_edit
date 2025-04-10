@@ -380,7 +380,7 @@ class Main_Window(QMainWindow):
                     shift = 0
                     if word == '转让':
                         company = self.global_config['company_name']
-                        changes, obj = zhuandan.get_sub_arr_zhuanrang(kaidan_pair, self.global_config[f'{company}_zhuandan_before'], self.global_config[f'{company}_zhuandan_after'])
+                        changes, obj = zhuandan.get_sub_arr_zhuanrang(kaidan_pair, self.global_config[f'{company}_config']['zhuandan_before'], self.global_config[f'{company}_config']['zhuandan_after'])
                         shift = -4
                     elif word == '授权':
                         changes, obj = zhuandan.get_sub_arr_shouquan(kaidan_pair, self.global_config['company_name'])
@@ -658,9 +658,14 @@ class Main_Window(QMainWindow):
                 self.row_two.select_files_button.setToolTip('选择文件或者文件夹直接跳转开始编辑')
                 self.row_two.select_files_button.clicked.connect(lambda: self.open_folder_dialog())
             else:
-                self.row_two.select_files_button.setText('开始更新')
-                self.row_two.select_files_button.setToolTip('开始更新程序')
-                self.row_two.select_files_button.clicked.connect(self.update_software)
+                if self.global_config['enable_update']:
+                    self.row_two.select_files_button.setText('开始更新')
+                    self.row_two.select_files_button.setToolTip('开始更新程序')
+                    self.row_two.select_files_button.clicked.connect(self.update_software)
+                else:
+                    self.row_two.select_files_button.setText('开始下载')
+                    self.row_two.select_files_button.setToolTip('从云空间下载源码，手动更新软件')
+                    self.row_two.select_files_button.clicked.connect(self.only_download_source_code)
         else:
             self.row_two.open_newest_button.setText('打开最新/删除所有编辑')
             self.row_two.open_newest_button.setToolTip('短按打开编辑结果中最新生成结果的文件夹，长按删除"照片编辑结果"中所有编辑')
@@ -672,8 +677,23 @@ class Main_Window(QMainWindow):
             self.row_zero.select_newest_checkbox.show()
             self.change_moren()
 
+    def only_download_source_code(self):
+        self.pwd = os.getcwd()
+        os.chdir('..')
+        self.show_info.set_show_text(f'正在下载源代码，请稍等......')
+        self.show_info.show()
+        QApplication.processEvents()
+        self.download_source_code_thread = Download_Sourcecode(self.global_config, 1, 1, '源码', 1, 1, True)
+        self.download_source_code_thread.resSignal.connect(self.end_only_download_sourcecode)
+        self.download_source_code_thread.start()
+
+    def end_only_download_sourcecode(self, pos1, pos2, pos3, pos4, pos5):
+        self.show_info.set_show_text(f'下载完成，请在根目录下查看，手动更新软件。')
+        self.show_info.show()
+        os.chdir(self.pwd)
+
     def update_software(self):
-        current_os = platform.system()
+        current_os = platform.system() 
         if current_os == "Windows":
             os.chdir('..')
             result_name = '身份证照片识别'

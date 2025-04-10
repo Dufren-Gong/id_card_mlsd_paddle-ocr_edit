@@ -27,7 +27,7 @@ mlsd_conf:
 
 main_window_conf:
   catch_max_height: 20 #展开最大宽度占多少行，一行高度为20px
-  debug_mode: software #[code, software], code模式在terminal中显示错误，software模式在窗口中报错
+  debug_mode: code #[code, software], code模式在terminal中显示错误，software模式在窗口中报错
 
 paddleocr_conf:
   device: cpu #[cpu, gpu]

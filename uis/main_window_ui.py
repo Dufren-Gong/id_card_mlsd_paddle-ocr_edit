@@ -123,7 +123,7 @@ class Row_One():
         self.function_combobox.setObjectName("function_combobox")
         self.function_combobox.setToolTip("前两个选项   :所选择的文件夹只能包含图片,并且保证身正面照在前\n                    如果直接识别照片文字请确保照片方向和正反顺序正确\n查询信息      :在高频信息里和缓存照片里查找这个人是否已经编辑过且保存下来了\n                    有这个人的照片和信息的话就不用编辑这个人的照片了\npdf转照片    :直接选择pdf文件,照片会生成到'最新编辑结果'的最新文件夹里\n合并最新编辑:选择文件夹,把里面的所有照片和.info信息合并到'最新编辑结果'的最新文件夹里\n制作全部      :是同时制作所有类型的word,其他都是单独制作某个类型的word")
         if not self.enable_update:
-            self.function_combobox.addItems(self.mode_options[:-1])
+            self.function_combobox.addItems(self.mode_options[:-1] + ['下载源码'])
         else:
             self.function_combobox.addItems(self.mode_options)
         self.function_combobox.setMaxVisibleItems(len(self.mode_options))
