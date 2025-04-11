@@ -18,7 +18,7 @@ import subprocess, platform
 from send2trash import send2trash
         
 class Main_Window(QMainWindow):
-    def __init__(self, open_pic_operate_window, global_config, flag_file):
+    def __init__(self, open_pic_operate_window, global_config):
         super().__init__()
         self.show_info = Show_Info_Window()
         self.Thread_pdf_to_pic = None
@@ -34,12 +34,11 @@ class Main_Window(QMainWindow):
         self.concat_index = 3
         self.pdf_to_pic_count = 0
         self.pdf_to_pic_finished = 0
-        self.flag_file = flag_file  # 标志文件路径
         # 启用拖放
         self.setAcceptDrops(True)
         self.shape.layout([self.shape.combobox_height, self.shape.combobox_height, self.shape.button_height, self.shape.combobox_height, 27],
                           [[60, 234]] + [[60, 135, 95]] * 3 + [[298]])
-        self.setWindowIcon(QIcon(get_internal_path('./files/icon/icon.ico')))
+        self.setWindowIcon(QIcon(get_internal_path('../files/icon/icon.ico')))
         self.init_ui()
         self.init_events()
 
@@ -704,7 +703,7 @@ class Main_Window(QMainWindow):
             root_floader = os.path.abspath('.')
             old_version = self.global_config['version']
             conf_path = '配置/conf.yaml'
-            if not os.path.exists(name) and not os.path.exists(zip_file_path):
+            if not os.path.exists(self.global_config['repo']) and not os.path.exists(name):
                 download_single_file(self.global_config, conf_path, 'conf.yaml')
                 config_check = get_config('conf.yaml')
                 new_version = config_check['version']
@@ -720,34 +719,19 @@ class Main_Window(QMainWindow):
                     self.download_source_code_thread = Download_Sourcecode(self.global_config, name, zip_file_path, result_name, root_floader, new_version)
                     self.download_source_code_thread.resSignal.connect(self.end_get_source_code)
                     self.download_source_code_thread.start()
+            #软件解压如果有问题，那就手动解压
             else:
-                cache = os.listdir('.')
-                if os.path.exists(name):
-                    del_flag = False
-                else:
-                    unzip_file(zip_file_path, '.')
-                    cache_temp = os.listdir()
-                    del_flag = True
+                # 以云端下载为准
+                if os.path.exists(self.global_config['repo']) and not os.path.exists(name):
+                    shutil.move(self.global_config['repo'], name)
                 try:
                     config_check = get_config(f'{name}/{conf_path}')
                 except:
-                    if del_flag:
-                        try:
-                            name_d = list(set(cache_temp) - set(cache))[0]
-                            shutil.rmtree(name_d)
-                        except:
-                            pass
                     self.show_info.set_show_text(f'提供的源代码或者云端下载的源代码有问题，压缩包名应该为"身份证照片识别.zip", 其内的文件夹名应为"{name}"，如还有问题请联系作者')
                     self.show_info.show()
                     return
                 new_version = config_check['version']
                 if new_version == old_version:
-                    if del_flag:
-                        try:
-                            name_d = list(set(cache_temp) - set(cache))[0]
-                            shutil.rmtree(name_d)
-                        except:
-                            pass
                     self.show_info.set_show_text(f'已是最新版本，不需要更新')
                     self.show_info.show()
                     return
@@ -758,12 +742,7 @@ class Main_Window(QMainWindow):
             self.show_info.show()
 
     def end_get_source_code(self, name, zip_file_path, result_name, root_floader, new_version):
-        try:
-            os.chdir(name)
-        except:
-            self.show_info.set_show_text(f'解压错误，尝试手动解压{zip_file_path}到{name}文件夹再次尝试。还是不行的话，就是下载更新包有问题，请联系作者')
-            self.show_info.show()
-            return
+        os.chdir(name)
         self.hide()
         QApplication.processEvents()
         shutil.copy(os.path.join('配置', 'new', 'main.spec'), './main.spec')
@@ -782,61 +761,46 @@ class Main_Window(QMainWindow):
         self.show_info.row_one.exit_button.hide()
         self.show_info.row_one.tip_label.setFixedSize(self.show_info.width() - 2 * self.show_info.shape.round_gap, self.show_info.row_one.tip_label.height())
         self.show_info.setWindowTitle('更新软件中')
-        self.update_show_time = self.global_config['update_info_show_time']
-        self.show_info.set_show_text(f'正在更新中,时间可能有点长,不要关闭弹出的窗口,最好等待提示更新再使用电脑,此提示窗口{self.update_show_time}秒后自动关闭')
+        self.show_info.set_show_text(f'正在更新中,这个窗口不可关闭!!!\n时间可能有点长,请耐心等待......')
         self.show_info.show()
-        self.update_timer = QTimer()
         time_count = 1000
+        self.update_timer = QTimer()
+        self.only_once_flag = True
         self.update_timer.timeout.connect(lambda: self.end_pyinstaller(time_count, name, result_name, root_floader, new_version, zip_file_path))
         self.pyinstaller_process = subprocess.Popen(command)
-        self.update_counter = 0
         self.update_timer.start(time_count)
 
     def end_pyinstaller(self, time_count, name, save_name, root_floader, new_version, zip_file_path):
-        self.update_counter += 1
-        if self.update_counter == self.update_show_time:
-            self.show_info.hide()
-            QApplication.processEvents()  # 刷新界面
-        # 检查进程是否仍在运行
+        wait_start_flag = False
         if self.pyinstaller_process.poll() is None:
             self.update_timer.start(time_count)  # 继续定时器
         else:
-            # self.show_info.row_one.tip_label.appendPlainText('更新即将完成，请稍等......')
-            os.chdir('..')
-            shutil.copytree('./模版/', os.path.join(name, 'dist', 'main', '模版'))
+            wait_start_flag = True
+        if wait_start_flag and self.only_once_flag:
+            self.only_once_flag = False
+            os.chdir(root_floader)
+            shutil.move(os.path.join(name, '配置'), os.path.join(name, 'dist', 'main', '配置'))
+            companys = self.global_config['companys']
+            for i in companys:
+                if os.path.exists(i):
+                    shutil.copytree(f'{i}/', os.path.join(name, 'dist', 'main', i))
+            if os.path.exists(zip_file_path):
+                shutil.move(zip_file_path, os.path.join(name, 'dist', 'main', '配置', zip_file_path))
             if not os.path.exists(os.path.join(name, 'dist', 'main', '_internal', '_tk_data')) and os.path.exists(os.path.join('_internal', '_tk_data')):
                 shutil.copytree(os.path.join('_internal', '_tk_data'), os.path.join(name, 'dist', 'main', '_internal', '_tk_data'))
-            os.chdir(name)
-            shutil.rmtree(os.path.join('dist', 'main', '配置'))
-            shutil.move(os.path.join('配置'), os.path.join('dist', 'main', '配置'))
-            os.chdir('..')
-            if os.path.exists("照片编辑结果"):
-                shutil.copytree('./照片编辑结果/', os.path.join(name, 'dist', 'main', '照片编辑结果'))
-            if os.path.exists("./照片放这里"):
-                shutil.copytree('./照片放这里/', os.path.join(name, 'dist', 'main', '照片放这里'))
-            if os.path.exists(zip_file_path):
-                shutil.move(zip_file_path, os.path.join(name, 'dist', 'main', '模版', zip_file_path))
             shutil.move(os.path.join(name, 'dist', 'main'), os.path.join(os.path.dirname(root_floader), f'{save_name}{new_version}'))
-            pwd_cache = os.getcwd()
-            os.chdir(os.path.join(os.path.dirname(root_floader), f'{save_name}{new_version}'))
-            shell_path = os.path.abspath(self.global_config['del_and_reopen_shell_path'])
-            command = [
-                "powershell",  # 调用 PowerShell
-                "-NoProfile",  # 不加载用户配置文件，避免干扰
-                # "-NoExit", # -NoExit 保持窗口打开
-                "-ExecutionPolicy", 
-                "Bypass",  # 绕过脚本执行限制
-                "-File", shell_path,  # 指定脚本路径
-                "-flag_file", self.flag_file,
-                "-exe_name", f'{save_name}.exe'
-            ]
-            subprocess.Popen(command)
-            os.chdir(pwd_cache)
+            shutil.rmtree(name)
+            self.show()
+            self.show_info.setWindowTitle('更新完成')
+            self.show_info.set_show_text(f'更新完成\n现在可以关闭这个窗口打开新软件使用')
             try:
-                shutil.rmtree(name)
+                self.show_info.row_one.exit_button.hide()
             except:
                 pass
-            sys.exit(0)
+            self.show_info.row_one.tip_label.setFixedSize(self.show_info.width() - 2 * self.show_info.shape.round_gap, self.show_info.row_one.tip_label.height())
+            self.show_info.show()
+            self.hide()
+            self.setDisabled(True)
 
     def operate_on_moren(self):
         floader_path = './照片编辑结果'

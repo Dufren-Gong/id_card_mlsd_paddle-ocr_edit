@@ -11,10 +11,7 @@ class MainApp:
     def __init__(self, global_config, errors):
         self.global_config = global_config
         self.errors = errors
-        self.flag_file = './flag_file'
-        if os.path.exists(self.flag_file):
-            self.global_config['enable_update'] = False
-        self.main_window = Main_Window(self.open_pic_operate_window, self.global_config, self.flag_file)
+        self.main_window = Main_Window(self.open_pic_operate_window, self.global_config)
 
     def open_pic_operate_window(self, file_path, mode):
         self.pic_operate = Pic_Operate_Windows(file_path, self.reopen_main_window, self.global_config, mode)
@@ -26,14 +23,17 @@ class MainApp:
     def if_no_company_or_no_moban(self):
         if errors != []:
             if errors == ['no_company']:
-                self.main_window.show_info.set_show_text('没有提供任何公司列表\n或未提供任何公司的模版信息\n添加公司列表和模版后重启软件。')
-                self.main_window.show_info.show()
+                self.main_window.show_info.set_show_text('没有提供任何公司列表\n请检查\n添加公司列表和模版后重启软件。')
                 self.main_window.show_info.row_one.exit_button.hide()
+                self.main_window.show_info.row_one.tip_label.setFixedSize(self.main_window.show_info.width() - 2 * self.main_window.show_info.shape.round_gap, self.main_window.show_info.row_one.tip_label.height())
+                self.main_window.show_info.show()
+                self.main_window.hide()
                 self.main_window.setDisabled(True)
             elif errors == ['all']:
-                self.main_window.show_info.set_show_text('所有公司都没有添加模版信息\n可添加模版信息后重启软件。')
-                self.main_window.show_info.show()
+                self.main_window.show_info.set_show_text('所有公司都没有添加模版信息\n需添加模版信息后重启软件。')
                 self.main_window.show_info.row_one.exit_button.hide()
+                self.main_window.show_info.row_one.tip_label.setFixedSize(self.main_window.show_info.width() - 2 * self.main_window.show_info.shape.round_gap, self.main_window.show_info.row_one.tip_label.height())
+                self.main_window.show_info.show()
                 self.main_window.hide()
                 self.main_window.setDisabled(True)
             else:
@@ -41,12 +41,6 @@ class MainApp:
                 for j in self.errors:
                     show_text += f'{j}\n'
                 self.main_window.show_info.set_show_text(f'{show_text}这些公司没有添加模版信息\n现可操作已添加模版的公司\n如果要操作现未添加模版的公司\n先添加模版再重启软件')
-                self.main_window.show_info.show()
-        else:
-            if os.path.exists(self.flag_file):
-                os.remove(self.flag_file)
-                now_version = self.global_config['version']
-                self.main_window.show_info.set_show_text(f'软件更新完成！\n新版本为 version {now_version}\n可以选择手动删除上一个版本')
                 self.main_window.show_info.show()
 
     def run(self):
@@ -71,7 +65,7 @@ def global_exception_handler(exc_type, exc_value, exc_traceback):
     
     # 创建消息框
     msg_box = QMessageBox()
-    msg_box.setWindowIcon(QIcon(get_internal_path('./files/icon/icon.ico')))
+    msg_box.setWindowIcon(QIcon(get_internal_path('../files/icon/icon.ico')))
     msg_box.setWindowTitle("程序错误")
     msg_box.setText("程序发生了异常，请联系开发者！")
     msg_box.setDetailedText(error_details)  # 展示详细错误信息

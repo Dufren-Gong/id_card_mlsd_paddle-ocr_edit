@@ -42,7 +42,7 @@ class Name_Pic(QMainWindow):
         self.gaopin_path = './模版/高频照片'
         self.setWindowTitle("照片信息编辑")
         self.setGeometry(0, 0, 800, 600)
-        self.setWindowIcon(QIcon(get_internal_path('./files/icon/icon.ico')))
+        self.setWindowIcon(QIcon(get_internal_path('../files/icon/icon.ico')))
         self.position_mode = self.global_config['paddleocr_conf']['defalut_position_mode']
         self.position_mode_text = ['默认原位', '默认移动']
         self.previous_nation = '未知'
