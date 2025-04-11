@@ -86,6 +86,7 @@ if __name__ == "__main__":
     pic_path = '照片放这里/横向中间截图'
     gaopin_catch = './模版/高频照片'
     date_catch = './模版/缓存照片'
+    excel_beifen = './模版/excel备份'
     errors = []
     at_lest_one_company = False
     if len(companys) != 0:
@@ -96,7 +97,10 @@ if __name__ == "__main__":
                 os.makedirs(result_path, exist_ok=True)
                 os.makedirs(pic_path, exist_ok=True)
                 os.makedirs(gaopin_catch, exist_ok=True)
-                os.makedirs(date_catch, exist_ok=True)
+                if global_config['catch_days'] > 0:
+                    os.makedirs(date_catch, exist_ok=True)
+                if global_config['excel_cache_num'] > 0:
+                    os.makedirs(excel_beifen, exist_ok=True)
                 os.chdir('..')
             else:
                 errors.append(company)

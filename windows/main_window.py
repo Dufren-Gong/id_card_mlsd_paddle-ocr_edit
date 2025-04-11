@@ -230,6 +230,14 @@ class Main_Window(QMainWindow):
     def start_processing(self):
         inputs = ['开单', '拿货', '转单', '年费', '补单', '补卡']
         try:
+            cache_excels = os.listdir('./模版/excel备份')
+            cache_excels = natsorted([i for i in cache_excels if os.path.isfile(os.path.join('./模版/excel备份', i))], reverse=True)
+            if len(cache_excels) >= self.global_config['excel_cache_num']:
+                dels = cache_excels[self.global_config['excel_cache_num'] - 1:]
+                for i in dels:
+                    send2trash(os.path.join('./模版/excel备份', i))
+            save_name = os.path.join('./模版/excel备份', get_data_str() + '.xlsx')
+            shutil.copy(os.path.join('模版', self.excel_name), save_name)
             pass_flag = check_excel(os.path.join('模版', self.excel_name), self.folder_path)
         except PermissionError:
             pass_flag = '请先关闭excel!'
@@ -256,6 +264,15 @@ class Main_Window(QMainWindow):
 
     def make_singe(self, mode):
         try:
+            #缓存一定个数的excel，防止信息丢失
+            cache_excels = os.listdir('./模版/excel备份')
+            cache_excels = natsorted([i for i in cache_excels if os.path.isfile(os.path.join('./模版/excel备份', i))], reverse=True)
+            if len(cache_excels) >= self.global_config['excel_cache_num']:
+                dels = cache_excels[self.global_config['excel_cache_num'] - 1:]
+                for i in dels:
+                    send2trash(os.path.join('./模版/excel备份', i))
+            save_name = os.path.join('./模版/excel备份', get_data_str() + '.xlsx')
+            shutil.copy(os.path.join('模版', self.excel_name), save_name)
             pass_flag = check_excel(os.path.join('模版', self.excel_name), self.folder_path, mode)
         except PermissionError:
             pass_flag = '请先关闭excel!'

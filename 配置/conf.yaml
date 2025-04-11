@@ -27,7 +27,7 @@ mlsd_conf:
 
 main_window_conf:
   catch_max_height: 20 #展开最大宽度占多少行，一行高度为20px
-  debug_mode: code #[code, software], code模式在terminal中显示错误，software模式在窗口中报错
+  debug_mode: software #[code, software], code模式在terminal中显示错误，software模式在窗口中报错
 
 paddleocr_conf:
   device: cpu #[cpu, gpu]
@@ -74,6 +74,7 @@ paddleocr_conf:
 version: '2.0' #版本号
 pic_shape: [856, 540] #[width, height]， 最终生成照片的尺寸
 catch_days: 30 #制作的照片缓存几天，填写0代表一直缓存, 正整数比如1，就缓存当天的照片，第二天再打开软件，前一天的缓存就删掉了
+excel_cache_num: 10 #缓存多少个excel
 button_timer_duration: 500 #长按按钮的执行时间，单位为ms
 show_tip_timer_duration: 1500 #展示提示的窗口的执行时间，单位为ms,0就是不显示
 
@@ -82,7 +83,7 @@ update_shell_path: 配置/update_windows.bat
 # del_and_reopen_shell_path: 配置/del_and_reopen.ps1
 
 update_info_show_time: 15 #秒
-enable_update: true #是否开启更新选项
+enable_update: false #是否开启更新选项
 
 # https://gitee.com/api/v5/repos/{owner}/{repo}/zipball?access_token={access_token}&ref={ref}
 access_token: 3d7b338f6b596cc32baf892157ac5f98 # gitee授权码
