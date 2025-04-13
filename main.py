@@ -20,22 +20,20 @@ class MainApp:
         self.pic_operate = None
         self.main_window.show()
 
+    def error_hide_mainwindow(self, tip):
+        self.main_window.show_info.set_show_text(tip)
+        self.main_window.show_info.row_one.exit_button.hide()
+        self.main_window.show_info.row_one.tip_label.setFixedSize(self.main_window.show_info.width() - 2 * self.main_window.show_info.shape.round_gap, self.main_window.show_info.row_one.tip_label.height())
+        self.main_window.show_info.show()
+        self.main_window.hide()
+        self.main_window.setDisabled(True)
+
     def if_no_company_or_no_moban(self):
         if errors != []:
             if errors == ['no_company']:
-                self.main_window.show_info.set_show_text('没有提供任何公司列表\n请检查\n添加公司列表和模版后重启软件。')
-                self.main_window.show_info.row_one.exit_button.hide()
-                self.main_window.show_info.row_one.tip_label.setFixedSize(self.main_window.show_info.width() - 2 * self.main_window.show_info.shape.round_gap, self.main_window.show_info.row_one.tip_label.height())
-                self.main_window.show_info.show()
-                self.main_window.hide()
-                self.main_window.setDisabled(True)
+                self.error_hide_mainwindow('没有提供任何公司列表\n请检查\n添加公司列表和模版后重启软件。')
             elif errors == ['all']:
-                self.main_window.show_info.set_show_text('所有公司都没有添加模版信息\n需添加模版信息后重启软件。')
-                self.main_window.show_info.row_one.exit_button.hide()
-                self.main_window.show_info.row_one.tip_label.setFixedSize(self.main_window.show_info.width() - 2 * self.main_window.show_info.shape.round_gap, self.main_window.show_info.row_one.tip_label.height())
-                self.main_window.show_info.show()
-                self.main_window.hide()
-                self.main_window.setDisabled(True)
+                self.error_hide_mainwindow('所有公司都没有添加模版信息\n需添加模版信息后重启软件。')
             else:
                 show_text = ''
                 for j in self.errors:
@@ -103,6 +101,7 @@ if __name__ == "__main__":
                     os.makedirs(excel_beifen, exist_ok=True)
                 os.chdir('..')
             else:
+                os.makedirs(company, exist_ok=True)
                 errors.append(company)
     if len(errors) == 0:
         if not at_lest_one_company:

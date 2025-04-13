@@ -25,10 +25,6 @@ mlsd_conf:
   top_n: 50 #取分数前多少的线条
   zheng_fan_shift: 50 #正反面偏移位置大小
 
-main_window_conf:
-  catch_max_height: 20 #展开最大宽度占多少行，一行高度为20px
-  debug_mode: software #[code, software], code模式在terminal中显示错误，software模式在窗口中报错
-
 paddleocr_conf:
   device: cpu #[cpu, gpu]
   times: 1 # 1就是用原图识别一遍，2就是再用灰度图识别一遍，可以权衡资源消耗和识别性能
@@ -67,34 +63,36 @@ paddleocr_conf:
   color:
     right: green #正确文本的颜色
     error: red #错误文本的颜色
+    check: blue #如果文本第一个字疑似为背景花纹识别出来的字，更改文本颜色为该颜色，注意检查
     check_front_strs: ['上']
     check_total_strs: ['中国', 'CHINA']
-    check: blue #如果文本第一个字疑似为背景花纹识别出来的字，更改文本颜色为该颜色，注意检查
 
 version: '2.0' #版本号
 pic_shape: [856, 540] #[width, height]， 最终生成照片的尺寸
 catch_days: 30 #制作的照片缓存几天，填写0代表一直缓存, 正整数比如1，就缓存当天的照片，第二天再打开软件，前一天的缓存就删掉了
 excel_cache_num: 10 #缓存多少个excel
-button_timer_duration: 500 #长按按钮的执行时间，单位为ms
+button_timer_duration: 1000 #长按按钮的执行时间，单位为ms
 show_tip_timer_duration: 1500 #展示提示的窗口的执行时间，单位为ms,0就是不显示
-
-conda_env_name: paddle-ocr #更新程序的时候，需要激活的conda环境名
-update_shell_path: 配置/update_windows.bat
-# del_and_reopen_shell_path: 配置/del_and_reopen.ps1
-
-update_info_show_time: 15 #秒
+#切割‘照片放这里/横向中间截图’中的照片的选项
+cut_proportion: 0.5 #从上到下，从左到右切割的比例
+cut_mode: 0 #切割模式，0代表分为上下部分，1代表分左右部分
 enable_update: false #是否开启更新选项
+main_window_conf:
+  catch_max_height: 20 #展开最大宽度占多少行，一行高度为20px
+  debug_mode: software #[code, software], code模式在terminal中显示错误，software模式在窗口中报错
+max_cash: 84513 #最大金额限制
+moren_pay: 62569 #设置默认支付金额
+moren_buy: 84513 #设置默认提货金额
+moren_annual_fee: 210 #设置默认年费
 
 # https://gitee.com/api/v5/repos/{owner}/{repo}/zipball?access_token={access_token}&ref={ref}
 access_token: 3d7b338f6b596cc32baf892157ac5f98 # gitee授权码
 owner: hellomrdj2597 # 源码拥有者
 repo: id_card_mlsd_paddle-ocr_edit # 项目名称
 ref: main #分支
-
-max_cash: 84513 #最大金额限制
-moren_pay: 62569 #设置默认支付金额
-moren_buy: 84513 #设置默认提货金额
-moren_annual_fee: 210 #设置默认年费
+conda_env_name: paddle-ocr #更新程序的时候，需要激活的conda环境名
+update_shell_path: 配置/update_windows.bat
+# del_and_reopen_shell_path: 配置/del_and_reopen.ps1
 
 #根据不同公司设置的选项
 companys: ['BASTION', 'SIBELLAC_HOLDINGS_LIMITED']
@@ -104,7 +102,3 @@ BASTION_config:
 SIBELLAC_HOLDINGS_LIMITED_config:
   zhuandan_before: '60' #时间点前转单的费用
   zhuandan_after: '60' #时间点后转单的费用
-
-#切割‘照片放这里/横向中间截图’中的照片的选项
-cut_proportion: 0.5 #从上到下，从左到右切割的比例
-cut_mode: 0 #切割模式，0代表分为上下部分，1代表分左右部分

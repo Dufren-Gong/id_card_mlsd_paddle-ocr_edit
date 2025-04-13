@@ -5,7 +5,7 @@ from my_utils.utils import delete_specific_files_and_folders
 from uis.main_window_ui import Row_Zero, Row_One, Row_Two, Select_Company, Row_Catch
 from windows.show_info_window import Show_Info_Window
 from my_utils.threads import Pdf_to_Pic_Thread, Download_Sourcecode
-from my_utils.utils import get_data_str, open_floader, find_in_catch_pic, get_internal_path, unzip_file, get_config, download_single_file, split_image
+from my_utils.utils import get_data_str, open_floader, find_in_catch_pic, get_internal_path, get_config, download_single_file, split_image
 from my_utils.operate_excel import read_sheets, get_kaidan_pairs, get_nahuo_pairs, get_zhuandan_pairs, get_nianfei_pairs, get_budan_pairs, get_buka_pairs, get_tuidan_pairs, fill_information, check_excel
 from each_types import kaidan, nahuo, zhuandan, budan, nianfei, buka, tuidan
 from PyQt6.QtGui import QDragEnterEvent, QIcon
@@ -227,18 +227,22 @@ class Main_Window(QMainWindow):
         self.have_error_flag = False
         self.select_file_flag = False
 
+    def cache_excel(self, excel_path, cache_floader):
+        cache_excels = os.listdir(cache_floader)
+        cache_excels = natsorted([i for i in cache_excels if os.path.isfile(os.path.join(cache_floader, i))], reverse=True)
+        if len(cache_excels) >= self.global_config['excel_cache_num']:
+            dels = cache_excels[self.global_config['excel_cache_num'] - 1:]
+            for i in dels:
+                send2trash(os.path.join(cache_floader, i))
+        save_name = os.path.join(cache_floader, get_data_str() + '.xlsx')
+        shutil.copy(excel_path, save_name)
+
     def start_processing(self):
-        inputs = ['开单', '拿货', '转单', '年费', '补单', '补卡']
+        inputs = ['开单', '拿货', '转单', '年费', '补单', '补卡', '退单']
         try:
-            cache_excels = os.listdir('./模版/excel备份')
-            cache_excels = natsorted([i for i in cache_excels if os.path.isfile(os.path.join('./模版/excel备份', i))], reverse=True)
-            if len(cache_excels) >= self.global_config['excel_cache_num']:
-                dels = cache_excels[self.global_config['excel_cache_num'] - 1:]
-                for i in dels:
-                    send2trash(os.path.join('./模版/excel备份', i))
-            save_name = os.path.join('./模版/excel备份', get_data_str() + '.xlsx')
-            shutil.copy(os.path.join('模版', self.excel_name), save_name)
-            pass_flag = check_excel(os.path.join('模版', self.excel_name), self.folder_path)
+            excel_path = os.path.join('模版', self.excel_name)
+            self.cache_excel(excel_path, './模版/excel备份')
+            pass_flag = check_excel(excel_path, self.folder_path)
         except PermissionError:
             pass_flag = '请先关闭excel!'
         if pass_flag == True:
@@ -246,7 +250,6 @@ class Main_Window(QMainWindow):
 
             with ThreadPoolExecutor() as executor:
                 futures = [executor.submit(fn, inp) for fn, inp in zip(functions, inputs)]
-
                 results = []
                 for future in as_completed(futures):
                     result = future.result()
@@ -265,14 +268,8 @@ class Main_Window(QMainWindow):
     def make_singe(self, mode):
         try:
             #缓存一定个数的excel，防止信息丢失
-            cache_excels = os.listdir('./模版/excel备份')
-            cache_excels = natsorted([i for i in cache_excels if os.path.isfile(os.path.join('./模版/excel备份', i))], reverse=True)
-            if len(cache_excels) >= self.global_config['excel_cache_num']:
-                dels = cache_excels[self.global_config['excel_cache_num'] - 1:]
-                for i in dels:
-                    send2trash(os.path.join('./模版/excel备份', i))
-            save_name = os.path.join('./模版/excel备份', get_data_str() + '.xlsx')
-            shutil.copy(os.path.join('模版', self.excel_name), save_name)
+            excel_path = os.path.join('模版', self.excel_name)
+            self.cache_excel(excel_path, './模版/excel备份')
             pass_flag = check_excel(os.path.join('模版', self.excel_name), self.folder_path, mode)
         except PermissionError:
             pass_flag = '请先关闭excel!'
