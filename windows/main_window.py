@@ -775,7 +775,7 @@ class Main_Window(QMainWindow):
         self.show_info.row_one.exit_button.hide()
         self.show_info.row_one.tip_label.setFixedSize(self.show_info.width() - 2 * self.show_info.shape.round_gap, self.show_info.row_one.tip_label.height())
         self.show_info.setWindowTitle('更新软件中')
-        self.show_info.set_show_text(f'正在更新中,这个窗口不可关闭!!!\n时间可能有点长,请耐心等待......')
+        self.show_info.set_show_text(f'正在更新中,如果软件在云空间\n最好先关闭云空间同步\n并且这个窗口不可关闭!!!\n时间可能有点长,请耐心等待......')
         self.show_info.show()
         time_count = 1000
         self.update_timer = QTimer()
@@ -786,6 +786,7 @@ class Main_Window(QMainWindow):
 
     def end_pyinstaller(self, time_count, name, save_name, root_floader, new_version, zip_file_path):
         wait_start_flag = False
+        stay_old_flag = True
         if self.pyinstaller_process.poll() is None:
             self.update_timer.start(time_count)  # 继续定时器
         else:
@@ -797,16 +798,23 @@ class Main_Window(QMainWindow):
             companys = self.global_config['companys']
             for i in companys:
                 if os.path.exists(i):
-                    shutil.copytree(f'{i}/', os.path.join(name, 'dist', 'main', i))
+                    if stay_old_flag:
+                        shutil.copytree(f'{i}/', os.path.join(name, 'dist', 'main', i))
+                    else:
+                        shutil.move(f'{i}', os.path.join(name, 'dist', 'main', i))
             if os.path.exists(zip_file_path):
                 shutil.move(zip_file_path, os.path.join(name, 'dist', 'main', '配置', zip_file_path))
             if not os.path.exists(os.path.join(name, 'dist', 'main', '_internal', '_tk_data')) and os.path.exists(os.path.join('_internal', '_tk_data')):
                 shutil.copytree(os.path.join('_internal', '_tk_data'), os.path.join(name, 'dist', 'main', '_internal', '_tk_data'))
             shutil.move(os.path.join(name, 'dist', 'main'), os.path.join(os.path.dirname(root_floader), f'{save_name}{new_version}'))
-            shutil.rmtree(name)
+            show_str = '更新完成\n现在可以关闭这个窗口打开新软件使用'
+            try:
+                shutil.rmtree(name)
+            except:
+                show_str += '\n请手动删除更新过程中产生的冗余文件。'
             self.show()
             self.show_info.setWindowTitle('更新完成')
-            self.show_info.set_show_text(f'更新完成\n现在可以关闭这个窗口打开新软件使用')
+            self.show_info.set_show_text(show_str)
             try:
                 self.show_info.row_one.exit_button.hide()
             except:
