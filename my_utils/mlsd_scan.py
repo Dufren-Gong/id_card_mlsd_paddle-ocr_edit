@@ -1,8 +1,11 @@
-import sys, gc, os
+import sys, gc, os, cv2
 import math
 import onnxruntime as ort
+import numpy as np
 from my_utils.utils import change_three_channel, get_internal_path
 from my_utils.mlsd_utils import pred_squares, distance
+from PIL.ImageEnhance import Contrast as PILImageEnhanceContrast
+from PIL.Image import fromarray as PILImagefromarray
 
 def release_model(model, model_large):
     # 删除模型
@@ -78,9 +81,21 @@ def get_square_dots(src, model, max_t=1024,
                          'w_degree': 1.95,
                          'w_length': 0.0,
                          'w_area': 1.86,
-                         'w_center': 0.14}):
+                         'w_center': 0.14,
+                         'top_n': 50,
+                         'pic_remode': 0,
+                         'duibidu_shift': 1.0}):
     max_t = min(max_t, 1024)
     src_temp = change_three_channel(src)
+    #增强对比度
+    pic_remode = params['pic_remode']
+    if pic_remode == 1:
+        duibidu_shift = params['duibidu_shift']
+        if duibidu_shift != 1.0:
+            src_temp = PILImagefromarray(cv2.cvtColor(src_temp, cv2.COLOR_BGR2RGB))
+            enhancer = PILImageEnhanceContrast(src_temp)
+            src_temp = enhancer.enhance(duibidu_shift)
+            src_temp = cv2.cvtColor(np.array(src_temp), cv2.COLOR_RGB2BGR)
     height, width, _ = src.shape
     min_length = min(height, width)
     min_pow = closest_shape(min_length)

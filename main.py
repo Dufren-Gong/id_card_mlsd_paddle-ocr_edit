@@ -54,10 +54,8 @@ def global_exception_handler(exc_type, exc_value, exc_traceback):
     # 将异常信息格式化为字符串
     error_details = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
     
-    # 打印到日志（可选）
-    if not os.path.exists('配置'):
-        os.makedirs('配置', exist_ok=True)
-    with open("配置/error.log", "a") as error_log:
+    # 打印到日志（可选
+    with open("模版/error.log", "a") as error_log:
         error_log.write(error_details)
         error_log.write("\n")
     
@@ -91,18 +89,18 @@ if __name__ == "__main__":
         for company in companys:
             if os.path.exists(f'{company}/模版'):
                 at_lest_one_company = True
-                os.chdir(company)
-                os.makedirs(result_path, exist_ok=True)
-                os.makedirs(pic_path, exist_ok=True)
-                os.makedirs(gaopin_catch, exist_ok=True)
-                if global_config['catch_days'] > 0:
-                    os.makedirs(date_catch, exist_ok=True)
-                if global_config['excel_cache_num'] > 0:
-                    os.makedirs(excel_beifen, exist_ok=True)
-                os.chdir('..')
             else:
-                os.makedirs(company, exist_ok=True)
+                os.makedirs(f'{company}/模版', exist_ok=True)
                 errors.append(company)
+            os.chdir(company)
+            os.makedirs(result_path, exist_ok=True)
+            os.makedirs(pic_path, exist_ok=True)
+            os.makedirs(gaopin_catch, exist_ok=True)
+            if global_config['catch_days'] > 0:
+                os.makedirs(date_catch, exist_ok=True)
+            if global_config['excel_cache_num'] > 0:
+                os.makedirs(excel_beifen, exist_ok=True)
+            os.chdir('..')
     if len(errors) == 0:
         if not at_lest_one_company:
             errors = ['no_company']

@@ -841,8 +841,8 @@ class Main_Window(QMainWindow):
                 unix_date = get_data_str()
                 for index, i in enumerate(cut_paths):
                     split_image(os.path.join(need_to_cut_between_path, i),
-                                os.path.join(floader_path, f'{unix_date}-{index * 2 + 1}'),
-                                os.path.join(floader_path, f'{unix_date}-{index * 2 + 2}'),
+                                os.path.join(floader_path, f'split_c_{unix_date}-{index * 2 + 1}'),
+                                os.path.join(floader_path, f'split_c_{unix_date}-{index * 2 + 2}'),
                                 proportion,
                                 cut_mode)
         self.open_folder_dialog(floader_path)

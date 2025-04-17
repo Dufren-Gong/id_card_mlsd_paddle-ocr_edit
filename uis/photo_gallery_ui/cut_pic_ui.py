@@ -94,7 +94,9 @@ class Cut_Pic(QMainWindow):
                 'w_length': self.global_config['mlsd_conf']['w_length'],
                 'w_area': self.global_config['mlsd_conf']['w_area'],
                 'w_center': self.global_config['mlsd_conf']['w_center'],
-                'top_n': self.global_config['mlsd_conf']['top_n']}
+                'top_n': self.global_config['mlsd_conf']['top_n'],
+                'pic_remode': 0,
+                'duibidu_shift': self.global_config['mlsd_conf']['duibidu_shift']}
         max_t_arr = [self.global_config['mlsd_conf']['tiny_max_input_size'], self.global_config['mlsd_conf']['large_max_input_size']]
         for i in range(groups):
             pair = self.photo_paths[i * gap: (i + 1)*gap]

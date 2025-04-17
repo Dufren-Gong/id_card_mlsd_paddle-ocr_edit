@@ -15,6 +15,7 @@ class Show_Pic_Window(QMainWindow):
         self.max_size = (self.screen_size.width()*0.8, self.screen_size.height()*0.8)
         self.show_info_window = show_info
         self.global_config = global_config
+        self.n_px = global_config['mlsd_conf']['n_px']
         self.map_color = copy.deepcopy(self.global_config['mlsd_conf']['map_color'])
         self.map_color[3] = int(255 * self.map_color[3])
         self.points = []
@@ -205,55 +206,53 @@ class Show_Pic_Window(QMainWindow):
         return new_x, new_y, flag
 
     def keyPressEvent(self, event):
-        if self.selected_point is not None:
-            # 设置每次移动的像素数量
-            n_px = 1
-            if event.key() == QtCore.Qt.Key.Key_Up:
-                new_y = self.points[self.selected_point].y() - n_px
-                _, new_y, _ = self.gap((self.points[self.selected_point].x(), new_y))
-                self.points[self.selected_point].setY(new_y)
-            elif event.key() == QtCore.Qt.Key.Key_Down:
-                new_y = self.points[self.selected_point].y() + n_px
-                _, new_y, _ = self.gap((self.points[self.selected_point].x(), new_y))
-                self.points[self.selected_point].setY(new_y)
-            elif event.key() == QtCore.Qt.Key.Key_Left:
-                new_x = self.points[self.selected_point].x() - n_px
-                new_x, _, _ = self.gap((new_x, self.points[self.selected_point].x()))
-                self.points[self.selected_point].setX(new_x)
-            elif event.key() == QtCore.Qt.Key.Key_Right:
-                new_x = self.points[self.selected_point].x() + n_px
-                new_x, _, _ = self.gap((new_x, self.points[self.selected_point].x()))
-                self.points[self.selected_point].setX(new_x)
-            # 重新计算中间点并更新显示
-            self.calculate_middle_points()
-            self.update()
-        if self.selected_middle_point is not None:
-            # 设置每次移动的像素数量
-            n_px = 1
-            i = self.selected_middle_point
-            p1 = self.points[i]
-            p2 = self.points[(i+1) % 4]
-            if event.key() == QtCore.Qt.Key.Key_Up:
-                new_x = self.middle_points[self.selected_middle_point].x()
-                new_y = self.middle_points[self.selected_middle_point].y() - n_px
-            elif event.key() == QtCore.Qt.Key.Key_Down:
-                new_x = self.middle_points[self.selected_middle_point].x()
-                new_y = self.middle_points[self.selected_middle_point].y() + n_px
-            elif event.key() == QtCore.Qt.Key.Key_Left:
-                new_x = self.middle_points[self.selected_middle_point].x() - n_px
-                new_y = self.middle_points[self.selected_middle_point].y()
-            elif event.key() == QtCore.Qt.Key.Key_Right:
-                new_x = self.middle_points[self.selected_middle_point].x() + n_px
-                new_y = self.middle_points[self.selected_middle_point].y()
-            delta_x = round(new_x) - (p1.x() + p2.x()) // 2
-            delta_y = round(new_y) - (p1.y() + p2.y()) // 2
-            newx_1, newy_1, flag1 = self.gap((p1.x() + delta_x, p1.y() + delta_y))
-            newx_2, newy_2, flag2 = self.gap((p2.x() + delta_x, p2.y() + delta_y))
-            if not flag1 and not flag2:
-                p2.setX(newx_2)
-                p1.setX(newx_1)
-                p1.setY(newy_1)
-                p2.setY(newy_2)
+        if event.key() == QtCore.Qt.Key.Key_Up \
+            or event.key() == QtCore.Qt.Key.Key_Down \
+            or event.key() == QtCore.Qt.Key.Key_Left \
+            or event.key() == QtCore.Qt.Key.Key_Right:
+            if self.selected_point is not None:
+                if event.key() == QtCore.Qt.Key.Key_Up:
+                    new_y = self.points[self.selected_point].y() - self.n_px
+                    _, new_y, _ = self.gap((self.points[self.selected_point].x(), new_y))
+                    self.points[self.selected_point].setY(new_y)
+                elif event.key() == QtCore.Qt.Key.Key_Down:
+                    new_y = self.points[self.selected_point].y() + self.n_px
+                    _, new_y, _ = self.gap((self.points[self.selected_point].x(), new_y))
+                    self.points[self.selected_point].setY(new_y)
+                elif event.key() == QtCore.Qt.Key.Key_Left:
+                    new_x = self.points[self.selected_point].x() - self.n_px
+                    new_x, _, _ = self.gap((new_x, self.points[self.selected_point].x()))
+                    self.points[self.selected_point].setX(new_x)
+                elif event.key() == QtCore.Qt.Key.Key_Right:
+                    new_x = self.points[self.selected_point].x() + self.n_px
+                    new_x, _, _ = self.gap((new_x, self.points[self.selected_point].x()))
+                    self.points[self.selected_point].setX(new_x)
+            if self.selected_middle_point is not None:
+                # 设置每次移动的像素数量
+                i = self.selected_middle_point
+                p1 = self.points[i]
+                p2 = self.points[(i+1) % 4]
+                if event.key() == QtCore.Qt.Key.Key_Up:
+                    new_x = self.middle_points[self.selected_middle_point].x()
+                    new_y = self.middle_points[self.selected_middle_point].y() - self.n_px
+                elif event.key() == QtCore.Qt.Key.Key_Down:
+                    new_x = self.middle_points[self.selected_middle_point].x()
+                    new_y = self.middle_points[self.selected_middle_point].y() + self.n_px
+                elif event.key() == QtCore.Qt.Key.Key_Left:
+                    new_x = self.middle_points[self.selected_middle_point].x() - self.n_px
+                    new_y = self.middle_points[self.selected_middle_point].y()
+                elif event.key() == QtCore.Qt.Key.Key_Right:
+                    new_x = self.middle_points[self.selected_middle_point].x() + self.n_px
+                    new_y = self.middle_points[self.selected_middle_point].y()
+                delta_x = round(new_x) - (p1.x() + p2.x()) // 2
+                delta_y = round(new_y) - (p1.y() + p2.y()) // 2
+                newx_1, newy_1, flag1 = self.gap((p1.x() + delta_x, p1.y() + delta_y))
+                newx_2, newy_2, flag2 = self.gap((p2.x() + delta_x, p2.y() + delta_y))
+                if not flag1 and not flag2:
+                    p2.setX(newx_2)
+                    p1.setX(newx_1)
+                    p1.setY(newy_1)
+                    p2.setY(newy_2)
             # 重新计算中间点并更新显示
             self.calculate_middle_points()
             self.update()

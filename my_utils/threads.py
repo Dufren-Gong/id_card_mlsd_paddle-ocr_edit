@@ -4,6 +4,7 @@ from my_utils.pdf_to_pic import convert_pdf_to_images
 from my_utils.ocr_by_paddleocr import pic_to_str
 from my_utils.mlsd_scan import square_four_lines, get_square_dots
 import numpy as np
+import os
 
 class PDFToPicSignals(QtCore.QObject):
     finished = QtCore.pyqtSignal()
@@ -71,7 +72,10 @@ class Get_line_detect(QtCore.QRunnable):
     def run(self):  # 重写run  比较耗时的后台任务可以在这里运行
         points = []
         max_flags = []
-        for people in self.cv_pairs:
+        for index, people in enumerate(self.cv_pairs):
+            pic_path_this = self.pair_paths[index]
+            if os.path.basename(pic_path_this).startswith('split_c_'):
+                self.params['pic_remode'] = 1
             h, w, _ = people.shape
             if self.model_type == 'tiny':
                 squares, array_score = get_square_dots(people, self.line_detect_model, max_t=self.max_t_arr[0], params=self.params)
@@ -91,6 +95,8 @@ class Get_line_detect(QtCore.QRunnable):
                     else:
                         squares, array_score = get_square_dots(people, self.line_detect_model, max_t=self.max_t_arr[0], params=self.params)
                     squares_lines, max_flag = square_four_lines(squares, array_score, (h, w), 0.1, self.pic_shape)
+            #重置mode
+            self.params['pic_remode'] = 0
             squares_lines = sorted(squares_lines, key=lambda x:x[4], reverse=False)
             first_step = [i[:4] for i in squares_lines]
             second_step = [[j[0][0], j[0][1], j[2][0], j[2][1]] for j in first_step]
