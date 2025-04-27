@@ -8,7 +8,7 @@ from openpyxl.styles import Font
 from my_utils import check
 from my_utils.utils import find_in_catch_pic
 
-sheet_names = ['开单', '拿货', '转单', '年费', '补单', '补卡']
+sheet_names = ['开单', '拿货', '转单', '年费', '补单', '补卡', '退单']
 
 column_names = dict(姓名=check.check_name,
                     联系电话=check.check_phone_number,

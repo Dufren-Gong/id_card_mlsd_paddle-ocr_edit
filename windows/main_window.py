@@ -1,4 +1,4 @@
-import os, shutil, sys
+import os, shutil
 from PyQt6.QtWidgets import QMainWindow, QWidget, QFileDialog, QApplication
 from uis.shapes import Ui_Shapes
 from my_utils.utils import delete_specific_files_and_folders
@@ -6,7 +6,7 @@ from uis.main_window_ui import Row_Zero, Row_One, Row_Two, Select_Company, Row_C
 from windows.show_info_window import Show_Info_Window
 from my_utils.threads import Pdf_to_Pic_Thread, Download_Sourcecode
 from my_utils.utils import get_data_str, open_floader, find_in_catch_pic, get_internal_path, get_config, download_single_file, split_image
-from my_utils.operate_excel import read_sheets, get_kaidan_pairs, get_nahuo_pairs, get_zhuandan_pairs, get_nianfei_pairs, get_budan_pairs, get_buka_pairs, get_tuidan_pairs, fill_information, check_excel
+from my_utils import operate_excel as utils_operate_excel
 from each_types import kaidan, nahuo, zhuandan, budan, nianfei, buka, tuidan
 from PyQt6.QtGui import QDragEnterEvent, QIcon
 from PyQt6.QtCore import QFileInfo, QThreadPool, QTimer
@@ -238,18 +238,17 @@ class Main_Window(QMainWindow):
         shutil.copy(excel_path, save_name)
 
     def start_processing(self):
-        inputs = ['开单', '拿货', '转单', '年费', '补单', '补卡', '退单']
         try:
             excel_path = os.path.join('模版', self.excel_name)
             self.cache_excel(excel_path, './模版/excel备份')
-            pass_flag = check_excel(excel_path, self.folder_path)
+            pass_flag = utils_operate_excel.check_excel(excel_path, self.folder_path)
         except PermissionError:
             pass_flag = '请先关闭excel!'
         if pass_flag == True:
-            functions = [self.make_all_single] * len(inputs)
+            functions = [self.make_all_single] * len(utils_operate_excel.sheet_names)
 
             with ThreadPoolExecutor() as executor:
-                futures = [executor.submit(fn, inp) for fn, inp in zip(functions, inputs)]
+                futures = [executor.submit(fn, inp) for fn, inp in zip(functions, utils_operate_excel.sheet_names)]
                 results = []
                 for future in as_completed(futures):
                     result = future.result()
@@ -270,7 +269,7 @@ class Main_Window(QMainWindow):
             #缓存一定个数的excel，防止信息丢失
             excel_path = os.path.join('模版', self.excel_name)
             self.cache_excel(excel_path, './模版/excel备份')
-            pass_flag = check_excel(os.path.join('模版', self.excel_name), self.folder_path, mode)
+            pass_flag = utils_operate_excel.check_excel(os.path.join('模版', self.excel_name), self.folder_path, mode)
         except PermissionError:
             pass_flag = '请先关闭excel!'
         if pass_flag == True:
@@ -372,8 +371,8 @@ class Main_Window(QMainWindow):
         self.show_info.show()
 
     def creat_zhuandan(self, mode, check_none = False):
-        df = read_sheets(f'./模版/{self.excel_name}', mode)
-        kaidan_pairs, errors = get_zhuandan_pairs(df, self.folder_path)
+        df = utils_operate_excel.read_sheets(f'./模版/{self.excel_name}', mode)
+        kaidan_pairs, errors = utils_operate_excel.utils_operate_excel.get_zhuandan_pairs(df, self.folder_path)
         if check_none and len(kaidan_pairs) == 0 and len(errors) == 0:
             self.show_excel_none(mode)
         else:
@@ -405,17 +404,17 @@ class Main_Window(QMainWindow):
                     doc = replace_pic(doc, obj, 18 + shift, kaidan_path, 0, 6, self.pic_scale)
                     doc = replace_pic(doc, obj, 16 + shift, kaidan_path, 1, 6, self.pic_scale)
                     try:
-                        fill_information(obj, f'./模版/{self.excel_name}', mode, cache_all_flag=True)
+                        utils_operate_excel.fill_information(obj, f'./模版/{self.excel_name}', mode, cache_all_flag=True)
                     except:
                         pass
                     doc.save(kaidan_path)
-                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path), 3)
+                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path), 3, self.global_config['move_pic'])
             self.show_error(errors)
             return errors
 
     def creat_nahuo(self, mode, check_none = False):
-        df = read_sheets(f'./模版/{self.excel_name}', mode)
-        kaidan_pairs, errors = get_nahuo_pairs(df, self.folder_path)
+        df = utils_operate_excel.read_sheets(f'./模版/{self.excel_name}', mode)
+        kaidan_pairs, errors = utils_operate_excel.get_nahuo_pairs(df, self.folder_path)
         if check_none and len(kaidan_pairs) == 0 and len(errors) == 0:
             self.show_excel_none(mode)
         else:
@@ -432,17 +431,17 @@ class Main_Window(QMainWindow):
                 doc = replace_pic(doc, kaidan_pair,18, kaidan_path, 0, 6, self.pic_scale)
                 doc = replace_pic(doc, kaidan_pair, 16, kaidan_path, 1, 6, self.pic_scale)
                 try:
-                    fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
+                    utils_operate_excel.fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
                 except:
                     pass
                 doc.save(kaidan_path)
-                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path))
+                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path), 3, self.global_config['move_pic'])
             self.show_error(errors)
             return errors
     
     def creat_nianfei(self, mode, check_none = False):
-        df = read_sheets(f'./模版/{self.excel_name}', mode)
-        kaidan_pairs, errors = get_nianfei_pairs(df, self.folder_path)
+        df = utils_operate_excel.read_sheets(f'./模版/{self.excel_name}', mode)
+        kaidan_pairs, errors = utils_operate_excel.get_nianfei_pairs(df, self.folder_path)
         if check_none and len(kaidan_pairs) == 0 and len(errors) == 0:
             self.show_excel_none(mode)
         else:
@@ -459,17 +458,17 @@ class Main_Window(QMainWindow):
                 doc = replace_pic(doc, kaidan_pair,20, kaidan_path, 0, 6, self.pic_scale)
                 doc = replace_pic(doc, kaidan_pair, 18, kaidan_path, 1, 6, self.pic_scale)
                 try:
-                    fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
+                    utils_operate_excel.fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
                 except:
                     pass
                 doc.save(kaidan_path)
-                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path))
+                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path), 3, self.global_config['move_pic'])
             self.show_error(errors)
             return errors
 
     def creat_kaidan(self, mode, check_none = False):
-        df = read_sheets(f'./模版/{self.excel_name}', mode)
-        kaidan_pairs, errors = get_kaidan_pairs(df, self.folder_path)
+        df = utils_operate_excel.read_sheets(f'./模版/{self.excel_name}', mode)
+        kaidan_pairs, errors = utils_operate_excel.get_kaidan_pairs(df, self.folder_path)
         if check_none and len(kaidan_pairs) == 0 and len(errors) == 0:
             self.show_excel_none(mode)
         else:
@@ -486,17 +485,17 @@ class Main_Window(QMainWindow):
                 doc = replace_pic(doc, kaidan_pair, 20, kaidan_path, 0, 6, self.pic_scale)
                 doc = replace_pic(doc, kaidan_pair, 18, kaidan_path, 1, 6, self.pic_scale)
                 try:
-                    fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
+                    utils_operate_excel.fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
                 except:
                     pass
                 doc.save(kaidan_path)
-                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path))
+                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path), 3, self.global_config['move_pic'])
             self.show_error(errors)
             return errors
     
     def creat_budan(self, mode, check_none = False):
-        df = read_sheets(f'./模版/{self.excel_name}', mode)
-        kaidan_pairs, errors = get_budan_pairs(df, self.folder_path)
+        df = utils_operate_excel.read_sheets(f'./模版/{self.excel_name}', mode)
+        kaidan_pairs, errors = utils_operate_excel.get_budan_pairs(df, self.folder_path)
         if check_none and len(kaidan_pairs) == 0 and len(errors) == 0:
             self.show_excel_none(mode)
         else:
@@ -513,17 +512,17 @@ class Main_Window(QMainWindow):
                 doc = replace_pic(doc, kaidan_pair, 14, kaidan_path, 0, 6, self.pic_scale)
                 doc = replace_pic(doc, kaidan_pair, 12, kaidan_path, 1, 6, self.pic_scale)
                 try:
-                    fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
+                    utils_operate_excel.fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
                 except:
                     pass
                 doc.save(kaidan_path)
-                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path))
+                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path), 3, self.global_config['move_pic'])
             self.show_error(errors)
             return errors
     
     def creat_buka(self, mode, check_none = False):
-        df = read_sheets(f'./模版/{self.excel_name}', mode)
-        kaidan_pairs, errors = get_buka_pairs(df, self.folder_path)
+        df = utils_operate_excel.read_sheets(f'./模版/{self.excel_name}', mode)
+        kaidan_pairs, errors = utils_operate_excel.get_buka_pairs(df, self.folder_path)
         if check_none and len(kaidan_pairs) == 0 and len(errors) == 0:
             self.show_excel_none(mode)
         else:
@@ -540,17 +539,17 @@ class Main_Window(QMainWindow):
                 doc = replace_pic(doc, kaidan_pair, 15, kaidan_path, 0, 6, self.pic_scale)
                 doc = replace_pic(doc, kaidan_pair, 13, kaidan_path, 1, 6, self.pic_scale)
                 try:
-                    fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
+                    utils_operate_excel.fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
                 except:
                     pass
                 doc.save(kaidan_path)
-                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path))
+                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path), 3, self.global_config['move_pic'])
             self.show_error(errors)
             return errors
 
     def creat_tuidan(self, mode, check_none = False):
-        df = read_sheets(f'./模版/{self.excel_name}', mode)
-        kaidan_pairs, errors = get_tuidan_pairs(df, self.folder_path)
+        df = utils_operate_excel.read_sheets(f'./模版/{self.excel_name}', mode)
+        kaidan_pairs, errors = utils_operate_excel.get_tuidan_pairs(df, self.folder_path)
         if check_none and len(kaidan_pairs) == 0 and len(errors) == 0:
             self.show_excel_none(mode)
         else:
@@ -567,11 +566,11 @@ class Main_Window(QMainWindow):
                 doc = replace_pic(doc, kaidan_pair, 17, kaidan_path, 0, 6, self.pic_scale)
                 doc = replace_pic(doc, kaidan_pair, 15, kaidan_path, 1, 6, self.pic_scale)
                 try:
-                    fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
+                    utils_operate_excel.fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
                 except:
                     pass
                 doc.save(kaidan_path)
-                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path))
+                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path), 3, self.global_config['move_pic'])
             self.show_error(errors)
             return errors
 
