@@ -4,7 +4,7 @@ from my_utils.operate_excel import Pair
 from docx.shared import Inches
 from PIL import Image
 
-def copy_template(mode, base_path, name_concat, count, sub = None):
+def copy_template(mode, base_path, name_concat, count, sub = None, in_floader=False):
     template_name = ['两个内地人模版', '一港一内地模版']
     if sub != None:
         docx_name = name_concat + '_' + mode + '_' + sub + '.docx'
@@ -15,7 +15,10 @@ def copy_template(mode, base_path, name_concat, count, sub = None):
         kaidan_template_path = f'模版/{mode}/{name}.docx'
     else:
         kaidan_template_path = f'模版/{mode}/{name}/{sub}.docx'
-    kaidan_base = os.path.join(base_path, mode, name_concat)
+    if in_floader:
+        kaidan_base = os.path.join(base_path, mode, name_concat)
+    else:
+        kaidan_base = os.path.join(base_path, mode)
     os.makedirs(kaidan_base, exist_ok=True)
     kaidan_path = os.path.join(kaidan_base, docx_name)
     if os.path.exists(kaidan_path):

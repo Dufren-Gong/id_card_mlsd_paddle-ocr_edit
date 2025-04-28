@@ -377,6 +377,7 @@ class Main_Window(QMainWindow):
             self.show_excel_none(mode)
         else:
             for kaidan_pair in kaidan_pairs:
+                assert isinstance(kaidan_pair, utils_operate_excel.Pair)
                 words = ['转让', '授权', '年费']
                 #如果被委托人的卡号为空就不需要办年费，不为空就办
                 if not isinstance(kaidan_pair.beiweituo.sail_card_id, str):
@@ -388,7 +389,7 @@ class Main_Window(QMainWindow):
                         count += 1
                     if kaidan_pair.entrusted.native == '香港':
                         count += 1
-                    kaidan_path = copy_template(mode, self.folder_path, name_concat, count, word)
+                    kaidan_path = copy_template(mode, self.folder_path, name_concat, count, word, in_floader=True)
                     shift = 0
                     if word == '转让':
                         company = self.global_config['company_name']
@@ -408,7 +409,8 @@ class Main_Window(QMainWindow):
                     except:
                         pass
                     doc.save(kaidan_path)
-                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path), 3, self.global_config['move_pic'])
+                if self.global_config['in_floader']:
+                    kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path), 3)
             self.show_error(errors)
             return errors
 
@@ -419,13 +421,14 @@ class Main_Window(QMainWindow):
             self.show_excel_none(mode)
         else:
             for kaidan_pair in kaidan_pairs:
+                assert isinstance(kaidan_pair, utils_operate_excel.Pair)
                 name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
                 count = 0
                 if kaidan_pair.client.native == '香港':
                     count += 1
                 if kaidan_pair.entrusted.native == '香港':
                     count += 1
-                kaidan_path = copy_template(mode, self.folder_path, name_concat, count)
+                kaidan_path = copy_template(mode, self.folder_path, name_concat, count, in_floader=self.global_config['in_floader'])
                 changes = nahuo.get_sub_arr(kaidan_pair)
                 doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
                 doc = replace_pic(doc, kaidan_pair,18, kaidan_path, 0, 6, self.pic_scale)
@@ -435,7 +438,8 @@ class Main_Window(QMainWindow):
                 except:
                     pass
                 doc.save(kaidan_path)
-                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path), 3, self.global_config['move_pic'])
+                if self.global_config['in_floader']:
+                    kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path), 2)
             self.show_error(errors)
             return errors
     
@@ -446,13 +450,14 @@ class Main_Window(QMainWindow):
             self.show_excel_none(mode)
         else:
             for kaidan_pair in kaidan_pairs:
+                assert isinstance(kaidan_pair, utils_operate_excel.Pair)
                 name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
                 count = 0
                 if kaidan_pair.client.native == '香港':
                     count += 1
                 if kaidan_pair.entrusted.native == '香港':
                     count += 1
-                kaidan_path = copy_template(mode, self.folder_path, name_concat, count)
+                kaidan_path = copy_template(mode, self.folder_path, name_concat, count, in_floader=self.global_config['in_floader'])
                 changes = nianfei.get_sub_arr_nianfei(kaidan_pair)
                 doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
                 doc = replace_pic(doc, kaidan_pair,20, kaidan_path, 0, 6, self.pic_scale)
@@ -462,7 +467,8 @@ class Main_Window(QMainWindow):
                 except:
                     pass
                 doc.save(kaidan_path)
-                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path), 3, self.global_config['move_pic'])
+                if self.global_config['in_floader']:
+                    kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path), 2)
             self.show_error(errors)
             return errors
 
@@ -473,13 +479,14 @@ class Main_Window(QMainWindow):
             self.show_excel_none(mode)
         else:
             for kaidan_pair in kaidan_pairs:
+                assert isinstance(kaidan_pair, utils_operate_excel.Pair)
                 name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
                 count = 0
                 if kaidan_pair.client.native == '香港':
                     count += 1
                 if kaidan_pair.entrusted.native == '香港':
                     count += 1
-                kaidan_path = copy_template(mode, self.folder_path, name_concat, count)
+                kaidan_path = copy_template(mode, self.folder_path, name_concat, count, in_floader=self.global_config['in_floader'])
                 changes = kaidan.get_sub_arr(kaidan_pair)
                 doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
                 doc = replace_pic(doc, kaidan_pair, 20, kaidan_path, 0, 6, self.pic_scale)
@@ -489,7 +496,8 @@ class Main_Window(QMainWindow):
                 except:
                     pass
                 doc.save(kaidan_path)
-                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path), 3, self.global_config['move_pic'])
+                if self.global_config['in_floader']:
+                    kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path), 2)
             self.show_error(errors)
             return errors
     
@@ -500,13 +508,14 @@ class Main_Window(QMainWindow):
             self.show_excel_none(mode)
         else:
             for kaidan_pair in kaidan_pairs:
+                assert isinstance(kaidan_pair, utils_operate_excel.Pair)
                 name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
                 count = 0
                 if kaidan_pair.client.native == '香港':
                     count += 1
                 if kaidan_pair.entrusted.native == '香港':
                     count += 1
-                kaidan_path = copy_template(mode, self.folder_path, name_concat, count)
+                kaidan_path = copy_template(mode, self.folder_path, name_concat, count, in_floader=self.global_config['in_floader'])
                 changes = budan.get_sub_arr_budan(kaidan_pair)
                 doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
                 doc = replace_pic(doc, kaidan_pair, 14, kaidan_path, 0, 6, self.pic_scale)
@@ -516,7 +525,8 @@ class Main_Window(QMainWindow):
                 except:
                     pass
                 doc.save(kaidan_path)
-                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path), 3, self.global_config['move_pic'])
+                if self.global_config['in_floader']:
+                    kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path), 2)
             self.show_error(errors)
             return errors
     
@@ -527,13 +537,14 @@ class Main_Window(QMainWindow):
             self.show_excel_none(mode)
         else:
             for kaidan_pair in kaidan_pairs:
+                assert isinstance(kaidan_pair, utils_operate_excel.Pair)
                 name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
                 count = 0
                 if kaidan_pair.client.native == '香港':
                     count += 1
                 if kaidan_pair.entrusted.native == '香港':
                     count += 1
-                kaidan_path = copy_template(mode, self.folder_path, name_concat, count)
+                kaidan_path = copy_template(mode, self.folder_path, name_concat, count, in_floader=self.global_config['in_floader'])
                 changes = buka.get_sub_arr_buka(kaidan_pair)
                 doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
                 doc = replace_pic(doc, kaidan_pair, 15, kaidan_path, 0, 6, self.pic_scale)
@@ -543,7 +554,8 @@ class Main_Window(QMainWindow):
                 except:
                     pass
                 doc.save(kaidan_path)
-                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path), 3, self.global_config['move_pic'])
+                if self.global_config['in_floader']:
+                    kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path), 2)
             self.show_error(errors)
             return errors
 
@@ -554,13 +566,14 @@ class Main_Window(QMainWindow):
             self.show_excel_none(mode)
         else:
             for kaidan_pair in kaidan_pairs:
+                assert isinstance(kaidan_pair, utils_operate_excel.Pair)
                 name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
                 count = 0
                 if kaidan_pair.client.native == '香港':
                     count += 1
                 if kaidan_pair.entrusted.native == '香港':
                     count += 1
-                kaidan_path = copy_template(mode, self.folder_path, name_concat, count)
+                kaidan_path = copy_template(mode, self.folder_path, name_concat, count, in_floader=self.global_config['in_floader'])
                 changes = tuidan.get_sub_arr_tuidan(kaidan_pair)
                 doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
                 doc = replace_pic(doc, kaidan_pair, 17, kaidan_path, 0, 6, self.pic_scale)
@@ -570,7 +583,8 @@ class Main_Window(QMainWindow):
                 except:
                     pass
                 doc.save(kaidan_path)
-                kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path), 3, self.global_config['move_pic'])
+                if self.global_config['in_floader']:
+                    kaidan.move_pic(kaidan_pair, self.folder_path, os.path.dirname(kaidan_path), 2)
             self.show_error(errors)
             return errors
 

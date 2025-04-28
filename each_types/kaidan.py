@@ -69,13 +69,12 @@ def get_sub_arr(kaidan_pair:Pair):
     changes.extend([client_str, entrusted_str])
     return changes
 
-def move_pic(kaidan_pair:Pair, folder_path, target_path, pic_num=2, move_flag=False):
-    if move_flag:
-        names = os.listdir(folder_path)
-        all_names = [kaidan_pair.client.name, kaidan_pair.entrusted.name]
-        if pic_num == 3:
-            all_names.append(kaidan_pair.beiweituo.name)
-        for name in all_names:
-            names_tmep = [i for i in names if name in i]
-            for this_name in names_tmep:
-                shutil.copy(os.path.join(folder_path, this_name), os.path.join(target_path, this_name))
+def move_pic(kaidan_pair:Pair, folder_path, target_path, pic_num=2):
+    names = os.listdir(folder_path)
+    all_names = [kaidan_pair.client.name, kaidan_pair.entrusted.name]
+    if pic_num == 3:
+        all_names.append(kaidan_pair.beiweituo.name)
+    for name in all_names:
+        names_tmep = [i for i in names if name in i]
+        for this_name in names_tmep:
+            shutil.copy(os.path.join(folder_path, this_name), os.path.join(target_path, this_name))

@@ -79,14 +79,14 @@ show_tip_timer_duration: 1500 #展示提示的窗口的执行时间，单位为m
 cut_proportion: 0.5 #从上到下，从左到右切割的比例
 cut_mode: 0 #切割模式，0代表分为上下部分，1代表分左右部分
 enable_update: false #是否开启更新选项
-main_window_conf:
-  catch_max_height: 20 #展开最大宽度占多少行，一行高度为20px
-  debug_mode: software #[code, software], code模式在terminal中显示错误，software模式在窗口中报错
 max_cash: 84513 #最大金额限制
 moren_pay: 62569 #设置默认支付金额
 moren_buy: 84513 #设置默认提货金额
 moren_annual_fee: 210 #设置默认年费
-move_pic: False
+in_floader: False #
+main_window_conf:
+  catch_max_height: 20 #展开最大宽度占多少行，一行高度为20px
+  debug_mode: software #[code, software], code模式在terminal中显示错误，software模式在窗口中报错
 
 # https://gitee.com/api/v5/repos/{owner}/{repo}/zipball?access_token={access_token}&ref={ref}
 access_token: 3d7b338f6b596cc32baf892157ac5f98 # gitee授权码
