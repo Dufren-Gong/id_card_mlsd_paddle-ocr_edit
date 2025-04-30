@@ -101,7 +101,7 @@ def load_json_data(path):
             shutil.copy(cache_path + '.info', os.path.join(os.path.dirname(path), info_name + '.info'))
             shutil.copy(cache_path + '反.png', os.path.join(os.path.dirname(path), info_name + '反.png'))
         else:
-            cache_path = find_in_catch_pic(info_name)
+            cache_path = find_in_catch_pic(info_name, './模版/缓存照片', 2)
             if cache_path != '':
                 with open(cache_path + '.info', 'r', encoding='utf-8') as reader:
                     line = reader.readline()

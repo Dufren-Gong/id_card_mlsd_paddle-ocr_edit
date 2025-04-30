@@ -37,8 +37,7 @@ def cv_imread(file_path):
     cv_img = cv2.imdecode(image_array, cv2.IMREAD_UNCHANGED)
     return cv_img
 
-def find_in_catch_pic(name):
-    floader = './模版/缓存照片'
+def find_in_catch_pic(name, floader, in_level=2):
     #从最新的开始索引
     catch_pic_paths = natsorted(os.listdir(floader), reverse=True)
     if '.DS_Store' in catch_pic_paths:

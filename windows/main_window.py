@@ -902,19 +902,27 @@ class Main_Window(QMainWindow):
     def search_name(self):
         text = self.row_zero.pic_name_lineedit.text().replace(' ', '')
         if text:
+            searched = []
+            #新制作照片里找
+            searched_in_catch = find_in_catch_pic(text, './照片编辑结果', 2)
+            if searched_in_catch != '':
+                searched.append(os.path.dirname(searched_in_catch))
             #高频信息里面找
-            cache_path = os.path.join('模版', '高频照片')
+            cache_path = os.path.join('.', '模版', '高频照片')
             cache_names = os.listdir(cache_path)
-            searched = ''
             if text + '.info' in cache_names and text + '.png' in cache_names and text + '反.png' in cache_names:
-                searched = cache_path
-            else:
-                searched_in_catch = find_in_catch_pic(text)
-                if searched_in_catch != '':
-                    searched = os.path.dirname(searched_in_catch)
-            if searched != '':
-                self.show_info.set_show_text(f'{text}信息已存在，不用重新编辑照片！\n照片和信息在:{searched}')
-                open_floader(os.path.join(searched, f'{text}.png'))
+                searched.append(cache_path)
+            #cache里找
+            searched_in_catch = find_in_catch_pic(text, './模版/缓存照片', 2)
+            if searched_in_catch != '':
+                searched.append(os.path.dirname(searched_in_catch))
+            if len(searched) != 0:
+                show_str = '\n'.join(searched)
+                self.show_info.set_show_text(f'{text}信息已存在,照片和信息存在于:\n{show_str}')
+                for i in searched:
+                    open_floader(os.path.join(i, f'{text}.info'))
+                open_floader(os.path.join(searched[0], f'{text}.png'))
+                open_floader(os.path.join(searched[0], f'{text}反.png'))
             else:
                 self.show_info.set_show_text(f'{text}信息不存在，需要编辑此人照片！如果是香港人名字且带繁体字，先点击繁体转简体再查询')
         else:
