@@ -1,5 +1,5 @@
 import pandas as pd
-import os, json, shutil, re
+import os, json, shutil, re, copy
 from natsort import natsorted
 import numpy as np
 from my_utils.Traditional_to_Simplified_Chinese import fan_to_jian
@@ -9,6 +9,7 @@ from my_utils import check
 from my_utils.utils import find_in_catch_pic
 
 sheet_names = ['开单', '拿货', '转单', '年费', '补单', '补卡', '退单']
+catch_columns = ['性别', '归属地', '民族', '出生日期', '身份证号码', '住址']
 
 column_names = dict(姓名=check.check_name,
                     联系电话=check.check_phone_number,
@@ -18,6 +19,12 @@ column_names = dict(姓名=check.check_name,
                     开单日期=check.check_open_date,
                     剩余货值=check.check_cash,
                     地址=check.check_address)
+
+column_names_after = dict(性别=check.check_sex,
+                    民族=check.check_nation,
+                    出生日期=check.check_birth,
+                    身份证号码=check.check_id,
+                    住址=check.check_address)
 
 class People_Info():
     def __init__(self,
@@ -673,7 +680,6 @@ def fill_information(obj_pairs:Pair, save_path, cue, cache_all_flag = False):
     wb = load_workbook(save_path)
     ws = wb[cue]
     
-    catch_columns = ['性别', '归属地', '民族', '出生日期', '身份证号码', '住址']
     column_letters = get_column_letter(ws, catch_columns)
 
     for obj in cache_objs:
@@ -757,6 +763,10 @@ def check_excel(file_path, pic_floader, sheet_name = None):
         ws = wb[sheet]
         ws = read_openpyxl_by_str(ws)
         row_count = ws.max_row
+        # 遍历所有单元格并设置字体颜色为黑色
+        for row in ws.iter_rows(min_row=2):
+            for cell in row:
+                cell.font = black_font  # 设置字体颜色为黑色
         check_cloumns = [i for i in [cell.value for cell in ws[1]] if i in c_names]
         column_letters = get_column_letter(ws, check_cloumns + ['模版信息'])
         address_column_index = check_cloumns.index('地址')
@@ -774,7 +784,6 @@ def check_excel(file_path, pic_floader, sheet_name = None):
             for i in range(2, row_count + 1):
                 value = ws[f"{letter}{i}"].value
                 if not pd.isna(value):
-                    ws[f"{letter}{i}"].font = black_font
                     if value.strip().replace(' ', '') != '':
                         check_r = column_names[c_name](value)
                         if c_name != '姓名':
@@ -854,6 +863,44 @@ def check_excel(file_path, pic_floader, sheet_name = None):
                                             ws[f"{address_column_letters}{i}"] = address
                                     else:
                                         ws[f"{address_column_letters}{i}"] = np.nan
+                    else:
+                        ws[f"{letter}{i}"] = np.nan
+    wb.save(file_path)
+    return passed_flag
+
+def check_excel_after(file_path, sheet_name = None):
+    passed_flag = True
+    # 设置绿色字体
+    red_font = Font(color="FF0000")  # 红色字体
+    black_font = Font(color="000000")  # 黑色字体
+    wb = load_workbook(file_path)
+    sheets = []
+    if sheet_name == None:
+        sheets = sheet_names
+    elif isinstance(sheet_name, str):
+        if sheet_name in sheet_names:
+            sheets = [sheet_name]
+    elif isinstance(sheet_name, list):
+        sheets = [i for i in sheet_name if i in sheet_names]
+    for sheet in sheets:
+        ws = wb[sheet]
+        ws = read_openpyxl_by_str(ws)
+        row_count = ws.max_row
+        temp = copy.deepcopy(catch_columns)
+        temp.remove('归属地')
+        check_cloumns = [i for i in [cell.value for cell in ws[1]] if i in temp]
+        column_letters = get_column_letter(ws, check_cloumns)
+        for index, letter in enumerate(column_letters):
+            c_name = check_cloumns[index]
+            for i in range(2, row_count + 1):
+                value = ws[f"{letter}{i}"].value
+                if not pd.isna(value):
+                    ws[f"{letter}{i}"].font = black_font
+                    if value.strip().replace(' ', '') != '':
+                        check_r = column_names_after[c_name](value)
+                        if check_r == None:
+                            ws[f"{letter}{i}"].font = red_font
+                            passed_flag = False
                     else:
                         ws[f"{letter}{i}"] = np.nan
     wb.save(file_path)

@@ -176,34 +176,34 @@ class Main_Window(QMainWindow):
                             self.show_info.set_show_text('正在制作中，请稍后！')
                             self.show_info.show_window()
                             QApplication.processEvents()
-                            if selected_options == 4:
-                                self.make_singe('开单')
-                            elif selected_options == 5:
-                                self.make_singe('拿货')
-                            elif selected_options == 6:
-                                self.make_singe('转单')
-                            elif selected_options == 7:
-                                self.make_singe('年费')
-                            elif selected_options == 8:
-                                self.make_singe('补单')
-                            elif selected_options == 9:
-                                self.make_singe('补卡')
-                            elif selected_options == 10:
-                                self.make_singe('退单')
-                            elif selected_options == 11:
+                            if selected_options != 11:
+                                if selected_options == 4:
+                                    self.make_singe('开单')
+                                elif selected_options == 5:
+                                    self.make_singe('拿货')
+                                elif selected_options == 6:
+                                    self.make_singe('转单')
+                                elif selected_options == 7:
+                                    self.make_singe('年费')
+                                elif selected_options == 8:
+                                    self.make_singe('补单')
+                                elif selected_options == 9:
+                                    self.make_singe('补卡')
+                                elif selected_options == 10:
+                                    self.make_singe('退单')
+                                if not self.have_error_flag:
+                                    duration = self.global_config['show_tip_timer_duration']
+                                    if duration > 0:
+                                        self.show_info.set_show_text('制作完成！')
+                                        self.show_info.show_window()
+                                        self.combbox_change_tips_timer.start(duration) 
+                            else:
                                 self.start_processing()
-                            if not self.have_error_flag:
-                                duration = self.global_config['show_tip_timer_duration']
-                                if duration > 0:
-                                    self.show_info.set_show_text('制作完成！')
-                                    self.show_info.show_window()
-                                    self.combbox_change_tips_timer.start(duration)    
                 else:
                     self.select_file_flag = False
         else:
             if floader_path == None:
-                self.folder_path, _ = QFileDialog.getOpenFileName(self, '选择pdf文件', '', 
-                                                    'Pdf Files (*.pdf);;All Files (*)')
+                self.folder_path, _ = QFileDialog.getOpenFileName(self, '选择pdf文件', '', 'Pdf Files (*.pdf);;All Files (*)')
             else:
                 self.folder_path = floader_path
             self.select_file_flag = True
@@ -246,7 +246,6 @@ class Main_Window(QMainWindow):
             pass_flag = '请先关闭excel!'
         if pass_flag == True:
             functions = [self.make_all_single] * len(utils_operate_excel.sheet_names)
-
             with ThreadPoolExecutor() as executor:
                 futures = [executor.submit(fn, inp) for fn, inp in zip(functions, utils_operate_excel.sheet_names)]
                 results = []
@@ -275,6 +274,12 @@ class Main_Window(QMainWindow):
         if pass_flag == True:
             try:
                 self.which_func(mode, True)
+                pass_flag_after = utils_operate_excel.check_excel_after(os.path.join('模版', self.excel_name), mode)
+                if not pass_flag_after:
+                    open_floader(os.path.join('模版', self.excel_name))
+                    self.have_error_flag = True
+                    self.show_info.set_show_text('填写到word里的信息好像有问题，已经将有误的地方标为红色，但是word已经按照这些信息做出来了，如果检查没问题就不用管了，如果确实有问题请修改对应人的.info文件。')
+                    self.show_info.show_window()
             except:
                 self.shwo_total_error()
         else:
@@ -317,7 +322,20 @@ class Main_Window(QMainWindow):
         if show_s != '':
             show_s += '请检查提供的信息和照片是否完全，或者联系作者。'
             self.show_info.set_show_text(show_s)
-            self.show_info.show_window() 
+            self.show_info.show_window()
+        else:
+            pass_flag_after = utils_operate_excel.check_excel_after(os.path.join('模版', self.excel_name))
+            if not pass_flag_after:
+                open_floader(os.path.join('模版', self.excel_name))
+                self.have_error_flag = True
+                self.show_info.set_show_text('制作成果，但是照片信息好像有问题，已经将有误的地方标为红色，但是word已经按照这些信息做出来了，如果检查没问题就不用管了，如果确实有问题请修改对应人的.info文件。')
+                self.show_info.show_window()
+            if not self.have_error_flag:
+                duration = self.global_config['show_tip_timer_duration']
+                if duration > 0:
+                    self.show_info.set_show_text('制作完成！')
+                    self.show_info.show_window()
+                    self.combbox_change_tips_timer.start(duration) 
 
     def which_func(self, mode, check=False):
         if mode == '开单':
@@ -372,7 +390,7 @@ class Main_Window(QMainWindow):
 
     def creat_zhuandan(self, mode, check_none = False):
         df = utils_operate_excel.read_sheets(f'./模版/{self.excel_name}', mode)
-        kaidan_pairs, errors = utils_operate_excel.utils_operate_excel.get_zhuandan_pairs(df, self.folder_path)
+        kaidan_pairs, errors = utils_operate_excel.get_zhuandan_pairs(df, self.folder_path)
         if check_none and len(kaidan_pairs) == 0 and len(errors) == 0:
             self.show_excel_none(mode)
         else:
@@ -431,8 +449,8 @@ class Main_Window(QMainWindow):
                 kaidan_path = copy_template(mode, self.folder_path, name_concat, count, in_floader=self.global_config['in_floader'])
                 changes = nahuo.get_sub_arr(kaidan_pair)
                 doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
-                doc = replace_pic(doc, kaidan_pair,18, kaidan_path, 0, 6, self.pic_scale)
-                doc = replace_pic(doc, kaidan_pair, 16, kaidan_path, 1, 6, self.pic_scale)
+                doc = replace_pic(doc, kaidan_pair,18, kaidan_path, 0, 6, self.pic_scale, self.global_config['in_floader'])
+                doc = replace_pic(doc, kaidan_pair, 16, kaidan_path, 1, 6, self.pic_scale, self.global_config['in_floader'])
                 try:
                     utils_operate_excel.fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
                 except:
@@ -460,8 +478,8 @@ class Main_Window(QMainWindow):
                 kaidan_path = copy_template(mode, self.folder_path, name_concat, count, in_floader=self.global_config['in_floader'])
                 changes = nianfei.get_sub_arr_nianfei(kaidan_pair)
                 doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
-                doc = replace_pic(doc, kaidan_pair,20, kaidan_path, 0, 6, self.pic_scale)
-                doc = replace_pic(doc, kaidan_pair, 18, kaidan_path, 1, 6, self.pic_scale)
+                doc = replace_pic(doc, kaidan_pair,20, kaidan_path, 0, 6, self.pic_scale, self.global_config['in_floader'])
+                doc = replace_pic(doc, kaidan_pair, 18, kaidan_path, 1, 6, self.pic_scale, self.global_config['in_floader'])
                 try:
                     utils_operate_excel.fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
                 except:
@@ -489,8 +507,8 @@ class Main_Window(QMainWindow):
                 kaidan_path = copy_template(mode, self.folder_path, name_concat, count, in_floader=self.global_config['in_floader'])
                 changes = kaidan.get_sub_arr(kaidan_pair)
                 doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
-                doc = replace_pic(doc, kaidan_pair, 20, kaidan_path, 0, 6, self.pic_scale)
-                doc = replace_pic(doc, kaidan_pair, 18, kaidan_path, 1, 6, self.pic_scale)
+                doc = replace_pic(doc, kaidan_pair, 20, kaidan_path, 0, 6, self.pic_scale, self.global_config['in_floader'])
+                doc = replace_pic(doc, kaidan_pair, 18, kaidan_path, 1, 6, self.pic_scale, self.global_config['in_floader'])
                 try:
                     utils_operate_excel.fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
                 except:
@@ -518,8 +536,8 @@ class Main_Window(QMainWindow):
                 kaidan_path = copy_template(mode, self.folder_path, name_concat, count, in_floader=self.global_config['in_floader'])
                 changes = budan.get_sub_arr_budan(kaidan_pair)
                 doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
-                doc = replace_pic(doc, kaidan_pair, 14, kaidan_path, 0, 6, self.pic_scale)
-                doc = replace_pic(doc, kaidan_pair, 12, kaidan_path, 1, 6, self.pic_scale)
+                doc = replace_pic(doc, kaidan_pair, 14, kaidan_path, 0, 6, self.pic_scale, self.global_config['in_floader'])
+                doc = replace_pic(doc, kaidan_pair, 12, kaidan_path, 1, 6, self.pic_scale, self.global_config['in_floader'])
                 try:
                     utils_operate_excel.fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
                 except:
@@ -547,8 +565,8 @@ class Main_Window(QMainWindow):
                 kaidan_path = copy_template(mode, self.folder_path, name_concat, count, in_floader=self.global_config['in_floader'])
                 changes = buka.get_sub_arr_buka(kaidan_pair)
                 doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
-                doc = replace_pic(doc, kaidan_pair, 15, kaidan_path, 0, 6, self.pic_scale)
-                doc = replace_pic(doc, kaidan_pair, 13, kaidan_path, 1, 6, self.pic_scale)
+                doc = replace_pic(doc, kaidan_pair, 15, kaidan_path, 0, 6, self.pic_scale, self.global_config['in_floader'])
+                doc = replace_pic(doc, kaidan_pair, 13, kaidan_path, 1, 6, self.pic_scale, self.global_config['in_floader'])
                 try:
                     utils_operate_excel.fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
                 except:
@@ -576,8 +594,8 @@ class Main_Window(QMainWindow):
                 kaidan_path = copy_template(mode, self.folder_path, name_concat, count, in_floader=self.global_config['in_floader'])
                 changes = tuidan.get_sub_arr_tuidan(kaidan_pair)
                 doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
-                doc = replace_pic(doc, kaidan_pair, 17, kaidan_path, 0, 6, self.pic_scale)
-                doc = replace_pic(doc, kaidan_pair, 15, kaidan_path, 1, 6, self.pic_scale)
+                doc = replace_pic(doc, kaidan_pair, 17, kaidan_path, 0, 6, self.pic_scale, self.global_config['in_floader'])
+                doc = replace_pic(doc, kaidan_pair, 15, kaidan_path, 1, 6, self.pic_scale, self.global_config['in_floader'])
                 try:
                     utils_operate_excel.fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
                 except:

@@ -56,10 +56,7 @@ def sort_boxes_by_line(boxes, threshold=10):
     infos = []
     this_line = []
     lengths = len(sort_by_y)
-    try:
-        compare_y = sort_by_y[0][0][0][1]
-    except:
-        print(boxes)
+    compare_y = sort_by_y[0][0][0][1]
     for line_index in range(lengths):
         this_y = sort_by_y[line_index][0][0][1]
         if abs(this_y - compare_y) <= threshold:

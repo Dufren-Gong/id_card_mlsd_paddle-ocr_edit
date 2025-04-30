@@ -118,9 +118,9 @@ def get_num_base(path, num=1):
         path = os.path.dirname(path)
     return path
 
-def get_image_paths(pairs:Pair, kaidan_path):
+def get_image_paths(pairs:Pair, kaidan_path, in_folder_flag):
     pics = []
-    base_path = get_num_base(kaidan_path, 3)
+    base_path = get_num_base(kaidan_path, 2 + int(in_folder_flag))
     client_name = pairs.client.name
     entrusted_name = pairs.entrusted.name
     pics_temp = os.listdir(base_path)
@@ -137,8 +137,8 @@ def get_image_paths(pairs:Pair, kaidan_path):
     pics = [f"{client_name}.png", f"{client_name}反.png", f"{entrusted_name}.png", f"{entrusted_name}反.png"]
     return [os.path.join(base_path, pic) for pic in pics]
 
-def replace_pic(doc, pairs, num, kaidan_path, position, num_spaces, scale = 1.0):
-    image_paths = get_image_paths(pairs, kaidan_path)
+def replace_pic(doc, pairs, num, kaidan_path, position, num_spaces, scale = 1.0, in_folder_flag = True):
+    image_paths = get_image_paths(pairs, kaidan_path, in_folder_flag)
     image_paths = image_paths[2*position:2*(position + 1)]
     # 计算目标段落的索引
     target_index = len(doc.paragraphs) - num

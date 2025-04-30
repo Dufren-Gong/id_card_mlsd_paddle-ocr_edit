@@ -3,6 +3,7 @@ from uis.shapes import Ui_Shapes
 from uis.show_info_window_ui import Row_One
 from PyQt6.QtGui import QIcon
 from my_utils.utils import get_internal_path
+from PyQt6.QtCore import Qt
 
 class Show_Info_Window(QMainWindow):
     def __init__(self):
@@ -14,6 +15,8 @@ class Show_Info_Window(QMainWindow):
         self.setWindowIcon(QIcon(get_internal_path('../files/icon/icon.ico')))
         self.init_ui()
         self.init_events()
+         # 设置窗口为置顶
+        self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint)
 
     def closeEvent(self, event):
         if self.reopen_main_window != None:
