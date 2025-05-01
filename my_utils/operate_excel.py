@@ -886,11 +886,14 @@ def check_excel_after(file_path, sheet_name = None):
         ws = wb[sheet]
         ws = read_openpyxl_by_str(ws)
         row_count = ws.max_row
-        temp = copy.deepcopy(catch_columns)
-        temp.remove('归属地')
-        check_cloumns = [i for i in [cell.value for cell in ws[1]] if i in temp]
+        check_cloumns = [i for i in [cell.value for cell in ws[1]] if i in catch_columns]
         column_letters = get_column_letter(ws, check_cloumns)
+        nation_index = check_cloumns.index('归属地')
+        nation_letter = column_letters[nation_index]
         for index, letter in enumerate(column_letters):
+            #归属地不检查，因为用不上
+            if letter == nation_letter:
+                continue
             c_name = check_cloumns[index]
             for i in range(2, row_count + 1):
                 value = ws[f"{letter}{i}"].value
@@ -899,8 +902,14 @@ def check_excel_after(file_path, sheet_name = None):
                     if value.strip().replace(' ', '') != '':
                         check_r = column_names_after[c_name](value)
                         if check_r == None:
-                            ws[f"{letter}{i}"].font = red_font
-                            passed_flag = False
+                            if c_name == '民族' and value == '无':
+                                nation_value = ws[f"{nation_letter}{i}"].value
+                                if nation_value != '香港':
+                                    ws[f"{letter}{i}"].font = red_font
+                                    passed_flag = False
+                            else:
+                                ws[f"{letter}{i}"].font = red_font
+                                passed_flag = False
                     else:
                         ws[f"{letter}{i}"] = np.nan
     wb.save(file_path)
