@@ -173,10 +173,10 @@ class Main_Window(QMainWindow):
                             self.show_info.set_show_text(f'缺少"{self.excel_name}"文件')
                             self.show_info.show_window()
                         else:
-                            self.show_info.set_show_text('正在制作中，请稍后！')
-                            self.show_info.show_window()
-                            QApplication.processEvents()
                             if selected_options != 11:
+                                self.show_info.set_show_text('正在制作中，请稍后！')
+                                self.show_info.show_window()
+                                QApplication.processEvents()
                                 if selected_options == 4:
                                     self.make_singe('开单')
                                 elif selected_options == 5:
@@ -198,7 +198,10 @@ class Main_Window(QMainWindow):
                                         self.show_info.show_window()
                                         self.combbox_change_tips_timer.start(duration) 
                             else:
-                                self.start_processing()
+                                self.show_info.row_one.exit_button.disconnect()
+                                self.show_info.row_one.exit_button.clicked.connect(self.start_processing)
+                                self.show_info.set_show_text('同时制作所有类型需用多线程对excel进行读写，可能导致excel损坏，若损坏，在{模版/excel备份}内有备份，替换excel后重新逐步制作。点击好的开始制作。')
+                                self.show_info.show_window()
                 else:
                     self.select_file_flag = False
         else:
@@ -238,12 +241,17 @@ class Main_Window(QMainWindow):
         shutil.copy(excel_path, save_name)
 
     def start_processing(self):
+        self.show_info.row_one.exit_button.disconnect()
+        self.show_info.init_events()
+        self.show_info.set_show_text('正在制作中，请稍后！')
+        self.show_info.show_window()
+        QApplication.processEvents()
         try:
             excel_path = os.path.join('模版', self.excel_name)
             self.cache_excel(excel_path, './模版/excel备份')
             pass_flag = utils_operate_excel.check_excel(excel_path, self.folder_path)
         except PermissionError:
-            pass_flag = '请先关闭excel!'
+            pass_flag = 'excel未关闭或excel文件损坏！若损坏，在{./模版/excel备份}内有备份，替换excel后重新逐步制作。'
         if pass_flag == True:
             functions = [self.make_all_single] * len(utils_operate_excel.sheet_names)
             with ThreadPoolExecutor() as executor:
@@ -270,7 +278,7 @@ class Main_Window(QMainWindow):
             self.cache_excel(excel_path, './模版/excel备份')
             pass_flag = utils_operate_excel.check_excel(os.path.join('模版', self.excel_name), self.folder_path, mode)
         except PermissionError:
-            pass_flag = '请先关闭excel!'
+            pass_flag = 'excel未关闭或excel文件损坏！若损坏，在{./模版/excel备份}内有备份，替换excel后重新逐步制作。'
         if pass_flag == True:
             try:
                 self.which_func(mode, True)
@@ -328,7 +336,7 @@ class Main_Window(QMainWindow):
             if not pass_flag_after:
                 open_floader(os.path.join('模版', self.excel_name))
                 self.have_error_flag = True
-                self.show_info.set_show_text('制作成果，但是照片信息好像有问题，已经将有误的地方标为红色，但是word已经按照这些信息做出来了，如果检查没问题就不用管了，如果确实有问题请修改对应人的.info文件。')
+                self.show_info.set_show_text('制作成功，但照片信息好像有问题，已将可能有误的地方标红，word已经按照这些信息做出来了，若检查无误就不用管，若确实有问题修改对应人的.info后重新制作。')
                 self.show_info.show_window()
             if not self.have_error_flag:
                 duration = self.global_config['show_tip_timer_duration']
