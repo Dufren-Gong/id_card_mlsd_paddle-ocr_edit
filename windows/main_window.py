@@ -45,12 +45,12 @@ class Main_Window(QMainWindow):
         self.init_events()
 
     def dragEnterEvent(self, event: QDragEnterEvent):
-        # 只要拖拽内容包含 URL，就接受拖拽
+        # 只要拖拽内容包含 URL,就接受拖拽
         if self.row_one.function_combobox.currentIndex() != 2:
             if event.mimeData().hasUrls():
                 event.acceptProposedAction()  # 接受所有拖拽操作
             else:
-                event.ignore()  # 如果没有 URL，忽略拖拽
+                event.ignore()  # 如果没有 URL,忽略拖拽
         else:
             event.ignore()
 
@@ -68,7 +68,7 @@ class Main_Window(QMainWindow):
                     file_info = QFileInfo(local_path)
                     if file_info.isFile():  # 如果是文件
                         # 检查文件扩展名
-                        file_extension = file_info.suffix().lower()  # 获取文件后缀，并转为小写
+                        file_extension = file_info.suffix().lower()  # 获取文件后缀,并转为小写
                         if index != 13 and index != 12:
                             if file_extension in self.formates[:-1]:
                                 shutil.copy(local_path, os.path.join('./照片放这里', get_data_str() + f'_{index_t}.' + file_extension))
@@ -146,7 +146,7 @@ class Main_Window(QMainWindow):
                         self.show_info.show_window()
                     elif len(self.folder_path) % 2 != 0:
                         self.select_file_flag = False
-                        self.show_info.set_show_text('照片数量为单数，必须为双数')
+                        self.show_info.set_show_text('照片数量为单数,必须为双数')
                         self.show_info.show_window()
                     else:
                         self.select_file_flag = True
@@ -162,12 +162,12 @@ class Main_Window(QMainWindow):
                     if selected_options == self.concat_index:
                         files = [i for i in files if i.rsplit('.', maxsplit = 1)[-1] in self.formates]
                         if len(files) == 0:
-                            self.show_info.set_show_text('所选文件夹无可合并信息！检查是否全是同名文件或者选择了合并到同一个文件')
+                            self.show_info.set_show_text('所选文件夹无可合并信息!检查是否全是同名文件或者选择了合并到同一个文件')
                         else:
                             if self.concat_all('照片编辑结果', files):
-                                self.show_info.set_show_text('合并文件夹照片成功，但不包含文件夹和同名文件')
+                                self.show_info.set_show_text('合并文件夹照片成功,但不包含文件夹和同名文件')
                             else:
-                                self.show_info.set_show_text('还未操作过照片，请先操作照片。')
+                                self.show_info.set_show_text('还未操作过照片,请先操作照片.')
                         self.show_info.show_window()
                     else:
                         self.excel_name = '非身份证信息需求.xlsx'
@@ -176,7 +176,7 @@ class Main_Window(QMainWindow):
                             self.show_info.show_window()
                         else:
                             if selected_options != 11:
-                                self.show_info.set_show_text('正在制作中，请稍后！')
+                                self.show_info.set_show_text('正在制作中,请稍后!')
                                 self.show_info.show_window()
                                 QApplication.processEvents()
                                 if selected_options == 4:
@@ -196,13 +196,13 @@ class Main_Window(QMainWindow):
                                 if not self.have_error_flag:
                                     duration = self.global_config['show_tip_timer_duration']
                                     if duration > 0:
-                                        self.show_info.set_show_text('制作完成！')
+                                        self.show_info.set_show_text('制作完成!')
                                         self.show_info.show_window()
                                         self.combbox_change_tips_timer.start(duration) 
                             else:
                                 self.show_info.row_one.exit_button.disconnect()
                                 self.show_info.row_one.exit_button.clicked.connect(self.start_processing)
-                                self.show_info.set_show_text('同时制作所有类型需用多线程对excel进行读写，可能导致excel损坏，若损坏，在{模版/excel备份}内有备份，替换excel后重新逐步制作。点击好的开始制作。')
+                                self.show_info.set_show_text('同时制作所有类型需用多线程对excel进行读写,可能导致excel损坏,若损坏,在{模版/excel备份}内有备份,替换excel后重新逐步制作.点击好的开始制作.')
                                 self.show_info.show_window()
                 else:
                     self.select_file_flag = False
@@ -221,7 +221,7 @@ class Main_Window(QMainWindow):
                     self.pdf_to_pic_count += 1
                 if self.pdf_to_pic_finished == 0:
                     self.row_two.select_files_button.setDisabled(True)
-                    self.show_info.set_show_text('可能需要一些时间，请等待')
+                    self.show_info.set_show_text('可能需要一些时间,请等待')
                     self.show_info.show_window()
                     QApplication.processEvents()
                 save_path = os.path.join('./照片编辑结果', get_data_str())
@@ -245,15 +245,15 @@ class Main_Window(QMainWindow):
     def start_processing(self):
         self.show_info.row_one.exit_button.disconnect()
         self.show_info.init_events()
-        self.show_info.set_show_text('正在制作中，请稍后！')
+        self.show_info.set_show_text('正在制作中,请稍后!')
         self.show_info.show_window()
         QApplication.processEvents()
         try:
             excel_path = os.path.join('模版', self.excel_name)
             self.cache_excel(excel_path, './模版/excel备份')
-            pass_flag = utils_operate_excel.check_excel(excel_path, self.folder_path)
+            pass_flag, error_rows = utils_operate_excel.check_excel(excel_path, self.folder_path)
         except PermissionError:
-            pass_flag = 'excel未关闭或excel文件损坏！若损坏，在{./模版/excel备份}内有备份，替换excel后重新逐步制作。'
+            pass_flag = 'excel未关闭或excel文件损坏!若损坏,在{./模版/excel备份}内有备份,替换excel后重新逐步制作.'
         if pass_flag == True:
             functions = [self.make_all_single] * len(utils_operate_excel.sheet_names)
             with ThreadPoolExecutor() as executor:
@@ -268,27 +268,32 @@ class Main_Window(QMainWindow):
             open_floader(os.path.join('模版', self.excel_name))
             self.have_error_flag = True
             if pass_flag == False:
-                self.show_info.set_show_text('excel信息有误，已经将有误的地方标为红色，请检查！')
+                str_to_show = ','.join(error_rows)
+                self.show_info.set_show_text(f'excel中{str_to_show}行信息有误,已经将有误的地方标为红色,请检查!')
             else:
                 self.show_info.set_show_text(pass_flag)
             self.show_info.show_window()
 
     def make_singe(self, mode):
         try:
-            #缓存一定个数的excel，防止信息丢失
+            #缓存一定个数的excel,防止信息丢失
             excel_path = os.path.join('模版', self.excel_name)
             self.cache_excel(excel_path, './模版/excel备份')
-            pass_flag = utils_operate_excel.check_excel(os.path.join('模版', self.excel_name), self.folder_path, mode)
+            pass_flag, error_rows = utils_operate_excel.check_excel(os.path.join('模版', self.excel_name), self.folder_path, mode)
         except PermissionError:
-            pass_flag = 'excel未关闭或excel文件损坏！若损坏，在{./模版/excel备份}内有备份，替换excel后重新逐步制作。'
+            pass_flag = 'excel未关闭或excel文件损坏!若损坏,在{./模版/excel备份}内有备份,替换excel后重新逐步制作.'
         if pass_flag == True:
             try:
                 self.which_func(mode, True)
-                pass_flag_after = utils_operate_excel.check_excel_after(os.path.join('模版', self.excel_name), mode)
+                pass_flag_after, error_rows_after = utils_operate_excel.check_excel_after(os.path.join('模版', self.excel_name), mode)
                 if not pass_flag_after:
                     open_floader(os.path.join('模版', self.excel_name))
                     self.have_error_flag = True
-                    self.show_info.set_show_text('填写到word里的信息好像有问题，已经将有误的地方标为红色，但是word已经按照这些信息做出来了，如果检查没问题就不用管了，如果确实有问题请修改对应人的.info文件。')
+                    if len(error_rows_after) != 0:
+                        str_to_show_after = ','.join(error_rows_after) + ' 行'
+                    else:
+                        str_to_show_after = ''
+                    self.show_info.set_show_text(f'已将 {str_to_show_after}可能有误的照片编辑信息标红,请检查,word已按原信息制作,若检查无误就不用管,若确实有问题需修改对应照片的.info后重新制作.')
                     self.show_info.show_window()
             except:
                 self.shwo_total_error()
@@ -296,7 +301,8 @@ class Main_Window(QMainWindow):
             open_floader(os.path.join('模版', self.excel_name))
             self.have_error_flag = True
             if pass_flag == False:
-                self.show_info.set_show_text('excel信息有误，已经将有误的地方标为红色，请检查！')
+                str_to_show = ','.join(error_rows)
+                self.show_info.set_show_text(f'excel中{str_to_show}行信息有误,已经将有误的地方标为红色,请检查!')
             else:
                 self.show_info.set_show_text(pass_flag)
             self.show_info.show_window()
@@ -330,20 +336,24 @@ class Main_Window(QMainWindow):
             show_s += f'{sstr}\n'
             self.have_error_flag = True
         if show_s != '':
-            show_s += '请检查提供的信息和照片是否完全，或者联系作者。'
+            show_s += '请检查提供的信息和照片是否完全,或者联系作者.'
             self.show_info.set_show_text(show_s)
             self.show_info.show_window()
         else:
-            pass_flag_after = utils_operate_excel.check_excel_after(os.path.join('模版', self.excel_name))
+            pass_flag_after, error_rows_after = utils_operate_excel.check_excel_after(os.path.join('模版', self.excel_name))
             if not pass_flag_after:
                 open_floader(os.path.join('模版', self.excel_name))
                 self.have_error_flag = True
-                self.show_info.set_show_text('制作成功，但照片信息好像有问题，已将可能有误的地方标红，word已经按照这些信息做出来了，若检查无误就不用管，若确实有问题修改对应人的.info后重新制作。')
+                if len(error_rows_after) != 0:
+                    str_to_show_after = ','.join(error_rows_after) + ' 行'
+                else:
+                    str_to_show_after = ''
+                self.show_info.set_show_text(f'已将 {str_to_show_after}可能有误的照片编辑信息标红,请检查,word已按原信息制作,若检查无误就不用管,若确实有问题需修改对应照片的.info后重新制作.')
                 self.show_info.show_window()
             if not self.have_error_flag:
                 duration = self.global_config['show_tip_timer_duration']
                 if duration > 0:
-                    self.show_info.set_show_text('制作完成！')
+                    self.show_info.set_show_text('制作完成!')
                     self.show_info.show_window()
                     self.combbox_change_tips_timer.start(duration) 
 
@@ -380,7 +390,7 @@ class Main_Window(QMainWindow):
             self.row_two.select_files_button.setEnabled(True)
             duration = self.global_config['show_tip_timer_duration']
             if duration > 0:
-                self.show_info.set_show_text('转换成功！')
+                self.show_info.set_show_text('转换成功!')
                 self.show_info.show_window()
                 self.combbox_change_tips_timer.start(duration)  
             self.pdf_to_pic_finished = 0
@@ -388,14 +398,14 @@ class Main_Window(QMainWindow):
 
     def show_error(self, errors):
         if len(errors) != 0:
-            name_str = '，'.join(errors)
+            name_str = ','.join(errors)
             self.show_info.set_show_text(f"部分制作完成\n{name_str}\n信息缺失或照片缺失\n注意红色部分信息填写完整\n如果不知道怎么填看第一页的模版\n其所在内组的word未制作")
             self.show_info.show()
             self.have_error_flag = True
 
     def show_excel_none(self, mode):
         self.have_error_flag = True
-        self.show_info.set_show_text(f'excel里没有填写<{mode}>的任何信息，请先填写信息再制作.')
+        self.show_info.set_show_text(f'excel里没有填写<{mode}>的任何信息,请先填写信息再制作.')
         self.show_info.show()
 
     def creat_zhuandan(self, mode, check_none = False):
@@ -407,11 +417,11 @@ class Main_Window(QMainWindow):
             for kaidan_pair in kaidan_pairs:
                 assert isinstance(kaidan_pair, utils_operate_excel.Pair)
                 words = ['转让', '授权', '年费']
-                #如果被委托人的卡号为空就不需要办年费，不为空就办
+                #如果被委托人的卡号为空就不需要办年费,不为空就办
                 if not isinstance(kaidan_pair.beiweituo.sail_card_id, str):
                     words.pop()
                 for word in words:
-                    name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name + '_' + kaidan_pair.beiweituo.name
+                    name_concat = kaidan_pair.beiweituo.name + kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name + '_'
                     count = 0
                     if kaidan_pair.client.native == '香港':
                         count += 1
@@ -450,7 +460,7 @@ class Main_Window(QMainWindow):
         else:
             for kaidan_pair in kaidan_pairs:
                 assert isinstance(kaidan_pair, utils_operate_excel.Pair)
-                name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
+                name_concat = kaidan_pair.entrusted.name + '_' + kaidan_pair.client.name
                 count = 0
                 if kaidan_pair.client.native == '香港':
                     count += 1
@@ -479,7 +489,7 @@ class Main_Window(QMainWindow):
         else:
             for kaidan_pair in kaidan_pairs:
                 assert isinstance(kaidan_pair, utils_operate_excel.Pair)
-                name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
+                name_concat = kaidan_pair.entrusted.name + '_' + kaidan_pair.client.name
                 count = 0
                 if kaidan_pair.client.native == '香港':
                     count += 1
@@ -508,7 +518,7 @@ class Main_Window(QMainWindow):
         else:
             for kaidan_pair in kaidan_pairs:
                 assert isinstance(kaidan_pair, utils_operate_excel.Pair)
-                name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
+                name_concat = kaidan_pair.entrusted.name + '_' + kaidan_pair.client.name
                 count = 0
                 if kaidan_pair.client.native == '香港':
                     count += 1
@@ -537,7 +547,7 @@ class Main_Window(QMainWindow):
         else:
             for kaidan_pair in kaidan_pairs:
                 assert isinstance(kaidan_pair, utils_operate_excel.Pair)
-                name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
+                name_concat = kaidan_pair.entrusted.name + '_' + kaidan_pair.client.name
                 count = 0
                 if kaidan_pair.client.native == '香港':
                     count += 1
@@ -566,7 +576,7 @@ class Main_Window(QMainWindow):
         else:
             for kaidan_pair in kaidan_pairs:
                 assert isinstance(kaidan_pair, utils_operate_excel.Pair)
-                name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
+                name_concat = kaidan_pair.entrusted.name + '_' + kaidan_pair.client.name
                 count = 0
                 if kaidan_pair.client.native == '香港':
                     count += 1
@@ -595,7 +605,7 @@ class Main_Window(QMainWindow):
         else:
             for kaidan_pair in kaidan_pairs:
                 assert isinstance(kaidan_pair, utils_operate_excel.Pair)
-                name_concat = kaidan_pair.client.name + '_' + kaidan_pair.entrusted.name
+                name_concat = kaidan_pair.entrusted.name + '_' + kaidan_pair.client.name
                 count = 0
                 if kaidan_pair.client.native == '香港':
                     count += 1
@@ -675,7 +685,7 @@ class Main_Window(QMainWindow):
             self.row_one.pic_here_checkbox.setEnabled(True)
             self.row_zero.tip_label.setText('文件类型:')
             self.row_two.open_newest_button.setText('打开最新/删除所有编辑')
-            self.row_two.open_newest_button.setToolTip('短按打开编辑结果中最新生成结果的文件夹，长按删除"照片编辑结果"中所有编辑')
+            self.row_two.open_newest_button.setToolTip('短按打开编辑结果中最新生成结果的文件夹,长按删除"照片编辑结果"中所有编辑')
             self.row_two.open_newest_button.pressed.connect(self.open_newest_pressed)
             self.row_two.open_newest_button.released.connect(self.open_newest_released)
             self.row_zero.tip_label.show()
@@ -689,7 +699,7 @@ class Main_Window(QMainWindow):
             self.row_two.open_newest_button.setText('繁体转简体')
             self.row_two.select_files_button.setText('查询')
             self.row_two.select_files_button.setToolTip('输入完名称之后在高频照片和缓存照片里开始查询')
-            self.row_two.open_newest_button.setToolTip('如果输入的名字时香港人的名字且带繁体，输入查询的人名后将名字从繁体转为简体')
+            self.row_two.open_newest_button.setToolTip('如果输入的名字时香港人的名字且带繁体,输入查询的人名后将名字从繁体转为简体')
             self.row_two.select_files_button.clicked.connect(self.search_name)
             self.row_two.open_newest_button.clicked.connect(self.fan_zhuan_jian)
             self.row_zero.tip_label.show()
@@ -700,7 +710,7 @@ class Main_Window(QMainWindow):
         elif current_index == self.concat_index or current_index == 12 or current_index == 13:
             self.row_two.open_newest_button.setText('打开最新/删除所有编辑')
             self.row_zero.tip_label.setText('文件类型:')
-            self.row_two.open_newest_button.setToolTip('短按打开编辑结果中最新生成结果的文件夹，长按删除"照片编辑结果"中所有编辑')
+            self.row_two.open_newest_button.setToolTip('短按打开编辑结果中最新生成结果的文件夹,长按删除"照片编辑结果"中所有编辑')
             self.row_two.open_newest_button.pressed.connect(self.open_newest_pressed)
             self.row_two.open_newest_button.released.connect(self.open_newest_released)
             self.row_zero.tip_label.show()
@@ -719,11 +729,11 @@ class Main_Window(QMainWindow):
                     self.row_two.select_files_button.clicked.connect(self.update_software)
                 else:
                     self.row_two.select_files_button.setText('开始下载')
-                    self.row_two.select_files_button.setToolTip('从云空间下载源码，手动更新软件')
+                    self.row_two.select_files_button.setToolTip('从云空间下载源码,手动更新软件')
                     self.row_two.select_files_button.clicked.connect(self.only_download_source_code)
         else:
             self.row_two.open_newest_button.setText('打开最新/删除所有编辑')
-            self.row_two.open_newest_button.setToolTip('短按打开编辑结果中最新生成结果的文件夹，长按删除"照片编辑结果"中所有编辑')
+            self.row_two.open_newest_button.setToolTip('短按打开编辑结果中最新生成结果的文件夹,长按删除"照片编辑结果"中所有编辑')
             self.row_two.open_newest_button.pressed.connect(self.open_newest_pressed)
             self.row_two.open_newest_button.released.connect(self.open_newest_released)
             self.row_zero.file_type_combobox.hide()
@@ -735,7 +745,7 @@ class Main_Window(QMainWindow):
     def only_download_source_code(self):
         self.pwd = os.getcwd()
         os.chdir('..')
-        self.show_info.set_show_text(f'正在下载源代码，请稍等......')
+        self.show_info.set_show_text(f'正在下载源代码,请稍等......')
         self.show_info.show()
         QApplication.processEvents()
         self.download_source_code_thread = Download_Sourcecode(self.global_config, 1, 1, '源码', 1, 1, True)
@@ -743,7 +753,7 @@ class Main_Window(QMainWindow):
         self.download_source_code_thread.start()
 
     def end_only_download_sourcecode(self, pos1, pos2, pos3, pos4, pos5):
-        self.show_info.set_show_text(f'下载完成，请在根目录下查看，手动更新软件。')
+        self.show_info.set_show_text(f'下载完成,请在根目录下查看,手动更新软件.')
         self.show_info.show()
         os.chdir(self.pwd)
 
@@ -765,17 +775,17 @@ class Main_Window(QMainWindow):
                 new_version = config_check['version']
                 os.remove('conf.yaml')
                 if new_version == old_version:
-                    self.show_info.set_show_text(f'已是最新版本，不需要更新')
+                    self.show_info.set_show_text(f'已是最新版本,不需要更新')
                     self.show_info.show()
                     return
                 else:
-                    self.show_info.set_show_text(f'正在下载源代码，请稍等......')
+                    self.show_info.set_show_text(f'正在下载源代码,请稍等......')
                     self.show_info.show()
                     QApplication.processEvents()
                     self.download_source_code_thread = Download_Sourcecode(self.global_config, name, zip_file_path, result_name, root_floader, new_version)
                     self.download_source_code_thread.resSignal.connect(self.end_get_source_code)
                     self.download_source_code_thread.start()
-            #软件解压如果有问题，那就手动解压
+            #软件解压如果有问题,那就手动解压
             else:
                 # 以云端下载为准
                 if os.path.exists(self.global_config['repo']) and not os.path.exists(name):
@@ -783,12 +793,12 @@ class Main_Window(QMainWindow):
                 try:
                     config_check = get_config(f'{name}/{conf_path}')
                 except:
-                    self.show_info.set_show_text(f'提供的源代码或者云端下载的源代码有问题，压缩包名应该为"身份证照片识别.zip", 其内的文件夹名应为"{name}"，如还有问题请联系作者')
+                    self.show_info.set_show_text(f'提供的源代码或者云端下载的源代码有问题,压缩包名应该为"身份证照片识别.zip", 其内的文件夹名应为"{name}",如还有问题请联系作者')
                     self.show_info.show()
                     return
                 new_version = config_check['version']
                 if new_version == old_version:
-                    self.show_info.set_show_text(f'已是最新版本，不需要更新')
+                    self.show_info.set_show_text(f'已是最新版本,不需要更新')
                     self.show_info.show()
                     return
                 self.end_get_source_code(name, zip_file_path, result_name, root_floader, new_version)
@@ -810,20 +820,21 @@ class Main_Window(QMainWindow):
             pass
         command = [
             "cmd",  # 调用 PowerShell
-            "/c",  # 不加载用户配置文件，避免干扰
+            "/c",  # 不加载用户配置文件,避免干扰
             shell_path,  # 指定脚本路径
             conda_env
         ]
         self.show_info.row_one.exit_button.hide()
         self.show_info.row_one.tip_label.setFixedSize(self.show_info.width() - 2 * self.show_info.shape.round_gap, self.show_info.row_one.tip_label.height())
         self.show_info.setWindowTitle('更新软件中')
-        self.show_info.set_show_text(f'正在更新中,如果软件在云空间\n最好先关闭云空间同步\n并且这个窗口不可关闭!!!\n时间可能有点长,请耐心等待......')
+        self.show_info.set_show_text(f'正在更新中,如果软件在云空间\n最好先关闭云空间同步\n并且这个窗口不可关闭!!!\n时间可能有点长,如果长时间为完成请点击黑色窗口然后按任意键再等待更新\n请耐心等待......')
         self.show_info.show()
         time_count = 1000
         self.update_timer = QTimer()
         self.only_once_flag = True
         self.update_timer.timeout.connect(lambda: self.end_pyinstaller(time_count, name, result_name, root_floader, new_version, zip_file_path))
-        self.pyinstaller_process = subprocess.Popen(command)
+        #???
+        self.pyinstaller_process = subprocess.Popen(command, creationflags=subprocess.CREATE_NO_WINDOW)
         self.update_timer.start(time_count)
 
     def end_pyinstaller(self, time_count, name, save_name, root_floader, new_version, zip_file_path):
@@ -845,6 +856,7 @@ class Main_Window(QMainWindow):
                     else:
                         shutil.move(f'{i}', os.path.join(name, 'dist', 'main', i))
             if os.path.exists(zip_file_path):
+                # send2trash(zip_file_path)
                 shutil.move(zip_file_path, os.path.join(name, 'dist', 'main', '配置', zip_file_path))
             if not os.path.exists(os.path.join(name, 'dist', 'main', '_internal', '_tk_data')) and os.path.exists(os.path.join('_internal', '_tk_data')):
                 shutil.copytree(os.path.join('_internal', '_tk_data'), os.path.join(name, 'dist', 'main', '_internal', '_tk_data'))
@@ -853,7 +865,7 @@ class Main_Window(QMainWindow):
             try:
                 shutil.rmtree(name)
             except:
-                show_str += '\n请手动删除更新过程中产生的冗余文件。'
+                show_str += '\n请手动删除更新过程中产生的冗余文件.'
             self.show()
             self.show_info.setWindowTitle('更新完成')
             self.show_info.set_show_text(show_str)
@@ -921,7 +933,7 @@ class Main_Window(QMainWindow):
                 pass
             self.row_zero.pic_name_lineedit.setText(text)
         else:
-            self.show_info.set_show_text(f'你还没有输入名字，或者名字为空！')
+            self.show_info.set_show_text(f'你还没有输入名字,或者名字为空!')
             self.show_info.show()
         self.row_zero.pic_name_lineedit.setFocus()
 
@@ -950,9 +962,9 @@ class Main_Window(QMainWindow):
                 open_floader(os.path.join(searched[0], f'{text}.png'))
                 open_floader(os.path.join(searched[0], f'{text}反.png'))
             else:
-                self.show_info.set_show_text(f'{text}信息不存在，需要编辑此人照片！如果是香港人名字且带繁体字，先点击繁体转简体再查询')
+                self.show_info.set_show_text(f'{text}信息不存在,需要编辑此人照片!如果是香港人名字且带繁体字,先点击繁体转简体再查询')
         else:
-            self.show_info.set_show_text(f'你还没有输入名字，或者名字为空！')
+            self.show_info.set_show_text(f'你还没有输入名字,或者名字为空!')
         self.show_info.show()
         self.row_zero.pic_name_lineedit.setFocus()
 
@@ -1017,12 +1029,12 @@ class Main_Window(QMainWindow):
                 except:
                     os.makedirs(f'{path}/横着中间截图', exist_ok=True)
                     os.makedirs(f'{path}/竖着中间截图', exist_ok=True)
-                    self.show_info.set_show_text('“照片放这里”正在被其他应用占用，可能清空失败，再次单击打开这个文件检查是否被清空。未清空就手动清空')
+                    self.show_info.set_show_text('“照片放这里”正在被其他应用占用,可能清空失败,再次单击打开这个文件检查是否被清空.未清空就手动清空')
                     self.show_info.show()
                     return
             os.makedirs(f'{path}/横着中间截图', exist_ok=True)
             os.makedirs(f'{path}/竖着中间截图', exist_ok=True)
-            self.show_info.set_show_text('“照片放这里”文件夹已清空，可以拖拽照片到窗口添加照片进去！')
+            self.show_info.set_show_text('“照片放这里”文件夹已清空,可以拖拽照片到窗口添加照片进去!')
             self.show_info.show()
 
     def black_released(self):
@@ -1051,7 +1063,7 @@ class Main_Window(QMainWindow):
                     send2trash(path)
                 except:
                     os.makedirs(path, exist_ok=True)
-                    self.show_info.set_show_text('清空失败，你打开了“照片编辑结果”里的照片或者word文档，请先关闭打开的文件再次尝试，或者手动清空')
+                    self.show_info.set_show_text('清空失败,你打开了“照片编辑结果”里的照片或者word文档,请先关闭打开的文件再次尝试,或者手动清空')
                     self.show_info.show()
                     return
             os.makedirs(path, exist_ok=True)
@@ -1066,7 +1078,7 @@ class Main_Window(QMainWindow):
             if '.DS_Store' in paths:
                 paths.remove('.DS_Store')
             if len(paths) == 0:
-                self.show_info.set_show_text('”照片编辑结果“文件夹内为空，请先编辑.')
+                self.show_info.set_show_text('”照片编辑结果“文件夹内为空,请先编辑.')
                 self.show_info.show()
             else:
                 path = paths[-1]

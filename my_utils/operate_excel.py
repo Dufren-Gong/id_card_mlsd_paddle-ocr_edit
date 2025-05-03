@@ -1,5 +1,5 @@
 import pandas as pd
-import os, json, shutil, re, copy
+import os, json, shutil, re
 from natsort import natsorted
 import numpy as np
 from my_utils.Traditional_to_Simplified_Chinese import fan_to_jian
@@ -736,8 +736,14 @@ def map_info(ws, template_column_info:str, i, check_cloumns, column_letters):
             ws[f"{name_t}{i}"].value = result_str
     return ws
 
+def chech_and_add(arr_t: list, i):
+    if i not in arr_t:
+        arr_t.append(i)
+    return arr_t
+
 def check_excel(file_path, pic_floader, sheet_name = None):
     passed_flag = True
+    error_rows = []
     # 设置绿色字体
     red_font = Font(color="FF0000")  # 红色字体
     black_font = Font(color="000000")  # 黑色字体
@@ -790,6 +796,7 @@ def check_excel(file_path, pic_floader, sheet_name = None):
                             if check_r == None:
                                 ws[f"{letter}{i}"].font = red_font
                                 passed_flag = False
+                                error_rows = chech_and_add(error_rows, i)
                             else:
                                 ws[f"{letter}{i}"] = check_r
                         #如果是检查姓名，跟地址一起检查
@@ -833,11 +840,13 @@ def check_excel(file_path, pic_floader, sheet_name = None):
                                                         if check_name_index == 1:
                                                             name_passed_flag = False
                                                             passed_flag = False
+                                                            error_rows = chech_and_add(error_rows, i)
                                                             ws[f"{letter}{i}"].font = red_font
                                             else:
                                                 if check_name_index == 1:
                                                     name_passed_flag = False
                                                     passed_flag = False
+                                                    error_rows = chech_and_add(error_rows, i)
                                                     ws[f"{letter}{i}"].font = red_font
                             #名字通过，开始检查地址
                             if name_passed_flag:
@@ -851,6 +860,7 @@ def check_excel(file_path, pic_floader, sheet_name = None):
                                     if pd.isna(address) or address.strip().replace(' ', '') == '':
                                         ws[f"{address_column_letters}{i}"].font = red_font
                                         passed_flag = False
+                                        error_rows = chech_and_add(error_rows, i)
                                         ws[f"{address_column_letters}{i}"] = '未填写地址'
                                 #再检查如果有地址是否有错
                                 if not pd.isna(address):
@@ -859,6 +869,7 @@ def check_excel(file_path, pic_floader, sheet_name = None):
                                         if pd.isna(address):
                                             ws[f"{address_column_letters}{i}"].font = red_font
                                             passed_flag = False
+                                            error_rows = chech_and_add(error_rows, i)
                                         else:
                                             ws[f"{address_column_letters}{i}"] = address
                                     else:
@@ -866,10 +877,11 @@ def check_excel(file_path, pic_floader, sheet_name = None):
                     else:
                         ws[f"{letter}{i}"] = np.nan
     wb.save(file_path)
-    return passed_flag
+    return passed_flag, [str(i) for i in error_rows]
 
 def check_excel_after(file_path, sheet_name = None):
     passed_flag = True
+    error_rows = []
     # 设置绿色字体
     red_font = Font(color="FF0000")  # 红色字体
     black_font = Font(color="000000")  # 黑色字体
@@ -907,10 +919,12 @@ def check_excel_after(file_path, sheet_name = None):
                                 if nation_value != '香港':
                                     ws[f"{letter}{i}"].font = red_font
                                     passed_flag = False
+                                    error_rows = chech_and_add(error_rows, i)
                             else:
                                 ws[f"{letter}{i}"].font = red_font
                                 passed_flag = False
+                                error_rows = chech_and_add(error_rows, i)
                     else:
                         ws[f"{letter}{i}"] = np.nan
     wb.save(file_path)
-    return passed_flag
+    return passed_flag, [str(i) for i in error_rows]

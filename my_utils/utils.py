@@ -415,6 +415,7 @@ def split_image(input_image_path: str, output_image_path_1, output_image_path_2,
             # 保存裁剪后的图片到指定路径
             upper_half.save(f'{output_image_path_1}.{pic_format}', format=upper_half.format)
             lower_half.save(f'{output_image_path_2}.{pic_format}', format=lower_half.format)
+            #删除原有照片
             send2trash(input_image_path)
     except:
         pass

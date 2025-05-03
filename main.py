@@ -8,8 +8,9 @@ from windows.pic_operate_window import Pic_Operate_Windows
 import traceback
 
 class MainApp:
-    def __init__(self, global_config, errors):
+    def __init__(self, global_config, errors, default_excepthook):
         self.global_config = global_config
+        self.default_excepthook = default_excepthook
         self.errors = errors
         self.main_window = Main_Window(self.open_pic_operate_window, self.refresh_main_window, self.global_config)
 
@@ -29,6 +30,11 @@ class MainApp:
         os.chdir(f'../{companys[0]}')
         self.main_window = Main_Window(self.open_pic_operate_window, self.refresh_main_window, global_config)
         self.main_window.show()
+        if not global_config['main_window_conf']['debug_mode']:
+            # 将全局异常处理器替换为自定义函数
+            sys.excepthook = global_exception_handler
+        else:
+            sys.excepthook = self.default_excepthook
 
     def error_hide_mainwindow(self, tip):
         self.main_window.show_info.set_show_text(tip)
@@ -83,6 +89,8 @@ def global_exception_handler(exc_type, exc_value, exc_traceback):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     global_config = get_config()
+    # 保存默认的异常处理程序
+    default_excepthook = sys.excepthook
     if not global_config['main_window_conf']['debug_mode']:
         # 将全局异常处理器替换为自定义函数
         sys.excepthook = global_exception_handler
@@ -128,6 +136,6 @@ if __name__ == "__main__":
             os.chdir(companys[0])
         else:
             errors = ['all']
-    main_app = MainApp(global_config, errors)
+    main_app = MainApp(global_config, errors, default_excepthook)
     main_app.run()
     sys.exit(app.exec())
