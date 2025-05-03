@@ -827,14 +827,14 @@ class Main_Window(QMainWindow):
         self.show_info.row_one.exit_button.hide()
         self.show_info.row_one.tip_label.setFixedSize(self.show_info.width() - 2 * self.show_info.shape.round_gap, self.show_info.row_one.tip_label.height())
         self.show_info.setWindowTitle('更新软件中')
-        self.show_info.set_show_text(f'正在更新中,如果软件在云空间\n最好先关闭云空间同步\n并且这个窗口不可关闭!!!\n时间可能有点长,如果长时间为完成请点击黑色窗口然后按任意键再等待更新\n请耐心等待......')
+        self.show_info.set_show_text(f'正在更新中,如果软件在云空间\n最好先关闭云空间同步\n请耐心等待......')
         self.show_info.show()
         time_count = 1000
         self.update_timer = QTimer()
         self.only_once_flag = True
         self.update_timer.timeout.connect(lambda: self.end_pyinstaller(time_count, name, result_name, root_floader, new_version, zip_file_path))
-        #???
-        self.pyinstaller_process = subprocess.Popen(command, creationflags=subprocess.CREATE_NO_WINDOW)
+        #不显示黑色terminal窗口
+        self.pyinstaller_process = subprocess.Popen(command, creationflags=0x08000000)
         self.update_timer.start(time_count)
 
     def end_pyinstaller(self, time_count, name, save_name, root_floader, new_version, zip_file_path):
