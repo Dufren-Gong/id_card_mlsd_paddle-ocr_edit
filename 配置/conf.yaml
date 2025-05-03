@@ -83,10 +83,10 @@ max_cash: 84513 #最大金额限制
 moren_pay: 62569 #设置默认支付金额
 moren_buy: 84513 #设置默认提货金额
 moren_annual_fee: 210 #设置默认年费
-in_floader: False #
+in_floader: false #
 main_window_conf:
   catch_max_height: 20 #展开最大宽度占多少行，一行高度为20px
-  debug_mode: software #[code, software], code模式在terminal中显示错误，software模式在窗口中报错
+  debug_mode: false #非debug模式在窗口中报错，debug模式在terminal中报错
 
 # https://gitee.com/api/v5/repos/{owner}/{repo}/zipball?access_token={access_token}&ref={ref}
 access_token: 3d7b338f6b596cc32baf892157ac5f98 # gitee授权码

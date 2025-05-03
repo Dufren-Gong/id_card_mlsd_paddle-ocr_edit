@@ -11,13 +11,23 @@ class MainApp:
     def __init__(self, global_config, errors):
         self.global_config = global_config
         self.errors = errors
-        self.main_window = Main_Window(self.open_pic_operate_window, self.global_config)
+        self.main_window = Main_Window(self.open_pic_operate_window, self.refresh_main_window, self.global_config)
 
     def open_pic_operate_window(self, file_path, mode):
         self.pic_operate = Pic_Operate_Windows(file_path, self.reopen_main_window, self.global_config, mode)
 
     def reopen_main_window(self):
         self.pic_operate = None
+        self.main_window.show()
+
+    def refresh_main_window(self, global_config):
+        self.pic_operate = None
+        self.main_window.close()
+        companys = global_config['companys']
+        global_config['companys'] = companys
+        global_config['company_name'] = companys[0]
+        os.chdir(f'../{companys[0]}')
+        self.main_window = Main_Window(self.open_pic_operate_window, self.refresh_main_window, global_config)
         self.main_window.show()
 
     def error_hide_mainwindow(self, tip):
@@ -73,7 +83,7 @@ def global_exception_handler(exc_type, exc_value, exc_traceback):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     global_config = get_config()
-    if global_config['main_window_conf']['debug_mode'] == 'software':
+    if not global_config['main_window_conf']['debug_mode']:
         # 将全局异常处理器替换为自定义函数
         sys.excepthook = global_exception_handler
     delete_specific_files_and_folders('.', '__pycache__', '.DS_Store')

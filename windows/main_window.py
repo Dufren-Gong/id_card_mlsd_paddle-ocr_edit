@@ -4,6 +4,7 @@ from uis.shapes import Ui_Shapes
 from my_utils.utils import delete_specific_files_and_folders
 from uis.main_window_ui import Row_Zero, Row_One, Row_Two, Select_Company, Row_Catch
 from windows.show_info_window import Show_Info_Window
+from uis.set_config import Set_Config_Window
 from my_utils.threads import Pdf_to_Pic_Thread, Download_Sourcecode
 from my_utils.utils import get_data_str, open_floader, find_in_catch_pic, get_internal_path, get_config, download_single_file, split_image
 from my_utils import operate_excel as utils_operate_excel
@@ -18,9 +19,10 @@ import subprocess, platform
 from send2trash import send2trash
         
 class Main_Window(QMainWindow):
-    def __init__(self, open_pic_operate_window, global_config):
+    def __init__(self, open_pic_operate_window, refresh_main_window, global_config):
         super().__init__()
         self.show_info = Show_Info_Window()
+        self.refresh_main_window = refresh_main_window
         self.Thread_pdf_to_pic = None
         self.global_config = global_config
         self.formates = ['jpg', 'jpeg', 'png', 'info']
@@ -37,7 +39,7 @@ class Main_Window(QMainWindow):
         # 启用拖放
         self.setAcceptDrops(True)
         self.shape.layout([self.shape.combobox_height, self.shape.combobox_height, self.shape.button_height, self.shape.combobox_height, 27],
-                          [[60, 234]] + [[60, 135, 95]] * 3 + [[298]])
+                          [[60, 170, 60]] + [[60, 135, 95]] * 3 + [[298]])
         self.setWindowIcon(QIcon(get_internal_path('../files/icon/icon.ico')))
         self.init_ui()
         self.init_events()
@@ -624,7 +626,8 @@ class Main_Window(QMainWindow):
             central_widget,
             self.global_config['companys'],
             self.shape.shape_tuples[0][0],
-            self.shape.shape_tuples[0][1]
+            self.shape.shape_tuples[0][1],
+            self.shape.shape_tuples[0][2]
         )
 
         self.row_zero = Row_Zero(
@@ -1068,6 +1071,19 @@ class Main_Window(QMainWindow):
     def change_height(self, height_shift):
         self.setFixedSize(self.width(), self.height() + height_shift)
 
+    def change_config(self):
+        self.set_config_window = Set_Config_Window(self.global_config)
+        self.set_config_window.show()
+        self.init_set_config_window_events()
+
+    def ensure_change_config(self):
+        global_config = self.set_config_window.global_config
+        self.set_config_window.close()
+        self.refresh_main_window(global_config)
+
+    def init_set_config_window_events(self):
+        self.set_config_window.ensure_button.clicked.connect(self.ensure_change_config)
+
     def init_events(self):
         self.init_black_button_timer()
         self.init_open_newest_timer()
@@ -1083,3 +1099,4 @@ class Main_Window(QMainWindow):
         self.row_zero.select_newest_checkbox.stateChanged.connect(self.change_moren)
         self.row_one.pic_here_checkbox.stateChanged.connect(self.change_moren_pic)
         self.row_catch.pic_name_lineedit.doubleClickedSignal.connect(self.change_height)
+        self.row_company.confit_button.clicked.connect(self.change_config)

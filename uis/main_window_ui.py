@@ -275,11 +275,13 @@ class Select_Company():
                  centralwidget,
                  companys,
                  tip_shape,
-                 row_catch_shape: tuple) -> None:
+                 row_catch_shape: tuple,
+                 config_shape) -> None:
         self.centralwidget = centralwidget
         self.companys = companys
         self.init_one_tip_label(tip_shape)
         self.init_one_company_name_lineedit(row_catch_shape)
+        self.init_one_config_pushbutton(config_shape)
 
     def init_one_tip_label(self, shape):
         self.tip_label = QtWidgets.QLabel(parent=self.centralwidget)
@@ -304,6 +306,21 @@ class Select_Company():
                 border-color: black;
                 background-color: white;
                 color: black;  /* 设置字体颜色为红色 */
+            }
+        """)
+
+    def init_one_config_pushbutton(self, shape):
+        self.confit_button = QtWidgets.QPushButton(parent=self.centralwidget)
+        self.confit_button.setGeometry(QtCore.QRect(*shape))
+        self.confit_button.setObjectName("confit_button")
+        self.confit_button.setText("更改配置")
+        self.confit_button.setToolTip('更改软件配置')
+        self.confit_button.setStyleSheet("""
+            QPushButton {
+                border-width: 1px;          /* 边缘宽度 */
+                border-style: solid;        /* 边缘样式 */
+                border-color: black;          /* 边缘颜色 */
+                background-color: lightgray;/* 背景颜色 */
             }
         """)
 
