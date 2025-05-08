@@ -37,7 +37,7 @@ class Main_Window(QMainWindow):
         self.pdf_to_pic_count = 0
         self.pdf_to_pic_finished = 0
         # 启用拖放
-        self.setAcceptDrops(True)
+        # self.setAcceptDrops(True)
         self.shape.layout([self.shape.combobox_height, self.shape.combobox_height, self.shape.button_height, self.shape.combobox_height, 27],
                           [[60, 170, 60]] + [[60, 135, 95]] * 3 + [[298]])
         self.setWindowIcon(QIcon(get_internal_path('../files/icon/icon.ico')))
@@ -1035,7 +1035,7 @@ class Main_Window(QMainWindow):
                     return
             os.makedirs(f'{path}/横着中间截图', exist_ok=True)
             os.makedirs(f'{path}/竖着中间截图', exist_ok=True)
-            self.show_info.set_show_text('“照片放这里”文件夹已清空,可以拖拽照片到窗口添加照片进去!')
+            self.show_info.set_show_text('“照片放这里”文件夹已清空')
             self.show_info.show()
 
     def black_released(self):

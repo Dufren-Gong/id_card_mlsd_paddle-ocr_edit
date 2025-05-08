@@ -22,7 +22,6 @@ class MainApp:
         self.main_window.show()
 
     def refresh_main_window(self, global_config):
-        print(11111)
         self.pic_operate = None
         self.main_window.close()
         companys = global_config['companys']
