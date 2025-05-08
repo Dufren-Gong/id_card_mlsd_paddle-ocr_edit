@@ -9,6 +9,7 @@ mlsd_conf:
   max_threads: 1 #最大线程数
   small_pic_fixed_width: 200 # 小图宽度，建议大于150
   angle_rate: 30 #圆角弧度
+  outside_color: 255 #默认圆弧外部颜色为255白色，0为黑色，从255->0越来越暗
   up_gap: 6 # 每边往里收的幅度
   down_gap: 1
   left_gap: 8

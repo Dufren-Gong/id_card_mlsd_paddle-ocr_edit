@@ -29,6 +29,13 @@ def get_config(config_path = '配置/conf.yaml'):
         global_config = yaml.load(file)
     return global_config
 
+def write_config(conflg_yaml, save_path = '配置/conf.yaml'):
+    # 初始化 YAML 处理器
+    yaml = YAML()
+    yaml.preserve_quotes = True  # 保留引号（如果 YAML 中有引号）
+    with open(save_path, "w", encoding="utf-8") as f:
+        yaml.dump(conflg_yaml, f)
+
 #用下面这两个函数可以使用cv读取含有中文路径的文件
 def cv_imread(file_path):
     # Read image as a byte array with np.fromfile
@@ -170,36 +177,36 @@ def get_pic_info(info_file_path: str, pic_path):
             break
     return info
 
-def add_mask(image, mask):
+def add_mask(image, mask, color = (255, 255, 255)):
     assert image.shape == mask.shape
 
-    # 将mask之内的区域设置为白色
-    white_background = np.full_like(image, 255, dtype=np.uint8)
-    white_area = ~cv2.bitwise_and(white_background, mask)
-
     # 将原图与反转后的掩码相结合，保持mask之外的原始内容
-    original_area = cv2.bitwise_and(image, mask)
+    original_area = cv2.bitwise_and(image, ~mask)
+
+    # 将mask之内的区域设置为白色
+    corol_background = np.full(image.shape, color, dtype=np.uint8)
+    corol_background = cv2.bitwise_and(corol_background, mask)
 
     # 合成最终图像
-    rounded_image = cv2.add(white_area, original_area)
+    rounded_image = cv2.add(corol_background, original_area)
     return rounded_image
 
 def get_mask(corner_radius, mask_shape):
     # 创建一个带有圆角的黑色掩码
     mask_shape = (mask_shape[1], mask_shape[0], mask_shape[2])
-    mask = np.zeros(mask_shape, dtype=np.uint8)
+    mask = np.full(mask_shape, 255, dtype=np.uint8)
     rows, cols, _ = mask_shape
     # 绘制矩形区域
-    mask = cv2.rectangle(mask, (corner_radius, corner_radius), (cols-corner_radius, rows-corner_radius), (255, 255, 255), thickness=-1)
-    mask = cv2.rectangle(mask, (corner_radius, 0), (cols-corner_radius, corner_radius), (255, 255, 255), thickness=-1)
-    mask = cv2.rectangle(mask, (corner_radius, rows-corner_radius), (cols-corner_radius, rows), (255, 255, 255), thickness=-1)
-    mask = cv2.rectangle(mask, (0, corner_radius), (corner_radius, rows-corner_radius), (255, 255, 255), thickness=-1)
-    mask = cv2.rectangle(mask, (cols-corner_radius, corner_radius), (cols, rows-corner_radius), (255, 255, 255), thickness=-1)
+    mask = cv2.rectangle(mask, (corner_radius, corner_radius), (cols-corner_radius, rows-corner_radius), (0, 0, 0), thickness=-1)
+    mask = cv2.rectangle(mask, (corner_radius, 0), (cols-corner_radius, corner_radius), (0, 0, 0), thickness=-1)
+    mask = cv2.rectangle(mask, (corner_radius, rows-corner_radius), (cols-corner_radius, rows), (0, 0, 0), thickness=-1)
+    mask = cv2.rectangle(mask, (0, corner_radius), (corner_radius, rows-corner_radius), (0, 0, 0), thickness=-1)
+    mask = cv2.rectangle(mask, (cols-corner_radius, corner_radius), (cols, rows-corner_radius), (0, 0, 0), thickness=-1)
     # 圆角处理
-    mask = cv2.circle(mask, (corner_radius, corner_radius), corner_radius, (255, 255, 255), thickness=-1)
-    mask = cv2.circle(mask, (cols-corner_radius, corner_radius), corner_radius, (255, 255, 255), thickness=-1)
-    mask = cv2.circle(mask, (corner_radius, rows-corner_radius), corner_radius, (255, 255, 255), thickness=-1)
-    mask = cv2.circle(mask, (cols-corner_radius, rows-corner_radius), corner_radius, (255, 255, 255), thickness=-1)
+    mask = cv2.circle(mask, (corner_radius, corner_radius), corner_radius, (0, 0, 0), thickness=-1)
+    mask = cv2.circle(mask, (cols-corner_radius, corner_radius), corner_radius, (0, 0, 0), thickness=-1)
+    mask = cv2.circle(mask, (corner_radius, rows-corner_radius), corner_radius, (0, 0, 0), thickness=-1)
+    mask = cv2.circle(mask, (cols-corner_radius, rows-corner_radius), corner_radius, (0, 0, 0), thickness=-1)
     mask = cv2.rotate(mask, cv2.ROTATE_90_CLOCKWISE)
     return mask
 
@@ -419,3 +426,15 @@ def split_image(input_image_path: str, output_image_path_1, output_image_path_2,
             send2trash(input_image_path)
     except:
         pass
+
+def recursive_update(stay_data, target_data):
+    for key, a_value in stay_data.items():
+        if key in target_data:
+            b_value = target_data[key]
+            if isinstance(a_value, dict) and isinstance(b_value, dict):
+                # 递归多级字典
+                recursive_update(a_value, b_value)
+            else:
+                # 叶子节点直接替换
+                target_data[key] = a_value
+    return target_data

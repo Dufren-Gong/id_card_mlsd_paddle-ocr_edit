@@ -227,6 +227,9 @@ class Show_Pic_Window(QMainWindow):
                     new_x = self.points[self.selected_point].x() + self.n_px
                     new_x, _, _ = self.gap((new_x, self.points[self.selected_point].x()))
                     self.points[self.selected_point].setX(new_x)
+                # 重新计算中间点并更新显示
+                self.calculate_middle_points()
+                self.update()
             if self.selected_middle_point is not None:
                 # 设置每次移动的像素数量
                 i = self.selected_middle_point
@@ -253,9 +256,9 @@ class Show_Pic_Window(QMainWindow):
                     p1.setX(newx_1)
                     p1.setY(newy_1)
                     p2.setY(newy_2)
-            # 重新计算中间点并更新显示
-            self.calculate_middle_points()
-            self.update()
+                # 重新计算中间点并更新显示
+                self.calculate_middle_points()
+                self.update()
 
     def keyReleaseEvent(self, event):
         if event.key() == QtCore.Qt.Key.Key_Up or event.key() == QtCore.Qt.Key.Key_Down or event.key() == QtCore.Qt.Key.Key_Left or event.key() == QtCore.Qt.Key.Key_Right:

@@ -1,17 +1,18 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QLabel, QPushButton, QHBoxLayout
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QScrollArea, QLabel, QPushButton, QHBoxLayout, QSlider
 from PyQt6.QtGui import QPixmap
 from PyQt6 import QtCore
 import numpy as np
 
 # 自定义 QLabel 类以支持点击事件
 class ClickableLabel(QLabel):
-    def __init__(self, index, photo_path, display_function, points=[], scale=1, max_flag=False, img = [], *args, **kwargs):
+    def __init__(self, index, photo_path, display_function, points=[], scale=1, max_flag=False, img = [], outside_color = (), *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.index = index  # 存储图片的索引
         self.photo_path = photo_path  # 存储图片路径
         self.display_function = display_function  # 存储显示函数
         self.points = points
         self.points_cache = np.array([])
+        self.outside_color = outside_color
         self.scale = scale
         self.scale_cache = 1
         self.img = img
@@ -26,8 +27,9 @@ class ClickableLabel(QLabel):
             self.display_function(self.index, shou_flag=shou_flag)  # 调用传入的显示函数
 
 class Scroll_Area(QWidget):
-    def __init__(self, width_t, display_large_image_function):
+    def __init__(self, global_config, width_t, display_large_image_function):
         super().__init__()
+        self.global_config = global_config
         self.width_t = width_t
         self.display_large_image_function = display_large_image_function
 
@@ -60,6 +62,7 @@ class Scroll_Area(QWidget):
         self.confirem_button = QPushButton("确认所有")
         self.confirem_button.setToolTip('确认全部截图信息，将进行下一步，确保所有照片都检查过了，或者点击跳过所有检查按钮。')
         self.confirem_button.setFixedWidth(int(width_t / 3))  # 设置按钮的固定宽度
+
         # button_layout.addWidget(self.skip_button)
         button_layout.addWidget(self.up_button)
         button_layout.addWidget(self.down_button)
@@ -98,6 +101,31 @@ class Scroll_Area(QWidget):
         button_layout1.addWidget(self.confire_this_button)
         button_layout1.setAlignment(QtCore.Qt.AlignmentFlag.AlignVCenter | QtCore.Qt.AlignmentFlag.AlignLeft)
 
+        # 创建一个新的水平布局来放置 skip_button 和 max_button
+        button_layout2 = QHBoxLayout()
+        button_layout2.setSpacing(2)  # 例如，设置为 10 像素，可以根据需要调整
+
+        self.tip_label_color = QLabel('圆弧外围颜色:')
+        self.tip_label_color.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.tip_label_color.setToolTip('更改圆弧外围颜色,数值越小颜色越深.先确认截图再调色.')
+        self.tip_label_color.setFixedWidth(int(width_t / 3))  # 设置按钮的固定宽度
+
+        # 创建水平滑块
+        self.slider = QSlider(QtCore.Qt.Orientation.Horizontal)
+        self.slider.setMinimum(0)       # 最小值
+        self.slider.setMaximum(255)     # 最大值
+        self.slider.setInvertedAppearance(True)
+        try:
+            self.slider.setValue(self.global_config['mlsd_conf']['outside_color'])       # 默认值
+        except:
+            self.slider.setValue(0)         # 默认值
+        self.slider.setTickInterval(50) # 刻度间隔，可选
+        self.slider.setTickPosition(QSlider.TickPosition.TicksBelow) # 显示刻度，可选
+        self.slider.setFixedWidth(int(3 * width_t / 5))  # 设置按钮的固定宽度
+
+        button_layout2.addWidget(self.tip_label_color)
+        button_layout2.addWidget(self.slider)
+
         self.tip_label = QLabel('缩略图')
         self.tip_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
 
@@ -118,6 +146,7 @@ class Scroll_Area(QWidget):
         left_layout = QVBoxLayout()
         left_layout.addLayout(button_layout)
         left_layout.addLayout(button_layout1)
+        left_layout.addLayout(button_layout2)
         left_layout.addWidget(self.tip_label)
         left_layout.addWidget(self.scroll_area)
         left_layout.setSpacing(0)
@@ -136,7 +165,8 @@ class Scroll_Area(QWidget):
         length = len(self.labels)
         for index, path in enumerate(photo_paths):
             # 创建 ClickableLabel 用于显示图片
-            label = ClickableLabel(length + index, path, self.display_large_image_function, pair_points[index], scales[index], max_flag=max_flags[index], img=cv_pairs[index])
+            out_side_color = self.global_config['mlsd_conf']['outside_color']
+            label = ClickableLabel(length + index, path, self.display_large_image_function, pair_points[index], scales[index], max_flag=max_flags[index], img=cv_pairs[index], outside_color=(out_side_color, out_side_color, out_side_color))
             pixmap = QPixmap(path)
             self.labels.append(label)
             # 设置固定宽度，自动计算高度以保持纵横比

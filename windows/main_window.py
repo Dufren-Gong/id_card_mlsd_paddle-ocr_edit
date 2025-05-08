@@ -1,4 +1,4 @@
-import os, shutil
+import os, shutil, copy
 from PyQt6.QtWidgets import QMainWindow, QWidget, QFileDialog, QApplication
 from uis.shapes import Ui_Shapes
 from my_utils.utils import delete_specific_files_and_folders
@@ -6,11 +6,11 @@ from uis.main_window_ui import Row_Zero, Row_One, Row_Two, Select_Company, Row_C
 from windows.show_info_window import Show_Info_Window
 from uis.set_config import Set_Config_Window
 from my_utils.threads import Pdf_to_Pic_Thread, Download_Sourcecode
-from my_utils.utils import get_data_str, open_floader, find_in_catch_pic, get_internal_path, get_config, download_single_file, split_image
+from my_utils.utils import get_data_str, open_floader, find_in_catch_pic, get_internal_path, get_config, download_single_file, split_image, write_config, recursive_update
 from my_utils import operate_excel as utils_operate_excel
 from each_types import kaidan, nahuo, zhuandan, budan, nianfei, buka, tuidan
-from PyQt6.QtGui import QDragEnterEvent, QIcon
-from PyQt6.QtCore import QFileInfo, QThreadPool, QTimer
+from PyQt6.QtGui import QIcon#, QDragEnterEvent
+from PyQt6.QtCore import QThreadPool, QTimer#, QFileInfo
 from my_utils.operate_word import copy_template, replace_text_with_same_format, replace_pic
 from natsort import natsorted
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -44,49 +44,49 @@ class Main_Window(QMainWindow):
         self.init_ui()
         self.init_events()
 
-    def dragEnterEvent(self, event: QDragEnterEvent):
-        # 只要拖拽内容包含 URL,就接受拖拽
-        if self.row_one.function_combobox.currentIndex() != 2:
-            if event.mimeData().hasUrls():
-                event.acceptProposedAction()  # 接受所有拖拽操作
-            else:
-                event.ignore()  # 如果没有 URL,忽略拖拽
-        else:
-            event.ignore()
+    # def dragEnterEvent(self, event: QDragEnterEvent):
+    #     # 只要拖拽内容包含 URL,就接受拖拽
+    #     if self.row_one.function_combobox.currentIndex() != 2:
+    #         if event.mimeData().hasUrls():
+    #             event.acceptProposedAction()  # 接受所有拖拽操作
+    #         else:
+    #             event.ignore()  # 如果没有 URL,忽略拖拽
+    #     else:
+    #         event.ignore()
 
-    def dropEvent(self, event):
-        index = self.row_one.function_combobox.currentIndex()
-        pic_check_index = [0, 1]
-        # floader_check_index = [3, 4, 5, 6, 7, 8, 9, 10]
-        no_event_arr = [2, 12, 13]
-        # 获取拖拽的所有文件或文件夹路径
-        urls = event.mimeData().urls()
-        if urls:
-            for index_t, url in enumerate(urls):
-                local_path = url.toLocalFile()  # 获取本地路径
-                if local_path:
-                    file_info = QFileInfo(local_path)
-                    if file_info.isFile():  # 如果是文件
-                        # 检查文件扩展名
-                        file_extension = file_info.suffix().lower()  # 获取文件后缀,并转为小写
-                        if index != 13 and index != 12:
-                            if file_extension in self.formates[:-1]:
-                                shutil.copy(local_path, os.path.join('./照片放这里', get_data_str() + f'_{index_t}.' + file_extension))
-                        elif index == 12:
-                            if file_extension == 'pdf':
-                                self.pdf_to_pic_count += 1
-                                self.open_folder_dialog(local_path)
-                        elif index == 13:
-                            if file_extension == 'zip':
-                                shutil.move(local_path, '.')
-                            else:
-                                self.show_info.set_show_text('该功能拖拽只接受后缀为zip类型的压缩包')
-                                self.show_info.show_window()
-                    elif file_info.isDir():  # 如果是文件夹
-                        if index not in no_event_arr:
-                            if not (self.row_zero.file_type_combobox.currentIndex() == 1 and index in pic_check_index):
-                                self.open_folder_dialog(local_path)
-                            break
+    # def dropEvent(self, event):
+    #     index = self.row_one.function_combobox.currentIndex()
+    #     pic_check_index = [0, 1]
+    #     # floader_check_index = [3, 4, 5, 6, 7, 8, 9, 10]
+    #     no_event_arr = [2, 12, 13]
+    #     # 获取拖拽的所有文件或文件夹路径
+    #     urls = event.mimeData().urls()
+    #     if urls:
+    #         for index_t, url in enumerate(urls):
+    #             local_path = url.toLocalFile()  # 获取本地路径
+    #             if local_path:
+    #                 file_info = QFileInfo(local_path)
+    #                 if file_info.isFile():  # 如果是文件
+    #                     # 检查文件扩展名
+    #                     file_extension = file_info.suffix().lower()  # 获取文件后缀,并转为小写
+    #                     if index != 13 and index != 12:
+    #                         if file_extension in self.formates[:-1]:
+    #                             shutil.copy(local_path, os.path.join('./照片放这里', get_data_str() + f'_{index_t}.' + file_extension))
+    #                     elif index == 12:
+    #                         if file_extension == 'pdf':
+    #                             self.pdf_to_pic_count += 1
+    #                             self.open_folder_dialog(local_path)
+    #                     elif index == 13:
+    #                         if file_extension == 'zip':
+    #                             shutil.move(local_path, '.')
+    #                         else:
+    #                             self.show_info.set_show_text('该功能拖拽只接受后缀为zip类型的压缩包')
+    #                             self.show_info.show_window()
+    #                 elif file_info.isDir():  # 如果是文件夹
+    #                     if index not in no_event_arr:
+    #                         if not (self.row_zero.file_type_combobox.currentIndex() == 1 and index in pic_check_index):
+    #                             self.open_folder_dialog(local_path)
+    #                         break
 
     def closeEvent(self, event):
         if self.thread_pool is not None:
@@ -345,10 +345,10 @@ class Main_Window(QMainWindow):
                 open_floader(os.path.join('模版', self.excel_name))
                 self.have_error_flag = True
                 if len(error_rows_after) != 0:
-                    str_to_show_after = ','.join(error_rows_after) + ' 行'
+                    str_to_show_after = '第' + ','.join(error_rows_after) + '行'
                 else:
                     str_to_show_after = ''
-                self.show_info.set_show_text(f'已将 {str_to_show_after}可能有误的照片编辑信息标红,请检查,word已按原信息制作,若检查无误就不用管,若确实有问题需修改对应照片的.info后重新制作.')
+                self.show_info.set_show_text(f'已将{str_to_show_after}可能有误的照片编辑信息标红,请检查,word已按原信息制作,若检查无误就不用管,若确实有问题需修改对应照片的.info后重新制作.')
                 self.show_info.show_window()
             if not self.have_error_flag:
                 duration = self.global_config['show_tip_timer_duration']
@@ -847,6 +847,7 @@ class Main_Window(QMainWindow):
         if wait_start_flag and self.only_once_flag:
             self.only_once_flag = False
             os.chdir(root_floader)
+            write_config(recursive_update(get_config(os.path.join('配置', 'conf.yaml')), get_config(os.path.join(name, '配置', 'conf.yaml'))), os.path.join(name, '配置', 'conf.yaml'))
             shutil.move(os.path.join(name, '配置'), os.path.join(name, 'dist', 'main', '配置'))
             companys = self.global_config['companys']
             for i in companys:
@@ -959,8 +960,8 @@ class Main_Window(QMainWindow):
                 self.show_info.set_show_text(f'{text}信息已存在,照片和信息存在于:\n{show_str}')
                 for i in searched:
                     open_floader(os.path.join(i, f'{text}.info'))
-                open_floader(os.path.join(searched[0], f'{text}.png'))
                 open_floader(os.path.join(searched[0], f'{text}反.png'))
+                open_floader(os.path.join(searched[0], f'{text}.png'))
             else:
                 self.show_info.set_show_text(f'{text}信息不存在,需要编辑此人照片!如果是香港人名字且带繁体字,先点击繁体转简体再查询')
         else:
@@ -1105,13 +1106,23 @@ class Main_Window(QMainWindow):
         self.set_config_window.show()
         self.init_set_config_window_events()
 
-    def ensure_change_config(self):
+    def ensure_change_config(self, forever_flag = False):
         global_config = self.set_config_window.global_config
+        #只有更改了才重启
+        if self.global_config != global_config:
+            self.refresh_main_window(global_config)
+            if forever_flag:
+                save_conf = copy.deepcopy(global_config)
+                try:
+                    del save_conf['company_name']
+                except:
+                    pass
+                write_config(save_conf, '../配置/conf.yaml')
         self.set_config_window.close()
-        self.refresh_main_window(global_config)
 
     def init_set_config_window_events(self):
         self.set_config_window.ensure_button.clicked.connect(self.ensure_change_config)
+        self.set_config_window.forever_ensure_button.clicked.connect(lambda: self.ensure_change_config(True))
 
     def init_events(self):
         self.init_black_button_timer()

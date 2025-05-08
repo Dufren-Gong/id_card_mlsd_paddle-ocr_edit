@@ -40,7 +40,7 @@ class Cut_Pic(QMainWindow):
         main_layout.setContentsMargins(10, 10, 10, 10)  # 布局的外边距为10像素
         self.scroll_area_width = self.fixed_width + 30
         # 创建 Scroll_Area 实例
-        self.scroll_area = Scroll_Area(width_t=self.scroll_area_width, display_large_image_function=self.display_large_image)
+        self.scroll_area = Scroll_Area(self.global_config, width_t=self.scroll_area_width, display_large_image_function=self.display_large_image)
         self.scroll_area.setFixedWidth = self.scroll_area_width
         # 创建 QLabel 用于显示大图
         self.large_image_label = Show_Pic_Window(show_info, global_config)
@@ -207,6 +207,7 @@ class Cut_Pic(QMainWindow):
             else:
                 self.scroll_area.confire_this_button.setText('确认截图')
             self.scroll_area.scroll_to_label(self.this_index)
+            self.scroll_area.slider.setValue(self.scroll_area.labels[index].outside_color[0])
 
     def confirm_selection(self):
         self.scroll_area.confirem_button.setDisabled(True)
@@ -224,7 +225,7 @@ class Cut_Pic(QMainWindow):
                     if len(points) != 0:
                         cv_img = self.reshape_image(cv_img, points)
                         mask = get_mask(self.angle_rate, cv_img.shape)
-                        cv_img = add_mask(cv_img, mask)
+                        cv_img = add_mask(cv_img, mask, self.scroll_area.labels[self.this_index].outside_color)
                     cv_imwrite(cv_img, self.save_formate, os.path.join(self.cut_save_floader, f'{index}{self.save_formate}'))
                 self.close_flag = False
                 if self.thread_pool != None:
@@ -340,9 +341,10 @@ class Cut_Pic(QMainWindow):
         img_cache = obj.img_cache
         moved_flag = obj.moved_flag
         max_flag = obj.max_flag
-        return index, photo_path, points, points_cache, scale, scale_cache, img, img_cache, moved_flag, max_flag
+        outside_color = obj.outside_color
+        return index, photo_path, points, points_cache, scale, scale_cache, img, img_cache, moved_flag, max_flag, outside_color
 
-    def write_cut_info(self, obj:ClickableLabel, index, photo_path, points, points_cache, scale, scale_cache, img, img_cache, moved_flag, max_flag):
+    def write_cut_info(self, obj:ClickableLabel, index, photo_path, points, points_cache, scale, scale_cache, img, img_cache, moved_flag, max_flag, outside_color):
         obj.index = index
         obj.photo_path = photo_path
         obj.points = points
@@ -353,6 +355,7 @@ class Cut_Pic(QMainWindow):
         obj.img_cache = img_cache
         obj.moved_flag = moved_flag
         obj.max_flag = max_flag
+        obj.outside_color = outside_color
         return obj
 
     def change_position(self, mode):
@@ -363,10 +366,10 @@ class Cut_Pic(QMainWindow):
                 shift = 1
             if (self.this_index != 0 and mode == 0) or (self.this_index != len(self.scroll_area.labels) - 1 and mode == 1):
                 #信息互换
-                _, photo_path, points, points_cache, scale, scale_cache, img, img_cache, moved_flag, max_flag = self.read_cut_info(self.scroll_area.labels[self.this_index])
-                _, photo_path1, points1, points_cache1, scale1, scale_cache1, img1, img_cache1, moved_flag1, max_flag1 = self.read_cut_info(self.scroll_area.labels[self.this_index + shift])
-                self.scroll_area.labels[self.this_index] = self.write_cut_info(self.scroll_area.labels[self.this_index], self.this_index, photo_path1, points1, points_cache1, scale1, scale_cache1, img1, img_cache1, moved_flag1, max_flag1)
-                self.scroll_area.labels[self.this_index + shift] = self.write_cut_info(self.scroll_area.labels[self.this_index + shift], self.this_index + shift, photo_path, points, points_cache, scale, scale_cache, img, img_cache, moved_flag, max_flag)
+                _, photo_path, points, points_cache, scale, scale_cache, img, img_cache, moved_flag, max_flag, outside_color = self.read_cut_info(self.scroll_area.labels[self.this_index])
+                _, photo_path1, points1, points_cache1, scale1, scale_cache1, img1, img_cache1, moved_flag1, max_flag1, outside_color1 = self.read_cut_info(self.scroll_area.labels[self.this_index + shift])
+                self.scroll_area.labels[self.this_index] = self.write_cut_info(self.scroll_area.labels[self.this_index], self.this_index, photo_path1, points1, points_cache1, scale1, scale_cache1, img1, img_cache1, moved_flag1, max_flag1, outside_color1)
+                self.scroll_area.labels[self.this_index + shift] = self.write_cut_info(self.scroll_area.labels[self.this_index + shift], self.this_index + shift, photo_path, points, points_cache, scale, scale_cache, img, img_cache, moved_flag, max_flag, outside_color)
                 shift_t = self.zheng_fan_shift * (self.this_index in self.viewed)
                 fixed_width = self.fixed_width - shift_t
                 pixmap = cv_to_qpixmap(self.scroll_area.labels[self.this_index + shift].img)
@@ -401,11 +404,13 @@ class Cut_Pic(QMainWindow):
                 points = self.scroll_area.labels[self.this_index].points
                 self.scroll_area.labels[self.this_index].points_cache = points
                 self.scroll_area.labels[self.this_index].points = np.array([])
+                self.large_image_label.selected_point = None
+                self.large_image_label.selected_middle_point = None
                 cv_img = self.scroll_area.labels[self.this_index].img
                 self.scroll_area.labels[self.this_index].img_cache = cv_img
                 cv_img = self.reshape_image(cv_img, points)
                 mask = get_mask(self.angle_rate, cv_img.shape)
-                cv_img = add_mask(cv_img, mask)
+                cv_img = add_mask(cv_img, mask, self.scroll_area.labels[self.this_index].outside_color)
                 self.scroll_area.labels[self.this_index].img = cv_img
                 scale = self.scroll_area.labels[self.this_index].scale
                 self.scroll_area.labels[self.this_index].scale_cache = scale
@@ -433,6 +438,8 @@ class Cut_Pic(QMainWindow):
                     self.large_image_label.change_size((height, width))  # 设置大图显示区域大小
                     self.large_image_label.clear_content()
                     self.large_image_label.set_points(np.array([]))
+                    self.large_image_label.selected_point = None
+                    self.large_image_label.selected_middle_point = None
                     self.large_image_label.set_pic(pixmap.scaled(width, height, aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatio))
                     large_image_shape_round_gap = self.large_image_label.show_pic_shape.round_gap
                     self.setFixedSize(self.scroll_area_width + width + large_image_shape_round_gap * 2 + self.width_gap, height + large_image_shape_round_gap * 2 + self.height_gap)
@@ -477,6 +484,18 @@ class Cut_Pic(QMainWindow):
                 self.scroll_area.confire_this_button.setText('确认截图')
                 self.scroll_area.scroll_to_label(self.this_index)
 
+    def change_outside_color(self):
+        if self.this_index != None:
+            value = self.scroll_area.slider.value()
+            color_change = (value, value, value)
+            self.scroll_area.labels[self.this_index].outside_color = color_change
+            if self.this_index in self.viewed:
+                points = self.scroll_area.labels[self.this_index].points_cache
+                self.scroll_area.labels[self.this_index].points = points
+                cv_img = self.scroll_area.labels[self.this_index].img_cache
+                self.scroll_area.labels[self.this_index].img = cv_img
+                self.comfire_this()
+
     def init_event(self):
         self.scroll_area.skip_button.clicked.connect(self.skip_check)
         self.scroll_area.lift_rotate_button.clicked.connect(lambda: self.rotate(1))
@@ -486,3 +505,4 @@ class Cut_Pic(QMainWindow):
         self.scroll_area.confire_this_button.clicked.connect(lambda: self.comfire_this(True))
         self.scroll_area.previous_button.clicked.connect(self.previous)
         self.scroll_area.confirem_button.clicked.connect(self.confirm_selection)
+        self.scroll_area.slider.sliderReleased.connect(self.change_outside_color)
