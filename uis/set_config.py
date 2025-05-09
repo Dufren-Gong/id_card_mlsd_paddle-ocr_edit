@@ -1,13 +1,13 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QComboBox, QLabel, QCheckBox, QPushButton)
 from PyQt6.QtGui import QDoubleValidator, QIntValidator, QIcon
 from my_utils.utils import get_internal_path
-import copy
+import copy, re
 
 class Set_Config_Window(QWidget):
     def __init__(self, global_config):
         super().__init__()
         self.global_config = copy.deepcopy(global_config)
-        self.setWindowTitle("设置软件配置")
+        self.setWindowTitle("配置软件")
         self.setGeometry(100, 100, 320, 100)
         self.setWindowIcon(QIcon(get_internal_path('../files/icon/icon.ico')))
         self.main_layout = QVBoxLayout()
@@ -107,31 +107,31 @@ class Set_Config_Window(QWidget):
         self.line_five_layout.addWidget(self.forever_ensure_button)
         self.line_five_layout.addWidget(self.ensure_button)
 
-        # self.line_six_layout = QHBoxLayout()
-        # self.add_company_label = QLabel('添加公司名称:')
-        # self.add_company_label.setFixedWidth(80)
+        self.line_six_layout = QHBoxLayout()
+        self.add_company_label = QLabel('添加公司名称:')
+        self.add_company_label.setFixedWidth(80)
 
-        # self.add_company_edit = QLineEdit()
-        # self.add_company_edit.setPlaceholderText("新公司的名称,不要带'.',符合文件夹命名规则.")
-        # self.line_six_layout.addWidget(self.add_company_label)
-        # self.line_six_layout.addWidget(self.add_company_edit)
+        self.add_company_edit = QLineEdit()
+        self.add_company_edit.setPlaceholderText("新公司的名称,不要带'.',符合文件夹命名规则.")
+        self.line_six_layout.addWidget(self.add_company_label)
+        self.line_six_layout.addWidget(self.add_company_edit)
 
-        # self.line_seven_layout = QHBoxLayout()
-        # self.copy_company_label = QLabel('模版复制公司:')
-        # self.copy_company_label.setFixedWidth(80)
+        self.line_seven_layout = QHBoxLayout()
+        self.copy_company_label = QLabel('模版复制公司:')
+        self.copy_company_label.setFixedWidth(80)
 
-        # self.copy_company_edit = QComboBox()
-        # self.copy_company_label.setToolTip('添加的新公司的模版从哪个公司哪里复制.')
-        # self.copy_company_edit.addItems(self.global_config['companys'])
-        # self.copy_company_edit.setCurrentIndex(0)
-        # self.line_seven_layout.addWidget(self.copy_company_label)
-        # self.line_seven_layout.addWidget(self.copy_company_edit)
+        self.copy_company_edit = QComboBox()
+        self.copy_company_label.setToolTip('添加的新公司的模版从哪个公司哪里复制.')
+        self.copy_company_edit.addItems(self.global_config['companys'])
+        self.copy_company_edit.setCurrentIndex(0)
+        self.line_seven_layout.addWidget(self.copy_company_label)
+        self.line_seven_layout.addWidget(self.copy_company_edit)
 
         # 将所有布局添加到主布局中
         self.main_layout.addLayout(self.line_two_layout)
         self.main_layout.addLayout(self.line_one_layout)
-        # self.main_layout.addLayout(self.line_six_layout)
-        # self.main_layout.addLayout(self.line_seven_layout)
+        self.main_layout.addLayout(self.line_six_layout)
+        self.main_layout.addLayout(self.line_seven_layout)
         self.main_layout.addLayout(self.line_three_layout)
         self.main_layout.addLayout(self.line_four_layout)
         self.main_layout.addLayout(self.line_five_layout)
@@ -197,6 +197,9 @@ class Set_Config_Window(QWidget):
     def debug_change_config(self):
         self.global_config['main_window_conf']['debug_mode'] = self.debug_mode_input.isChecked()
 
+    def manage_floader_name(self):
+        self.add_company_edit.setText(re.sub(r'\s+', ' ', self.add_company_edit.text().replace('.', '')))
+
     def init_events(self):
         self.pic_catch_days_input.textChanged.connect(self.cache_day_change_config)
         self.excel_catch_num_input.textChanged.connect(self.excel_num_change_config)
@@ -205,3 +208,4 @@ class Set_Config_Window(QWidget):
         self.in_folader_input.stateChanged.connect(self.in_folder_change_config)
         self.enable_update_input.stateChanged.connect(self.update_change_config)
         self.debug_mode_input.stateChanged.connect(self.debug_change_config)
+        self.add_company_edit.textChanged.connect(self.manage_floader_name)

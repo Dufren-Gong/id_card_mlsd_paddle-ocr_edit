@@ -1107,7 +1107,10 @@ class Main_Window(QMainWindow):
         self.init_set_config_window_events()
 
     def ensure_change_config(self, forever_flag = False):
-        global_config = self.set_config_window.global_config
+        if forever_flag:
+            global_config, _ = self.add_new_company(copy.deepcopy(self.set_config_window.global_config))
+        else:
+            global_config, forever_flag = self.add_new_company(copy.deepcopy(self.global_config))
         #只有更改了才重启
         if self.global_config != global_config:
             self.refresh_main_window(global_config)
@@ -1119,6 +1122,50 @@ class Main_Window(QMainWindow):
                     pass
                 write_config(save_conf, '../配置/conf.yaml')
         self.set_config_window.close()
+
+    def add_new_company(self, global_config):
+        company_name = self.set_config_window.add_company_edit.text().strip()
+        flag = False
+        if company_name:
+            floader_name = '_'.join(company_name.split(' '))
+            if floader_name in global_config['companys']:
+                self.show_info.set_show_text('添加的新公司已存在.')
+            else:
+                try:
+                    floader_cache = os.getcwd()
+                    new_floaders = ['照片编辑结果', '照片放这里/横着中间截图', '照片放这里/竖着中间截图', '模版/高频照片', '模版/缓存照片', '模版/excel备份']
+                    os.chdir('..')
+                    os.makedirs(floader_name, exist_ok=True)
+                    for i in new_floaders:
+                        os.makedirs(os.path.join(floader_name, i), exist_ok=True)
+                    copy_company = self.set_config_window.copy_company_edit.currentText()
+                    floaders = os.listdir(os.path.join(copy_company, '模版'))
+                    for i in floaders:
+                        floader_path = os.path.join(floader_name, '模版', i)
+                        if not os.path.exists(floader_path):
+                            if os.path.isdir(os.path.join(copy_company, '模版', i)):
+                                shutil.copytree(os.path.join(copy_company, '模版', i), floader_path)
+                            elif not i.endswith('error.log'):
+                                shutil.copy(os.path.join(copy_company, '模版', i), floader_path)
+                    #获取所有docx文件路径
+                    doc_files = []
+                    for dirpath, dirnames, filenames in os.walk(os.path.join(floader_name, '模版')):
+                        for filename in filenames:
+                            if filename.lower().endswith(('.doc', '.docx')):
+                                full_path = os.path.join(dirpath, filename)
+                                doc_files.append(full_path)
+                    for i in doc_files:
+                        doc = replace_text_with_same_format(i, copy_company.replace('_', ' '), [company_name] * 1000)
+                        doc.save(i)
+                    global_config['companys'].append(floader_name)
+                    global_config[f'{floader_name}_config'] = copy.deepcopy(global_config[f'{copy_company}_config'])
+                    os.chdir(floader_cache)
+                    self.show_info.set_show_text('新公司添加成功.')
+                    flag = True
+                except:
+                    self.show_info.set_show_text('提供的公司名不符合文件夹命名标准,请更改.')
+        self.show_info.show()
+        return global_config, flag
 
     def init_set_config_window_events(self):
         self.set_config_window.ensure_button.clicked.connect(self.ensure_change_config)

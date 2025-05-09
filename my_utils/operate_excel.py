@@ -910,21 +910,24 @@ def check_excel_after(file_path, sheet_name = None):
             for i in range(2, row_count + 1):
                 value = ws[f"{letter}{i}"].value
                 if not pd.isna(value):
-                    ws[f"{letter}{i}"].font = black_font
-                    if value.strip().replace(' ', '') != '':
-                        check_r = column_names_after[c_name](value)
-                        if check_r == None:
-                            if c_name == '民族' and value == '无':
-                                nation_value = ws[f"{nation_letter}{i}"].value
-                                if nation_value != '香港':
-                                    ws[f"{letter}{i}"].font = red_font
-                                    passed_flag = False
-                                    error_rows = chech_and_add(error_rows, i)
-                            else:
+                    value = ''
+                ws[f"{letter}{i}"].font = black_font
+                if value.strip().replace(' ', '') != '':
+                    check_r = column_names_after[c_name](value)
+                    if check_r == None:
+                        if c_name == '民族' and value == '无':
+                            nation_value = ws[f"{nation_letter}{i}"].value
+                            if nation_value != '香港':
                                 ws[f"{letter}{i}"].font = red_font
                                 passed_flag = False
                                 error_rows = chech_and_add(error_rows, i)
-                    else:
-                        ws[f"{letter}{i}"] = np.nan
+                        else:
+                            ws[f"{letter}{i}"].font = red_font
+                            passed_flag = False
+                            error_rows = chech_and_add(error_rows, i)
+                else:
+                    ws[f"{letter}{i}"] = np.nan
+                    passed_flag = False
+                    error_rows = chech_and_add(error_rows, i)
     wb.save(file_path)
     return passed_flag, [str(i) for i in error_rows]
