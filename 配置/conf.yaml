@@ -80,7 +80,7 @@ cut_proportion: 0.5 #从上到下切割的比例
 height_cut_proportion: 0.5 #从左到右切割的比例
 enable_update: false  #是否开启更新选项
 mandatory_update: false  #版本相同也强制更新
-update_window: false  #更新显示窗口展示信息
+update_window: true  #更新显示窗口展示信息
 max_cash: 84513 #最大金额限制
 moren_pay: 62569 #设置默认支付金额
 moren_buy: 84513 #设置默认提货金额
@@ -102,11 +102,11 @@ update_shell_path: 配置/update_windows.bat
 #根据不同公司设置的选项
 companys: [BASTION, SIBELLAC_HOLDINGS_LIMITED, Belle_Venture_Holding(HK)Ltd]
 BASTION_config:
-  zhuandan_before: 90 #时间点前转单的费用
-  zhuandan_after: 60 #时间点后转单的费用
+  zhuandan_before: '90' #时间点前转单的费用
+  zhuandan_after: '60' #时间点后转单的费用
 SIBELLAC_HOLDINGS_LIMITED_config:
-  zhuandan_before: 60 #时间点前转单的费用
-  zhuandan_after: 60 #时间点后转单的费用
+  zhuandan_before: '60' #时间点前转单的费用
+  zhuandan_after: '60' #时间点后转单的费用
 Belle_Venture_Holding(HK)Ltd_config:
-  zhuandan_before: 60 #时间点前转单的费用
-  zhuandan_after: 60 #时间点后转单的费用
+  zhuandan_before: '60' #时间点前转单的费用
+  zhuandan_after: '60' #时间点后转单的费用

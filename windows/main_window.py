@@ -1112,10 +1112,9 @@ class Main_Window(QMainWindow):
         self.init_set_config_window_events()
 
     def ensure_change_config(self, forever_flag = False):
-        if forever_flag:
-            global_config, _ = self.add_new_company(copy.deepcopy(self.set_config_window.global_config))
-        else:
-            global_config, forever_flag = self.add_new_company(copy.deepcopy(self.global_config))
+        global_config, flag = self.add_new_company(copy.deepcopy(self.set_config_window.global_config))
+        if not forever_flag:
+            forever_flag = flag
         #只有更改了才重启
         if self.global_config != global_config:
             self.refresh_main_window(global_config)

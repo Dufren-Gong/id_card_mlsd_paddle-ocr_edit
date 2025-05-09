@@ -11,7 +11,7 @@ class Set_Config_Window(QWidget):
         self.setGeometry(100, 100, 320, 100)
         self.setWindowIcon(QIcon(get_internal_path('../files/icon/icon.ico')))
         self.main_layout = QVBoxLayout()
-        self.main_layout.setSpacing(1)
+        # self.main_layout.setSpacing(1)
 
         self.line_one_layout = QHBoxLayout()
         self.pic_catch_days_tip = QLabel(self)

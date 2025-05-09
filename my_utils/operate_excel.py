@@ -909,8 +909,9 @@ def check_excel_after(file_path, sheet_name = None):
             c_name = check_cloumns[index]
             for i in range(2, row_count + 1):
                 value = ws[f"{letter}{i}"].value
-                if not pd.isna(value):
-                    value = ''
+                if pd.isna(value):
+                    value = '内容缺失'
+                    ws[f"{letter}{i}"].value = value
                 ws[f"{letter}{i}"].font = black_font
                 if value.strip().replace(' ', '') != '':
                     check_r = column_names_after[c_name](value)
