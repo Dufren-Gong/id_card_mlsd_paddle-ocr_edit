@@ -774,7 +774,7 @@ class Main_Window(QMainWindow):
                 config_check = get_config('conf.yaml')
                 new_version = config_check['version']
                 os.remove('conf.yaml')
-                if new_version == old_version:
+                if new_version == old_version and not self.global_config['mandatory_update']:
                     self.show_info.set_show_text(f'已是最新版本,不需要更新')
                     self.show_info.show()
                     return
@@ -782,6 +782,8 @@ class Main_Window(QMainWindow):
                     self.show_info.set_show_text(f'正在下载源代码,请稍等......')
                     self.show_info.show()
                     QApplication.processEvents()
+                    if new_version == old_version and self.global_config['mandatory_update']:
+                        result_name = '新' + result_name
                     self.download_source_code_thread = Download_Sourcecode(self.global_config, name, zip_file_path, result_name, root_floader, new_version)
                     self.download_source_code_thread.resSignal.connect(self.end_get_source_code)
                     self.download_source_code_thread.start()
@@ -834,7 +836,10 @@ class Main_Window(QMainWindow):
         self.only_once_flag = True
         self.update_timer.timeout.connect(lambda: self.end_pyinstaller(time_count, name, result_name, root_floader, new_version, zip_file_path))
         #不显示黑色terminal窗口
-        self.pyinstaller_process = subprocess.Popen(command, creationflags=0x08000000)
+        if self.global_config['update_window']:
+            self.pyinstaller_process = subprocess.Popen(command)
+        else:
+            self.pyinstaller_process = subprocess.Popen(command, creationflags=0x08000000)
         self.update_timer.start(time_count)
 
     def end_pyinstaller(self, time_count, name, save_name, root_floader, new_version, zip_file_path):
@@ -1164,7 +1169,7 @@ class Main_Window(QMainWindow):
                     flag = True
                 except:
                     self.show_info.set_show_text('提供的公司名不符合文件夹命名标准,请更改.')
-        self.show_info.show()
+            self.show_info.show()
         return global_config, flag
 
     def init_set_config_window_events(self):

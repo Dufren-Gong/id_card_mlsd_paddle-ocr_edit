@@ -71,6 +71,29 @@ class Set_Config_Window(QWidget):
         else:
             self.enable_update_input.setChecked(False)
 
+        self.mandatory_update_tip = QLabel(self)
+        self.mandatory_update_tip.setText('强制更新:')
+        self.mandatory_update_input = QCheckBox()
+        if self.global_config['mandatory_update']:
+            self.mandatory_update_input.setChecked(True)
+        else:
+            self.mandatory_update_input.setChecked(False)
+
+        self.update_window_tip = QLabel(self)
+        self.update_window_tip.setText('更新显示窗口:')
+        self.update_window_input = QCheckBox()
+        if self.global_config['update_window']:
+            self.update_window_input.setChecked(True)
+        else:
+            self.update_window_input.setChecked(False)
+
+        self.line_three_layout.addWidget(self.enable_update_tip)
+        self.line_three_layout.addWidget(self.enable_update_input)
+        self.line_three_layout.addWidget(self.mandatory_update_tip)
+        self.line_three_layout.addWidget(self.mandatory_update_input)
+        self.line_three_layout.addWidget(self.update_window_tip)
+        self.line_three_layout.addWidget(self.update_window_input)
+
         self.debug_mode_tip = QLabel(self)
         self.debug_mode_tip.setText('Debug模式:')
         self.debug_mode_input = QCheckBox()
@@ -78,11 +101,6 @@ class Set_Config_Window(QWidget):
             self.debug_mode_input.setChecked(True)
         else:
             self.debug_mode_input.setChecked(False)
-
-        self.line_three_layout.addWidget(self.debug_mode_tip)
-        self.line_three_layout.addWidget(self.debug_mode_input)
-        self.line_three_layout.addWidget(self.enable_update_tip)
-        self.line_three_layout.addWidget(self.enable_update_input)
 
         self.line_four_layout = QHBoxLayout()
         self.in_folader_tip = QLabel(self)
@@ -95,6 +113,8 @@ class Set_Config_Window(QWidget):
 
         self.line_four_layout.addWidget(self.in_folader_tip)
         self.line_four_layout.addWidget(self.in_folader_input)
+        self.line_four_layout.addWidget(self.debug_mode_tip)
+        self.line_four_layout.addWidget(self.debug_mode_input)
 
         self.line_five_layout = QHBoxLayout()
         self.forever_ensure_button = QPushButton('永久保存')
@@ -197,6 +217,12 @@ class Set_Config_Window(QWidget):
     def debug_change_config(self):
         self.global_config['main_window_conf']['debug_mode'] = self.debug_mode_input.isChecked()
 
+    def mandatory_update_change_config(self):
+        self.global_config['mandatory_update'] = self.mandatory_update_input.isChecked()
+
+    def update_window_change_config(self):
+        self.global_config['update_window'] = self.update_window_input.isChecked()
+
     def manage_floader_name(self):
         self.add_company_edit.setText(re.sub(r'\s+', ' ', self.add_company_edit.text().replace('.', '')))
 
@@ -209,3 +235,5 @@ class Set_Config_Window(QWidget):
         self.enable_update_input.stateChanged.connect(self.update_change_config)
         self.debug_mode_input.stateChanged.connect(self.debug_change_config)
         self.add_company_edit.textChanged.connect(self.manage_floader_name)
+        self.mandatory_update_input.stateChanged.connect(self.mandatory_update_change_config)
+        self.update_window_input.stateChanged.connect(self.update_window_change_config)
