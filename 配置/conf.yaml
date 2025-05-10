@@ -85,10 +85,10 @@ max_cash: 84513 #最大金额限制
 moren_pay: 62569 #设置默认支付金额
 moren_buy: 84513 #设置默认提货金额
 moren_annual_fee: 210 #设置默认年费
-in_floader: false #
+in_floader: false #是否为每一单单独创建文件夹
 main_window_conf:
   catch_max_height: 20 #展开最大宽度占多少行，一行高度为20px
-  debug_mode: false  #非debug模式在窗口中报错，debug模式在terminal中报错
+  debug_mode: false #非debug模式在窗口中报错，debug模式在terminal中报错
 
 # https://gitee.com/api/v5/repos/{owner}/{repo}/zipball?access_token={access_token}&ref={ref}
 access_token: 3d7b338f6b596cc32baf892157ac5f98 # gitee授权码
@@ -97,7 +97,6 @@ repo: id_card_mlsd_paddle-ocr_edit # 项目名称
 ref: main #分支
 conda_env_name: paddle-ocr #更新程序的时候，需要激活的conda环境名
 update_shell_path: 配置/update_windows.bat
-# del_and_reopen_shell_path: 配置/del_and_reopen.ps1
 
 #根据不同公司设置的选项
 companys: [BASTION, SIBELLAC_HOLDINGS_LIMITED, Belle_Venture_Holding(HK)Ltd]

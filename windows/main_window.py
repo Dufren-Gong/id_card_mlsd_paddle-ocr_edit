@@ -852,7 +852,7 @@ class Main_Window(QMainWindow):
         if wait_start_flag and self.only_once_flag:
             self.only_once_flag = False
             os.chdir(root_floader)
-            write_config(recursive_update(get_config(os.path.join('配置', 'conf.yaml')), get_config(os.path.join(name, '配置', 'conf.yaml'))), os.path.join(name, '配置', 'conf.yaml'))
+            write_config(recursive_update(get_config(os.path.join('配置', 'conf.yaml')), get_config(os.path.join(name, '配置', 'conf.yaml')), [('version')]), os.path.join(name, '配置', 'conf.yaml'))
             shutil.move(os.path.join(name, '配置'), os.path.join(name, 'dist', 'main', '配置'))
             companys = self.global_config['companys']
             for i in companys:

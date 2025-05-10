@@ -427,14 +427,51 @@ def split_image(input_image_path: str, output_image_path_1, output_image_path_2,
     except:
         pass
 
-def recursive_update(stay_data, target_data):
-    for key, a_value in stay_data.items():
-        if key in target_data:
-            b_value = target_data[key]
-            if isinstance(a_value, dict) and isinstance(b_value, dict):
-                # 递归多级字典
-                recursive_update(a_value, b_value)
+def recursive_update(stay_data, target_data, stay_paths):
+    """
+    将 stay_data 中的值更新到 target_data 中，但 stay_paths 中指定的路径保持 target_data 中的值不变。
+
+    参数说明：
+        stay_data: ruamel.yaml 读取的第一个yaml数据（通常是dict）
+        target_data: ruamel.yaml 读取的第二个yaml数据（通常是dict）
+        stay_paths: list of list，表示需要保持 target_data 不变的路径，例如 [(a, b, c), (x, y)]
+    """
+    def should_stay(path):
+        """
+        判断当前路径 path 是否在 stay_paths 中或其子路径中。
+        只要路径 path 是 stay_paths 中某路径的前缀，则也认为该路径需要保持不变，
+        以防止对 stay_paths 指定路径下的子树做替换。
+        """
+        for sp in stay_paths:
+            # 如果当前路径是 stay_paths 中路径的前缀或相等
+            if len(path) <= len(sp) and all(path[i] == sp[i] for i in range(len(path))):
+                return True
+        return False
+
+    def _recursive_update(sd, td, current_path=()):
+        """
+        递归遍历并更新 td 中的值
+        """
+        if not isinstance(sd, dict) or not isinstance(td, dict):
+            # 如果不是字典，无法再递归，直接替换（除非在 stay_paths 中）
+            if not should_stay(current_path):
+                return sd
             else:
-                # 叶子节点直接替换
-                target_data[key] = a_value
+                return td
+
+        # 都是字典，遍历 stay_data 的所有键
+        for k in sd:
+            new_path = current_path + (k,)
+            if k in td:
+                if should_stay(new_path):
+                    # 路径在 stay_paths 中，跳过替换，保持 target_data 原值
+                    continue
+                # 递归更新
+                td[k] = _recursive_update(sd[k], td[k], new_path)
+            else:
+                # k 不在 target_data 中，是否添加？题目未说明，这里不添加，只处理同时存在的
+                pass
+        return td
+
+    _recursive_update(stay_data, target_data)
     return target_data
