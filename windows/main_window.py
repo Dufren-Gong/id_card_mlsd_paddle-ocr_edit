@@ -761,6 +761,7 @@ class Main_Window(QMainWindow):
         current_os = platform.system() 
         if current_os == "Windows":
             os.chdir('..')
+            self.new_name_flag = False
             result_name = '身份证照片识别'
             name = self.global_config['repo']
             ref = self.global_config['ref']
@@ -783,7 +784,7 @@ class Main_Window(QMainWindow):
                     self.show_info.show()
                     QApplication.processEvents()
                     if new_version == old_version and self.global_config['mandatory_update']:
-                        result_name = '新' + result_name
+                        self.new_name_flag = True
                     self.download_source_code_thread = Download_Sourcecode(self.global_config, name, zip_file_path, result_name, root_floader, new_version)
                     self.download_source_code_thread.resSignal.connect(self.end_get_source_code)
                     self.download_source_code_thread.start()
@@ -866,7 +867,7 @@ class Main_Window(QMainWindow):
                 shutil.move(zip_file_path, os.path.join(name, 'dist', 'main', '配置', zip_file_path))
             if not os.path.exists(os.path.join(name, 'dist', 'main', '_internal', '_tk_data')) and os.path.exists(os.path.join('_internal', '_tk_data')):
                 shutil.copytree(os.path.join('_internal', '_tk_data'), os.path.join(name, 'dist', 'main', '_internal', '_tk_data'))
-            shutil.move(os.path.join(name, 'dist', 'main'), os.path.join(os.path.dirname(root_floader), f'{save_name}{new_version}'))
+            shutil.move(os.path.join(name, 'dist', 'main'), os.path.join(os.path.dirname(root_floader), f'新{save_name}{new_version}' if self.new_name_flag else f'{save_name}{new_version}'))
             show_str = '更新完成\n现在可以关闭这个窗口打开新软件使用'
             try:
                 shutil.rmtree(name)

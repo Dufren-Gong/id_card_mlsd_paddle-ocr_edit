@@ -80,7 +80,7 @@ cut_proportion: 0.5 #从上到下切割的比例
 height_cut_proportion: 0.5 #从左到右切割的比例
 enable_update: false  #是否开启更新选项
 mandatory_update: false  #版本相同也强制更新
-update_window: true  #更新显示窗口展示信息
+update_window: false  #更新显示窗口展示信息
 max_cash: 84513 #最大金额限制
 moren_pay: 62569 #设置默认支付金额
 moren_buy: 84513 #设置默认提货金额
