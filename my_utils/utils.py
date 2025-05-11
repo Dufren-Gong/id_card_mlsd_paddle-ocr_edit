@@ -1,14 +1,11 @@
 from datetime import datetime, timedelta
-import os, math, json, sys, base64
-import shutil, requests
+import os, math, json, sys, base64, shutil, requests, cv2, copy, platform
 # import PIL
 # import PIL.Image
 # import PIL.ImageEnhance
 from PIL import Image
 from PyQt6.QtGui import QImage, QPixmap
 from natsort import natsorted
-import platform
-import cv2, copy
 import numpy as np
 from pathlib import Path
 from ruamel.yaml import YAML
@@ -475,3 +472,13 @@ def recursive_update(stay_data, target_data, stay_paths):
 
     _recursive_update(stay_data, target_data)
     return target_data
+
+#计算非线性参数
+def calc_no_line_number(min_number, middle_number, max_number, k_high, count_number):
+    assert max_number > middle_number > min_number
+    assert max_number >= count_number >= min_number
+    if count_number <= middle_number:
+        return count_number * k_high
+    else:
+        point_y = middle_number * k_high
+        return point_y + (count_number - middle_number) * (max_number - point_y) / (max_number - middle_number)

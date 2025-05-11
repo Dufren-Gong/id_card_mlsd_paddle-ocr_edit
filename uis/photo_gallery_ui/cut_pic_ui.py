@@ -1,7 +1,7 @@
 import os, cv2
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout
 from PyQt6.QtGui import QIcon
-from my_utils.utils import get_all_pic_path, cv_imread, get_mask, add_mask, cv_imwrite, pic_rotate_angle, cv_to_qpixmap, point_rotate_90, calculate_distance, get_internal_path
+from my_utils.utils import get_all_pic_path, cv_imread, get_mask, add_mask, cv_imwrite, pic_rotate_angle, cv_to_qpixmap, point_rotate_90, calculate_distance, get_internal_path, calc_no_line_number
 from PyQt6.QtCore import Qt, QThreadPool
 from uis.photo_gallery_ui.scroll_area_for_cut import Scroll_Area, ClickableLabel  # 导入 Scroll_Area 模块
 from windows.show_info_window import Show_Info_Window
@@ -487,6 +487,7 @@ class Cut_Pic(QMainWindow):
     def change_outside_color(self):
         if self.this_index != None:
             value = self.scroll_area.slider.value()
+            value = calc_no_line_number(0, 50, 255, 3, value)
             color_change = (value, value, value)
             self.scroll_area.labels[self.this_index].outside_color = color_change
             if self.this_index in self.viewed:

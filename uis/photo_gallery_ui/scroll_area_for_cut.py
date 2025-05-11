@@ -50,7 +50,7 @@ class Scroll_Area(QWidget):
         # 创建按钮
         self.down_button = QPushButton("↓")
         self.down_button.setToolTip('调整顺序，将这张照片下移一个位置')
-        self.down_button.setFixedWidth(int(width_t/6))  # 设置按钮的固定宽度
+        self.down_button.setFixedWidth(int(width_t / 6))  # 设置按钮的固定宽度
 
         # 创建按钮
         self.skip_button = QPushButton("跳过检查")
@@ -103,12 +103,12 @@ class Scroll_Area(QWidget):
 
         # 创建一个新的水平布局来放置 skip_button 和 max_button
         button_layout2 = QHBoxLayout()
-        button_layout2.setSpacing(2)  # 例如，设置为 10 像素，可以根据需要调整
+        button_layout2.setSpacing(0)  # 例如，设置为 10 像素，可以根据需要调整
 
         self.tip_label_color = QLabel('圆弧外围颜色:')
-        self.tip_label_color.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.tip_label_color.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
         self.tip_label_color.setToolTip('更改圆弧外围颜色,数值越小颜色越深.先确认截图再调色.')
-        self.tip_label_color.setFixedWidth(int(width_t / 3))  # 设置按钮的固定宽度
+        self.tip_label_color.setFixedWidth(int(1 * width_t / 3))  # 设置按钮的固定宽度
 
         # 创建水平滑块
         self.slider = QSlider(QtCore.Qt.Orientation.Horizontal)
@@ -121,7 +121,7 @@ class Scroll_Area(QWidget):
             self.slider.setValue(0)         # 默认值
         self.slider.setTickInterval(50) # 刻度间隔，可选
         self.slider.setTickPosition(QSlider.TickPosition.TicksBelow) # 显示刻度，可选
-        self.slider.setFixedWidth(int(3 * width_t / 5))  # 设置按钮的固定宽度
+        self.slider.setFixedWidth(int(5 * width_t / 9))  # 设置按钮的固定宽度
 
         button_layout2.addWidget(self.tip_label_color)
         button_layout2.addWidget(self.slider)
