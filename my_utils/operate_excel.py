@@ -899,36 +899,50 @@ def check_excel_after(file_path, sheet_name = None):
         ws = read_openpyxl_by_str(ws)
         row_count = ws.max_row
         check_cloumns = [i for i in [cell.value for cell in ws[1]] if i in catch_columns]
-        column_letters = get_column_letter(ws, check_cloumns)
+        column_letters = get_column_letter(ws, check_cloumns + ['姓名'])
+        name_letter = column_letters[-1]
+        column_letters = column_letters[:-1]
         nation_index = check_cloumns.index('归属地')
         nation_letter = column_letters[nation_index]
+        #检查一次拿一些行需要检查
+        check_columns_log = []
+        for i in range(2, row_count + 1):
+            value = ws[f"{name_letter}{i}"].value
+            if not pd.isna(value) and value.strip().replace(' ', '') != '':
+                check_columns_log.append(i)
         for index, letter in enumerate(column_letters):
+            nation_pass_flag = False
             #归属地不检查，因为用不上
             if letter == nation_letter:
-                continue
+                nation_pass_flag = True
             c_name = check_cloumns[index]
-            for i in range(2, row_count + 1):
+            for i in check_columns_log:
                 value = ws[f"{letter}{i}"].value
-                if pd.isna(value):
+                ws[f"{letter}{i}"].font = black_font
+                if pd.isna(value) or value.strip().replace(' ', '') != '':
                     value = '内容缺失'
                     ws[f"{letter}{i}"].value = value
-                ws[f"{letter}{i}"].font = black_font
-                if value.strip().replace(' ', '') != '':
-                    check_r = column_names_after[c_name](value)
-                    if check_r == None:
-                        if c_name == '民族' and value == '无':
-                            nation_value = ws[f"{nation_letter}{i}"].value
-                            if nation_value != '香港':
-                                ws[f"{letter}{i}"].font = red_font
-                                passed_flag = False
-                                error_rows = chech_and_add(error_rows, i)
-                        else:
+                    if nation_pass_flag:
+                        ws[f"{letter}{i}"].font = red_font
+                        passed_flag = False
+                        error_rows = chech_and_add(error_rows, i)
+                        continue
+                elif nation_pass_flag and value not in ['香港', '内地']:
+                    ws[f"{letter}{i}"].font = red_font
+                    passed_flag = False
+                    error_rows = chech_and_add(error_rows, i)
+                    continue
+                check_r = column_names_after[c_name](value)
+                if check_r == None:
+                    if c_name == '民族' and value == '无':
+                        nation_value = ws[f"{nation_letter}{i}"].value
+                        if nation_value != '香港':
                             ws[f"{letter}{i}"].font = red_font
                             passed_flag = False
                             error_rows = chech_and_add(error_rows, i)
-                else:
-                    ws[f"{letter}{i}"] = np.nan
-                    passed_flag = False
-                    error_rows = chech_and_add(error_rows, i)
+                    else:
+                        ws[f"{letter}{i}"].font = red_font
+                        passed_flag = False
+                        error_rows = chech_and_add(error_rows, i)
     wb.save(file_path)
     return passed_flag, [str(i) for i in error_rows]
