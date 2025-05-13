@@ -5,8 +5,10 @@ import copy, re
 
 class NoDotValidator(QValidator):
     def validate(self, input_str, pos):
-        if '.' in input_str:
-            return (QValidator.State.Invalid, input_str, pos)
+        if input_str:
+            first = input_str[0]
+            if '.' in input_str or '  ' in input_str or first in [' ', '_']:
+                return (QValidator.State.Invalid, input_str, pos)
         return (QValidator.State.Acceptable, input_str, pos)
 
 class Set_Config_Window(QWidget):
