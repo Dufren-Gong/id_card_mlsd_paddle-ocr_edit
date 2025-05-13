@@ -908,18 +908,18 @@ def check_excel_after(file_path, sheet_name = None):
         check_columns_log = []
         for i in range(2, row_count + 1):
             value = ws[f"{name_letter}{i}"].value
-            if not pd.isna(value) and value.strip().replace(' ', '') != '':
+            if not pd.isna(value) and value.strip().replace(' ', ''):
                 check_columns_log.append(i)
         for index, letter in enumerate(column_letters):
-            nation_pass_flag = False
-            #归属地不检查，因为用不上
             if letter == nation_letter:
                 nation_pass_flag = True
+            else:
+                nation_pass_flag = False
             c_name = check_cloumns[index]
             for i in check_columns_log:
                 value = ws[f"{letter}{i}"].value
                 ws[f"{letter}{i}"].font = black_font
-                if pd.isna(value) or value.strip().replace(' ', '') != '':
+                if pd.isna(value) or not value.strip().replace(' ', ''):
                     value = '内容缺失'
                     ws[f"{letter}{i}"].value = value
                     if nation_pass_flag:
@@ -927,10 +927,11 @@ def check_excel_after(file_path, sheet_name = None):
                         passed_flag = False
                         error_rows = chech_and_add(error_rows, i)
                         continue
-                elif nation_pass_flag and value not in ['香港', '内地']:
-                    ws[f"{letter}{i}"].font = red_font
-                    passed_flag = False
-                    error_rows = chech_and_add(error_rows, i)
+                elif nation_pass_flag:
+                    if value not in ['香港', '内地']:
+                        ws[f"{letter}{i}"].font = red_font
+                        passed_flag = False
+                        error_rows = chech_and_add(error_rows, i)
                     continue
                 check_r = column_names_after[c_name](value)
                 if check_r == None:
