@@ -1,7 +1,13 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QComboBox, QLabel, QCheckBox, QPushButton)
-from PyQt6.QtGui import QDoubleValidator, QIntValidator, QIcon
+from PyQt6.QtGui import QDoubleValidator, QIntValidator, QIcon, QValidator
 from my_utils.utils import get_internal_path
 import copy, re
+
+class NoDotValidator(QValidator):
+    def validate(self, input_str, pos):
+        if '.' in input_str:
+            return (QValidator.State.Invalid, input_str, pos)
+        return (QValidator.State.Acceptable, input_str, pos)
 
 class Set_Config_Window(QWidget):
     def __init__(self, global_config):
@@ -17,18 +23,18 @@ class Set_Config_Window(QWidget):
         self.pic_catch_days_tip = QLabel(self)
         self.pic_catch_days_tip.setText('照片缓存天数:')
         self.pic_catch_days_input = QLineEdit(str(self.global_config['catch_days']))
-        self.pic_catch_days_input.setToolTip('0代表一直缓存,其他正数代表照片缓存天数，缓存照片在[./模版/excel备份]中')
-        # 设置输入验证器，只允许输入正整数
-        int_validator = QIntValidator(0, 1000000)  # 设置最小值为 1，最大值为 1000000
+        self.pic_catch_days_input.setToolTip('0代表一直缓存,其他正数代表照片缓存天数,缓存照片在[./模版/excel备份]中')
+        # 设置输入验证器,只允许输入正整数
+        int_validator = QIntValidator(0, 1000000)  # 设置最小值为 1,最大值为 1000000
         self.pic_catch_days_input.setValidator(int_validator)
         self.pic_catch_days_input.setFixedWidth(60)
 
         self.excel_catch_num_tip = QLabel(self)
         self.excel_catch_num_tip.setText('excel缓存个数:')
         self.excel_catch_num_input = QLineEdit(str(self.global_config['excel_cache_num']))
-        self.excel_catch_num_input.setToolTip('防止excel损坏丢失数据，每次制作word之前在[./模版/excel备份]中备份一定数量的excel.')
-        # 设置输入验证器，只允许输入正整数
-        int_validator = QIntValidator(0, 1000000)  # 设置最小值为 1，最大值为 1000000
+        self.excel_catch_num_input.setToolTip('防止excel损坏丢失数据,每次制作word之前在[./模版/excel备份]中备份一定数量的excel.')
+        # 设置输入验证器,只允许输入正整数
+        int_validator = QIntValidator(0, 1000000)  # 设置最小值为 1,最大值为 1000000
         self.excel_catch_num_input.setValidator(int_validator)
         self.excel_catch_num_input.setFixedWidth(60)
 
@@ -43,7 +49,7 @@ class Set_Config_Window(QWidget):
         self.cup_prob_tip.setText('横着切割比例:')
         self.cup_prob_input = QLineEdit(str(self.global_config['cut_proportion']))
         self.cup_prob_input.setToolTip('从上到下的比例.')
-        # 设置输入验证器，只允许输入正整数
+        # 设置输入验证器,只允许输入正整数
         double_validator = QDoubleValidator()
         self.cup_prob_input.setValidator(double_validator)
         self.cup_prob_input.setFixedWidth(60)
@@ -52,7 +58,7 @@ class Set_Config_Window(QWidget):
         self.height_cup_prob_tip.setText('竖着切割比例:')
         self.height_cup_prob_input = QLineEdit(str(self.global_config['height_cut_proportion']))
         self.height_cup_prob_input.setToolTip('从左到右切割的比例.')
-        # 设置输入验证器，只允许输入正整数
+        # 设置输入验证器,只允许输入正整数
         double_validator = QDoubleValidator()
         self.height_cup_prob_input.setValidator(double_validator)
         self.height_cup_prob_input.setFixedWidth(60)
@@ -73,6 +79,7 @@ class Set_Config_Window(QWidget):
 
         self.mandatory_update_tip = QLabel(self)
         self.mandatory_update_tip.setText('强制更新:')
+        self.mandatory_update_tip.setToolTip('版本号相同,强制更新')
         self.mandatory_update_input = QCheckBox()
         if self.global_config['mandatory_update']:
             self.mandatory_update_input.setChecked(True)
@@ -81,6 +88,7 @@ class Set_Config_Window(QWidget):
 
         self.update_window_tip = QLabel(self)
         self.update_window_tip.setText('更新显示窗口:')
+        self.update_window_tip.setToolTip('更新的时候是否打开黑色窗口显示更新进度')
         self.update_window_input = QCheckBox()
         if self.global_config['update_window']:
             self.update_window_input.setChecked(True)
@@ -94,6 +102,26 @@ class Set_Config_Window(QWidget):
         self.line_three_layout.addWidget(self.update_window_tip)
         self.line_three_layout.addWidget(self.update_window_input)
 
+        self.line_four_layout = QHBoxLayout()
+
+        self.update_save_mode_tip = QLabel(self)
+        self.update_save_mode_tip.setText('更新缓存:')
+        self.update_save_mode_tip.setToolTip('更新之后,保留上一个版本软件内公司信息以保证上一个版本功能正常还是删除上一个版本公司信息以节省空间')
+        self.update_save_mode_input = QCheckBox()
+        if self.global_config['stay_old']:
+            self.update_save_mode_input.setChecked(True)
+        else:
+            self.update_save_mode_input.setChecked(False)
+
+        self.in_folader_tip = QLabel(self)
+        self.in_folader_tip.setText('缓存信息和照片:')
+        self.in_folader_tip.setToolTip('每单的照片和信息以及制作的word放到单独的文件夹里,方便保存')
+        self.in_folader_input = QCheckBox()
+        if self.global_config['in_floader']:
+            self.in_folader_input.setChecked(True)
+        else:
+            self.in_folader_input.setChecked(False)
+
         self.debug_mode_tip = QLabel(self)
         self.debug_mode_tip.setText('Debug模式:')
         self.debug_mode_input = QCheckBox()
@@ -102,15 +130,8 @@ class Set_Config_Window(QWidget):
         else:
             self.debug_mode_input.setChecked(False)
 
-        self.line_four_layout = QHBoxLayout()
-        self.in_folader_tip = QLabel(self)
-        self.in_folader_tip.setText('每单创建单独文件夹并复制照片:')
-        self.in_folader_input = QCheckBox()
-        if self.global_config['in_floader']:
-            self.in_folader_input.setChecked(True)
-        else:
-            self.in_folader_input.setChecked(False)
-
+        self.line_four_layout.addWidget(self.update_save_mode_tip)
+        self.line_four_layout.addWidget(self.update_save_mode_input)
         self.line_four_layout.addWidget(self.in_folader_tip)
         self.line_four_layout.addWidget(self.in_folader_input)
         self.line_four_layout.addWidget(self.debug_mode_tip)
@@ -118,11 +139,11 @@ class Set_Config_Window(QWidget):
 
         self.line_five_layout = QHBoxLayout()
         self.forever_ensure_button = QPushButton('永久保存')
-        self.forever_ensure_button.setToolTip('保存永久应用，写入到配置文件中.')
+        self.forever_ensure_button.setToolTip('保存永久应用,写入到配置文件中.')
         self.forever_ensure_button.setFixedWidth(80)
 
         self.ensure_button = QPushButton('单次保存')
-        self.ensure_button.setToolTip('保存只应用一次，下次打开恢复默认.')
+        self.ensure_button.setToolTip('保存只应用一次,下次打开恢复默认.')
         self.ensure_button.setFixedWidth(80)
         self.line_five_layout.addWidget(self.forever_ensure_button)
         self.line_five_layout.addWidget(self.ensure_button)
@@ -132,7 +153,9 @@ class Set_Config_Window(QWidget):
         self.add_company_label.setFixedWidth(80)
 
         self.add_company_edit = QLineEdit()
-        self.add_company_edit.setPlaceholderText("新公司的名称,不要带'.',符合文件夹命名规则.")
+        validator = NoDotValidator()
+        self.add_company_edit.setValidator(validator)
+        self.add_company_edit.setPlaceholderText("新公司名,需符合文件夹命名规则")
         self.line_six_layout.addWidget(self.add_company_label)
         self.line_six_layout.addWidget(self.add_company_edit)
 
@@ -223,8 +246,8 @@ class Set_Config_Window(QWidget):
     def update_window_change_config(self):
         self.global_config['update_window'] = self.update_window_input.isChecked()
 
-    def manage_floader_name(self):
-        self.add_company_edit.setText(re.sub(r'\s+', ' ', self.add_company_edit.text().replace('.', '')))
+    def update_save_change_config(self):
+        self.global_config['stay_old'] = self.update_save_mode_input.isChecked()
 
     def init_events(self):
         self.pic_catch_days_input.textChanged.connect(self.cache_day_change_config)
@@ -234,6 +257,6 @@ class Set_Config_Window(QWidget):
         self.in_folader_input.stateChanged.connect(self.in_folder_change_config)
         self.enable_update_input.stateChanged.connect(self.update_change_config)
         self.debug_mode_input.stateChanged.connect(self.debug_change_config)
-        self.add_company_edit.textChanged.connect(self.manage_floader_name)
         self.mandatory_update_input.stateChanged.connect(self.mandatory_update_change_config)
         self.update_window_input.stateChanged.connect(self.update_window_change_config)
+        self.update_save_mode_input.stateChanged.connect(self.update_save_change_config)
