@@ -8,6 +8,7 @@ mlsd_conf:
   large_max_input_size: 768 #[512, 768]large 的图片输入尺寸,好像只能512，要不然会报错
   max_threads: 1 #最大线程数
   small_pic_fixed_width: 200 # 小图宽度，建议大于150
+  pic_shape: [856, 540] #[width, height]， 最终生成照片的尺寸
   angle_rate: 30 #圆角弧度
   outside_color: 255 #默认圆弧外部颜色为255白色，0为黑色，从255->0越来越暗
   up_gap: 6 # 每边往里收的幅度
@@ -71,7 +72,6 @@ paddleocr_conf:
     check_total_strs: [中国, CHINA]
 
 version: 2.0.3 #版本号
-pic_shape: [856, 540] #[width, height]， 最终生成照片的尺寸
 catch_days: 30 #制作的照片缓存几天，填写0代表一直缓存, 正整数比如1，就缓存当天的照片，第二天再打开软件，前一天的缓存就删掉了
 excel_cache_num: 10 #缓存多少个excel
 button_timer_duration: 1000 #长按按钮的执行时间，单位为ms

@@ -11,7 +11,7 @@ class Pic_Operate_Windows():
         self.file_path = file_path
         self.pic_type = '.png'
         self.global_config = global_config
-        self.id_shape = tuple(self.global_config['pic_shape'])
+        self.id_shape = tuple(self.global_config['mlsd_conf']['pic_shape'])
         self.show_info = Show_Info_Window()
         self.reopen_main_window = reopen_main_window
         self.save_floader = os.path.join("照片编辑结果", get_data_str())

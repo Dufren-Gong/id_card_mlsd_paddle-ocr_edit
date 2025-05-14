@@ -124,7 +124,7 @@ class Cut_Pic(QMainWindow):
                                                   params, 
                                                   max_t_arr, 
                                                   self.global_config['mlsd_conf']['model_type'], 
-                                                  tuple(self.global_config['pic_shape']), 
+                                                  tuple(self.global_config['mlsd_conf']['pic_shape']), 
                                                   self.global_config['mlsd_conf']['tiny_first'])
             line_detect_thread.signals.finished.connect(self.end_line_detct)  # 把任务完成的信号与任务完成后处理的槽函数绑定
             self.thread_pool.start(line_detect_thread)

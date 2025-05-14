@@ -102,7 +102,7 @@ class Name_Pic(QMainWindow):
             path = self.photo_paths[index]
             cv_img = cv_imread(path)
             ocr_thread = Get_Ocr(cv_img, self.ocr_model, path, scale=copy.copy(self.global_config['paddleocr_conf']['scale']), 
-                                 pic_shape=tuple(self.global_config['pic_shape']), 
+                                 pic_shape=tuple(self.global_config['mlsd_conf']['pic_shape']), 
                                  times=self.global_config['paddleocr_conf']['times'], 
                                  pic_type=self.global_config['paddleocr_conf']['ocr_pic_type'],
                                  info_checks=self.global_config['paddleocr_conf']['info_checks'],
@@ -794,7 +794,7 @@ class Name_Pic(QMainWindow):
             self.thread_pool = QThreadPool.globalInstance()
             self.thread_pool.setMaxThreadCount(self.global_config['paddleocr_conf']['max_threads'])
             ocr_thread = Get_Ocr(cv_imread(temp_path), self.ocr_model, temp_path, scale=copy.copy(self.global_config['paddleocr_conf']['scale']), 
-                                    pic_shape=tuple(self.global_config['pic_shape']), 
+                                    pic_shape=tuple(self.global_config['mlsd_conf']['pic_shape']), 
                                     times=self.global_config['paddleocr_conf']['times'], 
                                     pic_type=self.global_config['paddleocr_conf']['ocr_pic_type'],
                                     info_checks=self.global_config['paddleocr_conf']['info_checks'],
