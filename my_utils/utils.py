@@ -143,9 +143,13 @@ def open_floader(path, file_path=None):
     path = Path(path)
     current_os = platform.system()
     if current_os == "Windows":
-        # os.startfile(path)  # Windows特定的方法
         # 使用 explorer.exe /select, 参数选中指定文件
-        os.system(f'explorer.exe /select,"{file_path.resolve()}"')
+        if file_path:
+            # file_path = Path(file_path).resolve()  # 转换为 Path 对象
+            file_path = os.path.join(path, file_path)
+            os.system(f'explorer.exe /select,"{file_path}"')
+        else:
+            os.startfile(path)  # Windows特定的方法
     elif current_os == "Darwin":  # macOS
         os.system(f"open {os.path.abspath(path)}")
     elif current_os == "Linux":
