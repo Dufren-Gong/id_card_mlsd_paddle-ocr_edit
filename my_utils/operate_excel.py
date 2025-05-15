@@ -733,6 +733,8 @@ def map_info(ws, template_column_info:str, i, check_cloumns, column_letters):
                 result_str += m.strip().replace(' ', '')
         if result_str != '':
             name_t = column_letters[name_index]
+            if j == '姓名':
+                result_str = fan_to_jian(result_str)
             ws[f"{name_t}{i}"].value = result_str
     return ws
 

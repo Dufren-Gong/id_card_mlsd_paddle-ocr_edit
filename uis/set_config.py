@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QComboBox, QLabel, QCheckBox, QPushButton)
 from PyQt6.QtGui import QDoubleValidator, QIntValidator, QIcon, QValidator
 from my_utils.utils import get_internal_path
-import copy, re
+import copy
 
 class NoDotValidator(QValidator):
     def validate(self, input_str, pos):

@@ -1,6 +1,7 @@
 from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtCore import QRegularExpression
 from PyQt6.QtGui import QRegularExpressionValidator
+import copy
 
 def merge_shape(shapes, gap):
     start_width = shapes[0][0]
@@ -12,6 +13,14 @@ def merge_shape(shapes, gap):
     gaps = len(shapes) - 1
     width += gaps * gap
     return (start_width, start_height, width, height)
+
+def merge_position(shape, position, shift = 1, gap = 2):
+    shape_temp = copy.deepcopy(shape)
+    if position == 'up':
+        shape_temp = [shape_temp[0], shape_temp[1] - shift, shape_temp[2], int(shape_temp[3] / 2 + shift - gap / 2)]
+    elif position == 'down':
+        shape_temp = [shape_temp[0], int(shape_temp[1] + shape_temp[3] / 2 + gap / 2), shape_temp[2], int(shape_temp[3] / 2 + shift - gap / 2)]
+    return shape_temp
 
 class Row_Zero():
     def __init__(self,
@@ -93,6 +102,7 @@ class Row_Zero():
         self.select_newest_checkbox.setToolTip("默认选择最新编辑结果的文件夹，就不用再选择了，直接制作word，如果要选择其他文件夹，取消选中")
         self.select_newest_checkbox.hide()
         self.select_newest_checkbox.setChecked(True)
+        self.select_newest_checkbox.setStyleSheet("QCheckBox { text-align: right; }")
 
 class Row_One():
     def __init__(self,
@@ -107,6 +117,8 @@ class Row_One():
         self.init_one_tip_label(tip_label_shape)
         self.init_one_column_two_select_function_combobox(select_function_combobox_shape)
         self.init_one_pic_here_checkbox(pic_here_shape)
+        self.init_open_floader_checkbox(pic_here_shape, 'up')
+        self.init_open_text_checkbox(pic_here_shape, 'down')
 
     def init_one_tip_label(self, shape):
         self.tip_label = QtWidgets.QLabel(parent=self.centralwidget)
@@ -141,10 +153,33 @@ class Row_One():
     def init_one_pic_here_checkbox(self, shape):
         self.pic_here_checkbox = QtWidgets.QCheckBox(parent=self.centralwidget)
         self.pic_here_checkbox.setGeometry(QtCore.QRect(*shape))
-        self.pic_here_checkbox.setObjectName("select_newest_checkbox")
+        self.pic_here_checkbox.setObjectName("pic_here_checkbox")
         self.pic_here_checkbox.setText("选照片放这里")
         self.pic_here_checkbox.setToolTip("默认选择照片放这里文件夹，就不用再选择了，直接制作word，如果要选择其他文件夹，取消选中")
         self.pic_here_checkbox.setChecked(True)
+        self.pic_here_checkbox.setStyleSheet("QCheckBox { text-align: right; }")
+
+    def init_open_floader_checkbox(self, shape, position):
+        self.open_floader_checkbox = QtWidgets.QCheckBox(parent=self.centralwidget)
+        use_shape = merge_position(shape, position, shift=5)
+        self.open_floader_checkbox.setGeometry(QtCore.QRect(*use_shape))
+        self.open_floader_checkbox.setObjectName("open_floader_checkbox")
+        self.open_floader_checkbox.setText("  打开文件夹")
+        self.open_floader_checkbox.setToolTip("查找到照片的话是否打开文件夹")
+        self.open_floader_checkbox.hide()
+        self.open_floader_checkbox.setChecked(True)
+        self.open_floader_checkbox.setStyleSheet("QCheckBox { text-align: left; }")
+
+    def init_open_text_checkbox(self, shape, position):
+        self.open_text_checkbox = QtWidgets.QCheckBox(parent=self.centralwidget)
+        use_shape = merge_position(shape, position, shift=5)
+        self.open_text_checkbox.setGeometry(QtCore.QRect(*use_shape))
+        self.open_text_checkbox.setObjectName("open_text_checkbox")
+        self.open_text_checkbox.setText("打开所有info")
+        self.open_text_checkbox.setToolTip("查找到照片的话是否打开所有找到的.info文件,方便更改")
+        self.open_text_checkbox.hide()
+        self.open_text_checkbox.setChecked(True)
+        self.open_text_checkbox.setStyleSheet("QCheckBox { text-align: left; }")
 
 class Row_Two():
     def __init__(self,

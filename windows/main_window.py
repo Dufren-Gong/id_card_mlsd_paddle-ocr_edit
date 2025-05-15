@@ -43,6 +43,8 @@ class Main_Window(QMainWindow):
         self.setWindowIcon(QIcon(get_internal_path('../files/icon/icon.ico')))
         self.init_ui()
         self.init_events()
+        self.row_one.open_floader_checkbox.setChecked(self.global_config['open_search_floader'])
+        self.row_one.open_text_checkbox.setChecked(self.global_config['open_search_info'])
 
     # def dragEnterEvent(self, event: QDragEnterEvent):
     #     # 只要拖拽内容包含 URL,就接受拖拽
@@ -678,11 +680,15 @@ class Main_Window(QMainWindow):
         current_index = self.row_one.function_combobox.currentIndex()
         self.row_one.pic_here_checkbox.setDisabled(True)
         if current_index == 0 or current_index == 1:
-            if current_index == 0:
-                self.row_one.pic_here_checkbox.setChecked(True)
-            else:
-                self.row_one.pic_here_checkbox.setChecked(False)
+            # if current_index == 0:
+            #     self.row_one.pic_here_checkbox.setChecked(True)
+            # else:
+            #     self.row_one.pic_here_checkbox.setChecked(False)
+            self.row_one.pic_here_checkbox.setChecked(True)
             self.row_one.pic_here_checkbox.setEnabled(True)
+            self.row_one.open_floader_checkbox.hide()
+            self.row_one.open_text_checkbox.hide()
+            self.row_one.pic_here_checkbox.show()
             self.row_zero.tip_label.setText('文件类型:')
             self.row_two.open_newest_button.setText('打开最新/删除所有编辑')
             self.row_two.open_newest_button.setToolTip('短按打开编辑结果中最新生成结果的文件夹,长按删除"照片编辑结果"中所有编辑')
@@ -695,6 +701,9 @@ class Main_Window(QMainWindow):
             self.row_zero.select_newest_checkbox.hide()
             self.change_moren_pic()
         elif current_index == 2:
+            self.row_one.open_floader_checkbox.show()
+            self.row_one.open_text_checkbox.show()
+            self.row_one.pic_here_checkbox.hide()
             self.row_zero.tip_label.setText('输入名字:')
             self.row_two.open_newest_button.setText('繁体转简体')
             self.row_two.select_files_button.setText('查询')
@@ -708,6 +717,9 @@ class Main_Window(QMainWindow):
             self.row_zero.select_newest_checkbox.hide()
             self.row_zero.pic_name_lineedit.setFocus()
         elif current_index == self.concat_index or current_index == 12 or current_index == 13:
+            self.row_one.open_floader_checkbox.hide()
+            self.row_one.open_text_checkbox.hide()
+            self.row_one.pic_here_checkbox.show()
             self.row_two.open_newest_button.setText('打开最新/删除所有编辑')
             self.row_zero.tip_label.setText('文件类型:')
             self.row_two.open_newest_button.setToolTip('短按打开编辑结果中最新生成结果的文件夹,长按删除"照片编辑结果"中所有编辑')
@@ -732,6 +744,9 @@ class Main_Window(QMainWindow):
                     self.row_two.select_files_button.setToolTip('从云空间下载源码,手动更新软件')
                     self.row_two.select_files_button.clicked.connect(self.only_download_source_code)
         else:
+            self.row_one.open_floader_checkbox.hide()
+            self.row_one.open_text_checkbox.hide()
+            self.row_one.pic_here_checkbox.show()
             self.row_two.open_newest_button.setText('打开最新/删除所有编辑')
             self.row_two.open_newest_button.setToolTip('短按打开编辑结果中最新生成结果的文件夹,长按删除"照片编辑结果"中所有编辑')
             self.row_two.open_newest_button.pressed.connect(self.open_newest_pressed)
@@ -951,7 +966,7 @@ class Main_Window(QMainWindow):
         self.row_zero.pic_name_lineedit.setFocus()
 
     def search_name(self):
-        text = self.row_zero.pic_name_lineedit.text().replace(' ', '')
+        text = self.row_zero.pic_name_lineedit.text().replace(' ', '').strip()
         if text:
             searched = []
             #新制作照片里找
@@ -970,10 +985,11 @@ class Main_Window(QMainWindow):
             if len(searched) != 0:
                 show_str = '\n'.join(searched)
                 self.show_info.set_show_text(f'{text}信息已存在,照片和信息存在于:\n{show_str}')
-                for i in searched:
-                    open_floader(os.path.join(i, f'{text}.info'))
-                open_floader(os.path.join(searched[0], f'{text}反.png'))
-                open_floader(os.path.join(searched[0], f'{text}.png'))
+                if self.row_one.open_text_checkbox.isChecked():
+                    for i in searched:
+                        open_floader(os.path.join(i, f'{text}.info'))
+                if self.row_one.open_floader_checkbox.isChecked():
+                    open_floader(searched[0], f'{text}.png')
             else:
                 self.show_info.set_show_text(f'{text}信息不存在,需要编辑此人照片!如果是香港人名字且带繁体字,先点击繁体转简体再查询')
         else:
@@ -1132,6 +1148,8 @@ class Main_Window(QMainWindow):
                 except:
                     pass
                 write_config(save_conf, '../配置/conf.yaml')
+        elif forever_flag:
+            write_config(save_conf, '../配置/conf.yaml')
         self.set_config_window.close()
 
     def add_new_company(self, global_config):

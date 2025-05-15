@@ -139,11 +139,13 @@ def get_past_dates(n):
     dates = [(today - timedelta(days=i)).strftime("%Y-%m-%d") for i in range(0, n+0)]
     return dates
 
-def open_floader(path):
+def open_floader(path, file_path=None):
     path = Path(path)
     current_os = platform.system()
     if current_os == "Windows":
-        os.startfile(path)  # Windows特定的方法
+        # os.startfile(path)  # Windows特定的方法
+        # 使用 explorer.exe /select, 参数选中指定文件
+        os.system(f'explorer.exe /select,"{file_path.resolve()}"')
     elif current_os == "Darwin":  # macOS
         os.system(f"open {os.path.abspath(path)}")
     elif current_os == "Linux":
