@@ -876,7 +876,7 @@ class Main_Window(QMainWindow):
             if not os.path.exists(os.path.join(name, 'dist', 'main', '_internal', '_tk_data')) and os.path.exists(os.path.join('_internal', '_tk_data')):
                 shutil.copytree(os.path.join('_internal', '_tk_data'), os.path.join(name, 'dist', 'main', '_internal', '_tk_data'))
             f_name = f'新{save_name}{new_version}' if os.path.exists(os.path.join(os.path.dirname(root_floader), f'{save_name}{new_version}')) else f'{save_name}{new_version}'
-            shutil.move(os.path.join(name, 'dist', 'main'), os.path.join(os.path.dirname(root_floader), ))
+            shutil.move(os.path.join(name, 'dist', 'main'), os.path.join(os.path.dirname(root_floader), f_name))
             self.copy_threads = []  # 在类初始化时准备一个列表
             self.count_finished_copy = 0
             companys = self.global_config['companys']
