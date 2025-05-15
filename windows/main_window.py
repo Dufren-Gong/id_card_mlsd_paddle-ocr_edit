@@ -5,7 +5,7 @@ from my_utils.utils import delete_specific_files_and_folders
 from uis.main_window_ui import Row_Zero, Row_One, Row_Two, Select_Company, Row_Catch
 from windows.show_info_window import Show_Info_Window
 from uis.set_config import Set_Config_Window
-from my_utils.threads import Pdf_to_Pic_Thread, Download_Sourcecode
+from my_utils.threads import Pdf_to_Pic_Thread, Download_Sourcecode, Download_Copy_Large
 from my_utils.utils import get_data_str, open_floader, find_in_catch_pic, get_internal_path, get_config, download_single_file, split_image, write_config, recursive_update
 from my_utils import operate_excel as utils_operate_excel
 from each_types import kaidan, nahuo, zhuandan, budan, nianfei, buka, tuidan
@@ -798,8 +798,6 @@ class Main_Window(QMainWindow):
                     self.show_info.set_show_text(f'正在下载源代码,请稍等......')
                     self.show_info.show()
                     QApplication.processEvents()
-                    if new_version == old_version and self.global_config['mandatory_update']:
-                        self.new_name_flag = True
                     self.download_source_code_thread = Download_Sourcecode(self.global_config, name, zip_file_path, result_name, root_floader, new_version)
                     self.download_source_code_thread.resSignal.connect(self.end_get_source_code)
                     self.download_source_code_thread.start()
@@ -860,12 +858,12 @@ class Main_Window(QMainWindow):
         self.update_timer.start(time_count)
 
     def end_pyinstaller(self, time_count, name, save_name, root_floader, new_version, zip_file_path):
-        self.show_info.set_show_text(f'马上更新完成,请稍等...')
-        self.show_info.show()
         wait_start_flag = False
         if self.pyinstaller_process.poll() is None:
             self.update_timer.start(time_count)  # 继续定时器
         else:
+            self.show_info.set_show_text(f'马上更新完成,请稍等...')
+            self.show_info.show()
             wait_start_flag = True
         if wait_start_flag and self.only_once_flag:
             self.only_once_flag = False
@@ -877,18 +875,32 @@ class Main_Window(QMainWindow):
                 shutil.move(zip_file_path, os.path.join(name, 'dist', 'main', '配置', zip_file_path))
             if not os.path.exists(os.path.join(name, 'dist', 'main', '_internal', '_tk_data')) and os.path.exists(os.path.join('_internal', '_tk_data')):
                 shutil.copytree(os.path.join('_internal', '_tk_data'), os.path.join(name, 'dist', 'main', '_internal', '_tk_data'))
-            shutil.move(os.path.join(name, 'dist', 'main'), os.path.join(os.path.dirname(root_floader), f'新{save_name}{new_version}' if self.new_name_flag else f'{save_name}{new_version}'))
+            f_name = f'新{save_name}{new_version}' if os.path.exists(os.path.join(os.path.dirname(root_floader), f'{save_name}{new_version}')) else f'{save_name}{new_version}'
+            shutil.move(os.path.join(name, 'dist', 'main'), os.path.join(os.path.dirname(root_floader), ))
+            self.copy_threads = []  # 在类初始化时准备一个列表
+            self.count_finished_copy = 0
             companys = self.global_config['companys']
-            for i in companys:
-                if os.path.exists(i):
-                    if self.global_config['stay_old']:
-                        shutil.copytree(f'{i}/', os.path.join(os.path.dirname(root_floader), f'新{save_name}{new_version}' if self.new_name_flag else f'{save_name}{new_version}', i))
-                        text = self.show_info.row_one.tip_label.toPlainText()
-                        company_name = i.replace('_', ' ')
-                        self.show_info.set_show_text(f'{text}\n{company_name}复制完成')
-                        self.show_info.show()
-                    else:
-                        shutil.move(f'{i}', os.path.join(os.path.dirname(root_floader), f'新{save_name}{new_version}' if self.new_name_flag else f'{save_name}{new_version}', i))
+            if len(companys) > 0:
+                for i in companys:
+                    if os.path.exists(i):
+                        if self.global_config['stay_old']:
+                            copy_thread = Download_Copy_Large(i, os.path.join(os.path.dirname(root_floader), f_name, i), name)
+                            copy_thread.resSignal.connect(self.after_end)
+                            copy_thread.start()
+                            self.copy_threads.append(copy_thread)  # 保存引用
+                        else:
+                            shutil.move(f'{i}', os.path.join(os.path.dirname(root_floader), f_name, i))
+            else:
+                self.after_end('', name)
+
+    def after_end(self, source:str, name):
+        if len(self.copy_threads) != 0:
+            text = self.show_info.row_one.tip_label.toPlainText()
+            company_name = source.replace('_', ' ')
+            self.show_info.set_show_text(f'{text}\n{company_name}复制完成')
+            self.show_info.show()
+            self.count_finished_copy += 1
+        if self.count_finished_copy == len(self.copy_threads):
             show_str = '更新完成\n现在可以关闭这个窗口打开新软件使用'
             try:
                 shutil.rmtree(name)

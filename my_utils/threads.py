@@ -4,7 +4,7 @@ from my_utils.pdf_to_pic import convert_pdf_to_images
 from my_utils.ocr_by_paddleocr import pic_to_str
 from my_utils.mlsd_scan import square_four_lines, get_square_dots
 import numpy as np
-import os
+import os, shutil
 
 class PDFToPicSignals(QtCore.QObject):
     finished = QtCore.pyqtSignal()
@@ -124,3 +124,15 @@ class Download_Sourcecode(QtCore.QThread):
             self.resSignal.emit(self.name, self.zip_file_path, self.result_name, self.root_floader, self.new_version)
         else:
             self.resSignal.emit(1, 1, 1, 1, 1)
+
+class Download_Copy_Large(QtCore.QThread):
+    resSignal = QtCore.pyqtSignal(object, object)  # 注册一个信号
+    def __init__(self, source, target, name): # 从前端界面中传递参数到这个任务后台
+        super().__init__()
+        self.source = source
+        self.target = target
+        self.name = name
+
+    def run(self):  # 重写run  比较耗时的后台任务可以在这里运行
+        shutil.copytree(self.source, self.target)
+        self.resSignal.emit(self.source, self.name)
