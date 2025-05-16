@@ -175,7 +175,7 @@ class Row_One():
         use_shape = merge_position(shape, position, shift=5)
         self.open_text_checkbox.setGeometry(QtCore.QRect(*use_shape))
         self.open_text_checkbox.setObjectName("open_text_checkbox")
-        self.open_text_checkbox.setText("打开所有info")
+        self.open_text_checkbox.setText("打开全部info")
         self.open_text_checkbox.setToolTip("查找到照片的话是否打开所有找到的.info文件,方便更改")
         self.open_text_checkbox.hide()
         self.open_text_checkbox.setChecked(True)

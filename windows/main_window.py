@@ -875,7 +875,8 @@ class Main_Window(QMainWindow):
                 shutil.move(zip_file_path, os.path.join(name, 'dist', 'main', '配置', zip_file_path))
             if not os.path.exists(os.path.join(name, 'dist', 'main', '_internal', '_tk_data')) and os.path.exists(os.path.join('_internal', '_tk_data')):
                 shutil.copytree(os.path.join('_internal', '_tk_data'), os.path.join(name, 'dist', 'main', '_internal', '_tk_data'))
-            f_name = f'新{save_name}{new_version}' if os.path.exists(os.path.join(os.path.dirname(root_floader), f'{save_name}{new_version}')) else f'{save_name}{new_version}'
+            time_new_str = get_data_str()
+            f_name = f'{time_new_str}_{save_name}{new_version}' if os.path.exists(os.path.join(os.path.dirname(root_floader), f'{save_name}{new_version}')) else f'{save_name}{new_version}'
             shutil.move(os.path.join(name, 'dist', 'main'), os.path.join(os.path.dirname(root_floader), f_name))
             self.copy_threads = []  # 在类初始化时准备一个列表
             self.count_finished_copy = 0
@@ -899,6 +900,7 @@ class Main_Window(QMainWindow):
             company_name = source.replace('_', ' ')
             self.show_info.set_show_text(f'{text}\n{company_name}复制完成')
             self.show_info.show()
+            QApplication.processEvents()
             self.count_finished_copy += 1
         if self.count_finished_copy == len(self.copy_threads):
             show_str = '更新完成\n现在可以关闭这个窗口打开新软件使用'

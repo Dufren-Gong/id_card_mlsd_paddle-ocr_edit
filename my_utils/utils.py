@@ -181,13 +181,15 @@ def get_pic_info(info_file_path: str, pic_path):
     return info
 
 def add_mask(image, mask, color = (255, 255, 255)):
-    assert image.shape == mask.shape
+    image_shape = image.shape
+    assert image_shape == mask.shape
+    color = tuple([color[0]] * image_shape[2])
 
     # 将原图与反转后的掩码相结合，保持mask之外的原始内容
     original_area = cv2.bitwise_and(image, ~mask)
 
     # 将mask之内的区域设置为白色
-    corol_background = np.full(image.shape, color, dtype=np.uint8)
+    corol_background = np.full(image_shape, color, dtype=np.uint8)
     corol_background = cv2.bitwise_and(corol_background, mask)
 
     # 合成最终图像
