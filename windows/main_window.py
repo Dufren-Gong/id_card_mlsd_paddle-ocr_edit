@@ -153,10 +153,13 @@ class Main_Window(QMainWindow):
                     else:
                         self.select_file_flag = True
             else:
-                if floader_path == None:
-                    self.folder_path = QFileDialog.getExistingDirectory(self, "选择文件夹")
+                if selected_options == self.concat_index and self.row_one.searched_checkbox.isChecked():
+                    self.folder_path = './查找到的照片'
                 else:
-                    self.folder_path = floader_path
+                    if floader_path == None:
+                        self.folder_path = QFileDialog.getExistingDirectory(self, "选择文件夹")
+                    else:
+                        self.folder_path = floader_path
                 if self.folder_path:  # 检查是否选择了文件夹
                     files = os.listdir(self.folder_path)
                     if ".DS_Store" in files:
@@ -169,7 +172,7 @@ class Main_Window(QMainWindow):
                             if self.concat_all('照片编辑结果', files):
                                 self.show_info.set_show_text('合并文件夹照片成功,但不包含文件夹和同名文件')
                             else:
-                                self.show_info.set_show_text('还未操作过照片,请先操作照片.')
+                                self.show_info.set_show_text('还未编辑过照片,或无文件可合并.')
                         self.show_info.show_window()
                     else:
                         self.excel_name = '非身份证信息需求.xlsx'
@@ -244,70 +247,109 @@ class Main_Window(QMainWindow):
         save_name = os.path.join(cache_floader, get_data_str() + '.xlsx')
         shutil.copy(excel_path, save_name)
 
-    def start_processing(self):
-        self.show_info.row_one.exit_button.disconnect()
-        self.show_info.init_events()
-        self.show_info.set_show_text('正在制作中,请稍后!')
-        self.show_info.show_window()
-        QApplication.processEvents()
-        try:
-            excel_path = os.path.join('模版', self.excel_name)
-            self.cache_excel(excel_path, './模版/excel备份')
-            pass_flag, error_rows = utils_operate_excel.check_excel(excel_path, self.folder_path)
-        except PermissionError:
-            pass_flag = 'excel未关闭或excel文件损坏!若损坏,在{./模版/excel备份}内有备份,替换excel后重新逐步制作.'
-        if pass_flag == True:
-            functions = [self.make_all_single] * len(utils_operate_excel.sheet_names)
-            with ThreadPoolExecutor() as executor:
-                futures = [executor.submit(fn, inp) for fn, inp in zip(functions, utils_operate_excel.sheet_names)]
-                results = []
-                for future in as_completed(futures):
-                    result = future.result()
-                    results.append(result)
-            # 处理所有函数返回的结果
-            self.handle_results(results)
-        else:
-            open_floader(os.path.join('模版', self.excel_name))
-            self.have_error_flag = True
-            if pass_flag == False:
-                str_to_show = ','.join(error_rows)
-                self.show_info.set_show_text(f'excel中{str_to_show}行信息有误,已经将有误的地方标为红色,请检查!')
+    def outside_floader_exsit(self, path):
+        if path:
+            if os.path.exists(path):
+                return True, ''
             else:
-                self.show_info.set_show_text(pass_flag)
+                return False, '你开启了查找外部文件夹,但是提供的文件夹不存在,请在更改配置里修改文件夹路径,如果不需要请取消查找外部文件夹'
+        else:
+            return False, '你开启了查找外部文件夹,但未提供外部查找文件夹路径,请在更改配置里修改文件夹路径,如果不需要请取消查找外部文件夹'
+
+    def start_processing(self):
+        outside_search_path = self.global_config['outside_search_path']
+        outside_search_passed_flag = True
+        if self.row_one.outside_search_checkbox.isChecked():
+            outside_search_passed_flag, tip = self.outside_floader_exsit(outside_search_path)
+            if tip:
+                self.show_info.set_show_text(tip)
+                self.show_info.show_window()
+                self.have_error_flag = True
+        if outside_search_passed_flag:
+            self.show_info.row_one.exit_button.disconnect()
+            self.show_info.init_events()
+            self.show_info.set_show_text('正在制作中,请稍后!')
             self.show_info.show_window()
+            QApplication.processEvents()
+            try:
+                excel_path = os.path.join('模版', self.excel_name)
+                self.cache_excel(excel_path, './模版/excel备份')
+                pass_flag, error_rows, extra_searched = utils_operate_excel.check_excel(excel_path, self.folder_path, search_extra_floader = (self.row_one.outside_search_checkbox.isChecked(), outside_search_path))
+                self.row_one.outside_search_checkbox.setChecked(False)
+            except PermissionError:
+                pass_flag = 'excel未关闭或excel文件损坏!若损坏,在{./模版/excel备份}内有备份,替换excel后重新逐步制作.'
+            if pass_flag == True:
+                functions = [self.make_all_single] * len(utils_operate_excel.sheet_names)
+                with ThreadPoolExecutor() as executor:
+                    futures = [executor.submit(fn, inp) for fn, inp in zip(functions, utils_operate_excel.sheet_names)]
+                    results = []
+                    for future in as_completed(futures):
+                        result = future.result()
+                        results.append(result)
+                # 处理所有函数返回的结果
+                self.handle_results(results)
+            else:
+                open_floader(os.path.join('模版', self.excel_name))
+                self.have_error_flag = True
+                if pass_flag == False:
+                    str_to_show = ','.join(natsorted(error_rows))
+                    if len(extra_searched) != 0:
+                        open_floader('./查找到的照片')
+                        str_to_show_extra = '\n【' + ','.join(extra_searched) + '】的照片在外部文件夹找到,已经复制到“查找到的照片”文件夹里,请复制到相应的位置.'
+                    else:
+                        str_to_show_extra = ''
+                    self.show_info.set_show_text(f'excel中{str_to_show}行信息有误,已经将有误的地方标为红色,请检查!{str_to_show_extra}')
+                else:
+                    self.show_info.set_show_text(pass_flag)
+                self.show_info.show_window()
 
     def make_singe(self, mode):
-        try:
-            #缓存一定个数的excel,防止信息丢失
-            excel_path = os.path.join('模版', self.excel_name)
-            self.cache_excel(excel_path, './模版/excel备份')
-            pass_flag, error_rows = utils_operate_excel.check_excel(os.path.join('模版', self.excel_name), self.folder_path, mode)
-        except PermissionError:
-            pass_flag = 'excel未关闭或excel文件损坏!若损坏,在{./模版/excel备份}内有备份,替换excel后重新逐步制作.'
-        if pass_flag == True:
+        outside_search_path = self.global_config['outside_search_path']
+        outside_search_passed_flag = True
+        if self.row_one.outside_search_checkbox.isChecked():
+            outside_search_passed_flag, tip = self.outside_floader_exsit(outside_search_path)
+            if tip:
+                self.show_info.set_show_text(tip)
+                self.show_info.show_window()
+                self.have_error_flag = True
+        if outside_search_passed_flag:
             try:
-                self.which_func(mode, True)
-                pass_flag_after, error_rows_after = utils_operate_excel.check_excel_after(os.path.join('模版', self.excel_name), mode)
-                if not pass_flag_after:
-                    open_floader(os.path.join('模版', self.excel_name))
-                    self.have_error_flag = True
-                    if len(error_rows_after) != 0:
-                        str_to_show_after = ','.join(error_rows_after) + ' 行'
-                    else:
-                        str_to_show_after = ''
-                    self.show_info.set_show_text(f'已将 {str_to_show_after}可能有误的照片编辑信息标红,请检查,word已按原信息制作,若检查无误就不用管,若确实有问题需修改对应照片的.info后重新制作.')
-                    self.show_info.show_window()
-            except:
-                self.shwo_total_error()
-        else:
-            open_floader(os.path.join('模版', self.excel_name))
-            self.have_error_flag = True
-            if pass_flag == False:
-                str_to_show = ','.join(error_rows)
-                self.show_info.set_show_text(f'excel中{str_to_show}行信息有误,已经将有误的地方标为红色,请检查!')
+                #缓存一定个数的excel,防止信息丢失
+                excel_path = os.path.join('模版', self.excel_name)
+                self.cache_excel(excel_path, './模版/excel备份')
+                pass_flag, error_rows, extra_searched = utils_operate_excel.check_excel(os.path.join('模版', self.excel_name), self.folder_path, mode, search_extra_floader = (self.row_one.outside_search_checkbox.isChecked(), outside_search_path))
+                self.row_one.outside_search_checkbox.setChecked(False)
+            except PermissionError:
+                pass_flag = 'excel未关闭或excel文件损坏!若损坏,在{./模版/excel备份}内有备份,替换excel后重新逐步制作.'
+            if pass_flag == True:
+                try:
+                    self.which_func(mode, True)
+                    pass_flag_after, error_rows_after = utils_operate_excel.check_excel_after(os.path.join('模版', self.excel_name), mode)
+                    if not pass_flag_after:
+                        open_floader(os.path.join('模版', self.excel_name))
+                        self.have_error_flag = True
+                        if len(error_rows_after) != 0:
+                            str_to_show_after = ','.join(error_rows_after) + ' 行'
+                        else:
+                            str_to_show_after = ''
+                        self.show_info.set_show_text(f'已将 {str_to_show_after}可能有误的照片编辑信息标红,请检查,word已按原信息制作,若检查无误就不用管,若确实有问题需修改对应照片的.info后重新制作.')
+                        self.show_info.show_window()
+                except:
+                    self.shwo_total_error()
             else:
-                self.show_info.set_show_text(pass_flag)
-            self.show_info.show_window()
+                open_floader(os.path.join('模版', self.excel_name))
+                self.have_error_flag = True
+                if pass_flag == False:
+                    str_to_show = ','.join(natsorted(error_rows))
+                    if len(extra_searched) != 0:
+                        open_floader('./查找到的照片')
+                        str_to_show_extra = '\n【' + ','.join(extra_searched) + '】的照片在外部文件夹找到,已经复制到“查找到的照片”文件夹里,请复制到相应的位置.'
+                    else:
+                        str_to_show_extra = ''
+                    self.show_info.set_show_text(f'excel中{str_to_show}行信息有误,已经将有误的地方标为红色,请检查!{str_to_show_extra}')
+                else:
+                    self.show_info.set_show_text(pass_flag)
+                self.show_info.show_window()
 
     def make_all_single(self, mode):
         error_part = []
@@ -343,6 +385,7 @@ class Main_Window(QMainWindow):
             self.show_info.show_window()
         else:
             pass_flag_after, error_rows_after = utils_operate_excel.check_excel_after(os.path.join('模版', self.excel_name))
+            self.row_one.outside_search_checkbox.setChecked(False)
             if not pass_flag_after:
                 open_floader(os.path.join('模版', self.excel_name))
                 self.have_error_flag = True
@@ -678,17 +721,17 @@ class Main_Window(QMainWindow):
             self.row_two.open_newest_button.pressed.disconnect()
             self.row_two.open_newest_button.released.disconnect()
         current_index = self.row_one.function_combobox.currentIndex()
-        self.row_one.pic_here_checkbox.setDisabled(True)
         if current_index == 0 or current_index == 1:
             # if current_index == 0:
             #     self.row_one.pic_here_checkbox.setChecked(True)
             # else:
             #     self.row_one.pic_here_checkbox.setChecked(False)
             self.row_one.pic_here_checkbox.setChecked(True)
-            self.row_one.pic_here_checkbox.setEnabled(True)
             self.row_one.open_floader_checkbox.hide()
             self.row_one.open_text_checkbox.hide()
             self.row_one.pic_here_checkbox.show()
+            self.row_one.searched_checkbox.hide()
+            self.row_one.outside_search_checkbox.hide()
             self.row_zero.tip_label.setText('文件类型:')
             self.row_two.open_newest_button.setText('打开最新/删除所有编辑')
             self.row_two.open_newest_button.setToolTip('短按打开编辑结果中最新生成结果的文件夹,长按删除"照片编辑结果"中所有编辑')
@@ -704,6 +747,8 @@ class Main_Window(QMainWindow):
             self.row_one.open_floader_checkbox.show()
             self.row_one.open_text_checkbox.show()
             self.row_one.pic_here_checkbox.hide()
+            self.row_one.searched_checkbox.hide()
+            self.row_one.outside_search_checkbox.hide()
             self.row_zero.tip_label.setText('输入名字:')
             self.row_two.open_newest_button.setText('繁体转简体')
             self.row_two.select_files_button.setText('查询')
@@ -719,7 +764,13 @@ class Main_Window(QMainWindow):
         elif current_index == self.concat_index or current_index == 12 or current_index == 13:
             self.row_one.open_floader_checkbox.hide()
             self.row_one.open_text_checkbox.hide()
-            self.row_one.pic_here_checkbox.show()
+            self.row_one.pic_here_checkbox.hide()
+            self.row_one.outside_search_checkbox.hide()
+            if current_index == self.concat_index:
+                self.row_one.searched_checkbox.show()
+                self.change_searched_concat_mode()
+            else:
+                self.row_one.searched_checkbox.hide()
             self.row_two.open_newest_button.setText('打开最新/删除所有编辑')
             self.row_zero.tip_label.setText('文件类型:')
             self.row_two.open_newest_button.setToolTip('短按打开编辑结果中最新生成结果的文件夹,长按删除"照片编辑结果"中所有编辑')
@@ -731,8 +782,9 @@ class Main_Window(QMainWindow):
             self.row_zero.pic_name_lineedit.hide()
             self.row_zero.select_newest_checkbox.hide()
             if current_index != 13:
-                self.row_two.select_files_button.setText('选择文件/文件夹')
-                self.row_two.select_files_button.setToolTip('选择文件或者文件夹直接跳转开始编辑')
+                if current_index != self.concat_index:
+                    self.row_two.select_files_button.setText('选择文件/文件夹')
+                    self.row_two.select_files_button.setToolTip('选择文件或者文件夹直接跳转开始编辑')
                 self.row_two.select_files_button.clicked.connect(lambda: self.open_folder_dialog())
             else:
                 if self.global_config['enable_update']:
@@ -746,7 +798,9 @@ class Main_Window(QMainWindow):
         else:
             self.row_one.open_floader_checkbox.hide()
             self.row_one.open_text_checkbox.hide()
-            self.row_one.pic_here_checkbox.show()
+            self.row_one.pic_here_checkbox.hide()
+            self.row_one.searched_checkbox.hide()
+            self.row_one.outside_search_checkbox.show()
             self.row_two.open_newest_button.setText('打开最新/删除所有编辑')
             self.row_two.open_newest_button.setToolTip('短按打开编辑结果中最新生成结果的文件夹,长按删除"照片编辑结果"中所有编辑')
             self.row_two.open_newest_button.pressed.connect(self.open_newest_pressed)
@@ -922,12 +976,11 @@ class Main_Window(QMainWindow):
 
     def operate_on_moren(self):
         floader_path = './照片编辑结果'
-        paths = natsorted(os.listdir(floader_path))
-        if '.DS_Store' in paths:
-            paths.remove('.DS_Store')
+        check = [os.path.join(floader_path, i) for i in os.listdir(floader_path)]
+        paths = natsorted([i for i in check if os.path.isdir(i)])
         if len(paths) == 0:
-            paths = [get_data_str()]
-        path = os.path.join(floader_path, paths[-1])
+            paths = [os.path.join(floader_path, get_data_str())]
+        path = paths[-1]
         os.makedirs(path, exist_ok=True)
         self.open_folder_dialog(path)
 
@@ -1214,6 +1267,14 @@ class Main_Window(QMainWindow):
         self.set_config_window.ensure_button.clicked.connect(self.ensure_change_config)
         self.set_config_window.forever_ensure_button.clicked.connect(lambda: self.ensure_change_config(True))
 
+    def change_searched_concat_mode(self):
+        if self.row_one.searched_checkbox.isChecked():
+            self.row_two.select_files_button.setText('开始')
+            self.row_two.select_files_button.setToolTip('开始合并')
+        else:
+            self.row_two.select_files_button.setText('选择文件/文件夹')
+            self.row_two.select_files_button.setToolTip('选择文件或者文件夹直接跳转开始编辑')
+
     def init_events(self):
         self.init_black_button_timer()
         self.init_open_newest_timer()
@@ -1230,3 +1291,4 @@ class Main_Window(QMainWindow):
         self.row_one.pic_here_checkbox.stateChanged.connect(self.change_moren_pic)
         self.row_catch.pic_name_lineedit.doubleClickedSignal.connect(self.change_height)
         self.row_company.confit_button.clicked.connect(self.change_config)
+        self.row_one.searched_checkbox.clicked.connect(self.change_searched_concat_mode)

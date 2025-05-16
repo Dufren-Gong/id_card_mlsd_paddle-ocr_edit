@@ -117,8 +117,10 @@ class Row_One():
         self.init_one_tip_label(tip_label_shape)
         self.init_one_column_two_select_function_combobox(select_function_combobox_shape)
         self.init_one_pic_here_checkbox(pic_here_shape)
+        self.init_outside_search_checkbox(pic_here_shape)
         self.init_open_floader_checkbox(pic_here_shape, 'up')
         self.init_open_text_checkbox(pic_here_shape, 'down')
+        self.init_searched_checkbox(pic_here_shape)
 
     def init_one_tip_label(self, shape):
         self.tip_label = QtWidgets.QLabel(parent=self.centralwidget)
@@ -180,6 +182,26 @@ class Row_One():
         self.open_text_checkbox.hide()
         self.open_text_checkbox.setChecked(True)
         self.open_text_checkbox.setStyleSheet("QCheckBox { text-align: left; }")
+
+    def init_outside_search_checkbox(self, shape):
+        self.outside_search_checkbox = QtWidgets.QCheckBox(parent=self.centralwidget)
+        self.outside_search_checkbox.setGeometry(QtCore.QRect(*shape))
+        self.outside_search_checkbox.setObjectName("outside_search_checkbox")
+        self.outside_search_checkbox.setText("开启外部查找")
+        self.outside_search_checkbox.hide()
+        self.outside_search_checkbox.setToolTip("制作word的时候发现照片不存在,则在外部文件夹里查找照片,外部文件夹里照片可能比较多,照片找到的话会复制到'查找结果'文件夹里,将这个文件夹里的照片粗知道你想要的位置里")
+        self.outside_search_checkbox.setChecked(False)
+        self.outside_search_checkbox.setStyleSheet("QCheckBox { text-align: right; }")
+
+    def init_searched_checkbox(self, shape):
+        self.searched_checkbox = QtWidgets.QCheckBox(parent=self.centralwidget)
+        self.searched_checkbox.setGeometry(QtCore.QRect(*shape))
+        self.searched_checkbox.setObjectName("searched_checkbox")
+        self.searched_checkbox.setText("合查找到的照片")
+        self.searched_checkbox.hide()
+        self.searched_checkbox.setToolTip("默认选择合并'查找到的照片'文件夹里的照片到最新编辑结果里")
+        self.searched_checkbox.setChecked(False)
+        self.searched_checkbox.setStyleSheet("QCheckBox { text-align: right; }")
 
 class Row_Two():
     def __init__(self,

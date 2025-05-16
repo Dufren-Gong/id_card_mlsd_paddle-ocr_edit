@@ -6,7 +6,7 @@ from my_utils.Traditional_to_Simplified_Chinese import fan_to_jian
 from openpyxl import load_workbook
 from openpyxl.styles import Font
 from my_utils import check
-from my_utils.utils import find_in_catch_pic
+from my_utils.utils import find_in_catch_pic, find_png_by_name_fast
 
 sheet_names = ['开单', '拿货', '转单', '年费', '补单', '补卡', '退单']
 catch_columns = ['性别', '归属地', '民族', '出生日期', '身份证号码', '住址']
@@ -733,8 +733,8 @@ def map_info(ws, template_column_info:str, i, check_cloumns, column_letters):
                 result_str += m.strip().replace(' ', '')
         if result_str != '':
             name_t = column_letters[name_index]
-            if j == '姓名':
-                result_str = fan_to_jian(result_str)
+            # if j == '姓名':
+            #     result_str = fan_to_jian(result_str)
             ws[f"{name_t}{i}"].value = result_str
     return ws
 
@@ -743,12 +743,13 @@ def chech_and_add(arr_t: list, i):
         arr_t.append(i)
     return arr_t
 
-def check_excel(file_path, pic_floader, sheet_name = None):
+def check_excel(file_path, pic_floader, sheet_name = None, search_extra_floader = (False, '')):
     passed_flag = True
     error_rows = []
     # 设置绿色字体
     red_font = Font(color="FF0000")  # 红色字体
     black_font = Font(color="000000")  # 黑色字体
+    blue_font = Font(color="0000FF")  # 蓝色字体
     #高频信息里面找
     cache_path = os.path.join('模版', '高频照片')
     #照片缓存信息里面找
@@ -767,6 +768,12 @@ def check_excel(file_path, pic_floader, sheet_name = None):
         sheets = [i for i in sheet_name if i in sheet_names]
     c_names = column_names.keys()
     wb = load_workbook(file_path)
+    extra_searched = []
+    if search_extra_floader[0]:
+        save_path = './查找到的照片'
+        if os.path.exists(save_path):
+            shutil.rmtree(save_path)
+        os.makedirs(save_path, exist_ok=True)
     for sheet in sheets:
         ws = wb[sheet]
         ws = read_openpyxl_by_str(ws)
@@ -850,6 +857,18 @@ def check_excel(file_path, pic_floader, sheet_name = None):
                                                     passed_flag = False
                                                     error_rows = chech_and_add(error_rows, i)
                                                     ws[f"{letter}{i}"].font = red_font
+                            if not name_passed_flag and search_extra_floader[0]:
+                                path = find_png_by_name_fast(search_extra_floader[1], found_names, '.png')
+                                if path != None:
+                                    this_searched_name = os.path.basename(path).split('.', maxsplit=1)[0]
+                                    all_path_root = os.path.dirname(path)
+                                    if os.path.exists(os.path.join(all_path_root, f'{this_searched_name}反.png')) and os.path.exists(os.path.join(all_path_root, f'{this_searched_name}.info')):
+                                        extra_searched = chech_and_add(extra_searched, this_searched_name)
+                                        ws[f"{letter}{i}"].font = blue_font
+                                        passed_flag = False
+                                        shutil.copy(path, os.path.join(save_path, os.path.basename(path)))
+                                        shutil.copy(os.path.join(all_path_root, f'{this_searched_name}反.png'), os.path.join(save_path, f'{this_searched_name}反.png'))
+                                        shutil.copy(os.path.join(all_path_root, f'{this_searched_name}.info'), os.path.join(save_path, f'{this_searched_name}.info'))
                             #名字通过，开始检查地址
                             if name_passed_flag:
                                 ws[f"{letter}{i}"] = check_r
@@ -879,7 +898,7 @@ def check_excel(file_path, pic_floader, sheet_name = None):
                     else:
                         ws[f"{letter}{i}"] = np.nan
     wb.save(file_path)
-    return passed_flag, [str(i) for i in error_rows]
+    return passed_flag, [str(i) for i in error_rows], extra_searched
 
 def check_excel_after(file_path, sheet_name = None):
     passed_flag = True

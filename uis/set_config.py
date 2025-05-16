@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QComboBox, QLabel, QCheckBox, QPushButton)
+from PyQt6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QComboBox, QLabel, QCheckBox, QPushButton, QFileDialog)
 from PyQt6.QtGui import QDoubleValidator, QIntValidator, QIcon, QValidator
 from my_utils.utils import get_internal_path
 import copy
@@ -140,13 +140,18 @@ class Set_Config_Window(QWidget):
         self.line_four_layout.addWidget(self.debug_mode_input)
 
         self.line_five_layout = QHBoxLayout()
+        self.change_outside_floader_button = QPushButton('更改外部查找文件夹路径')
+        self.change_outside_floader_button.setToolTip('更改外部查找文件夹路径,在高频和缓存里都找不到照片的话,会在这个文件夹自动查找所有缺失照片并且归总到一个文件夹里.')
+        self.change_outside_floader_button.setFixedWidth(150)
+
         self.forever_ensure_button = QPushButton('永久保存')
         self.forever_ensure_button.setToolTip('保存永久应用,写入到配置文件中.')
-        self.forever_ensure_button.setFixedWidth(80)
+        self.forever_ensure_button.setFixedWidth(60)
 
         self.ensure_button = QPushButton('单次保存')
         self.ensure_button.setToolTip('保存只应用一次,下次打开恢复默认.')
-        self.ensure_button.setFixedWidth(80)
+        self.ensure_button.setFixedWidth(60)
+        self.line_five_layout.addWidget(self.change_outside_floader_button)
         self.line_five_layout.addWidget(self.forever_ensure_button)
         self.line_five_layout.addWidget(self.ensure_button)
 
@@ -251,6 +256,9 @@ class Set_Config_Window(QWidget):
     def update_save_change_config(self):
         self.global_config['stay_old'] = self.update_save_mode_input.isChecked()
 
+    def change_outside_floader(self):
+        self.global_config['outside_search_path'] = QFileDialog.getExistingDirectory(self, "选择外部搜索文件夹")
+
     def init_events(self):
         self.pic_catch_days_input.textChanged.connect(self.cache_day_change_config)
         self.excel_catch_num_input.textChanged.connect(self.excel_num_change_config)
@@ -262,3 +270,4 @@ class Set_Config_Window(QWidget):
         self.mandatory_update_input.stateChanged.connect(self.mandatory_update_change_config)
         self.update_window_input.stateChanged.connect(self.update_window_change_config)
         self.update_save_mode_input.stateChanged.connect(self.update_save_change_config)
+        self.change_outside_floader_button.clicked.connect(self.change_outside_floader)

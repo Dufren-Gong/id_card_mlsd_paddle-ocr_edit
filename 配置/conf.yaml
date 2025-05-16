@@ -72,6 +72,7 @@ paddleocr_conf:
     check_total_strs: [中国, CHINA]
 
 version: 2.0.3 #版本号
+outside_search_path: #外部查找文件夹路径
 open_search_floader: false # 查找到照片的话是否打开文件夹
 open_search_info: false # 查找到照片的话是否打开所有找到的.info文件，方便更改
 catch_days: 30 #制作的照片缓存几天，填写0代表一直缓存, 正整数比如1，就缓存当天的照片，第二天再打开软件，前一天的缓存就删掉了
@@ -91,7 +92,7 @@ moren_annual_fee: 210 #设置默认年费
 in_floader: true  #是否为每一单单独创建文件夹
 main_window_conf:
   catch_max_height: 20 #展开最大宽度占多少行，一行高度为20px
-  debug_mode: false #非debug模式在窗口中报错，debug模式在terminal中报错
+  debug_mode: false  #非debug模式在窗口中报错，debug模式在terminal中报错
 
 # https://gitee.com/api/v5/repos/{owner}/{repo}/zipball?access_token={access_token}&ref={ref}
 access_token: 3d7b338f6b596cc32baf892157ac5f98 # gitee授权码

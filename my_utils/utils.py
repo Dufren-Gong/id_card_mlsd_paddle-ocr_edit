@@ -490,3 +490,29 @@ def calc_no_line_number(min_number, middle_number, max_number, k_high, count_num
     else:
         point_y = middle_number * k_high
         return point_y + (count_number - middle_number) * (max_number - point_y) / (max_number - middle_number)
+    
+def find_png_by_name_fast(root_folder:str, target_name:list, formate:str):
+    """
+    递归使用 os.scandir 以提高遍历效率，
+    查找文件名为 target_name（不带扩展名）的 PNG 文件，返回第一个匹配的绝对路径，找不到返回 None。
+    """
+    target_lower = [i.strip().lower() for i in target_name]
+
+    def recursive_scan(folder):
+        try:
+            with os.scandir(folder) as it:
+                for entry in it:
+                    if entry.is_file():
+                        name, ext = os.path.splitext(entry.name)
+                        if ext.lower() == formate and name.lower() in target_lower:
+                            return entry.path
+                    elif entry.is_dir():
+                        found = recursive_scan(entry.path)
+                        if found:
+                            return found
+        except PermissionError:
+            # 无权限访问的文件夹忽略
+            pass
+        return None
+
+    return recursive_scan(root_folder)
