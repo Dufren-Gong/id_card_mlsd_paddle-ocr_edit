@@ -154,7 +154,12 @@ class Main_Window(QMainWindow):
                         self.select_file_flag = True
             else:
                 if selected_options == self.concat_index and self.row_one.searched_checkbox.isChecked():
-                    self.folder_path = './查找到的照片'
+                    if os.path.exists('./查找到的照片'):
+                        self.folder_path = './查找到的照片'
+                    else:
+                        self.show_info.set_show_text('你选择了合并查找到的照片选项，但是没有”查找到的照片“文件夹，请先查找照片，或者取消勾选合并查找到的照片选项')
+                        self.show_info.show()
+                        return
                 else:
                     if floader_path == None:
                         self.folder_path = QFileDialog.getExistingDirectory(self, "选择文件夹")
@@ -172,7 +177,7 @@ class Main_Window(QMainWindow):
                             if self.concat_all('照片编辑结果', files):
                                 self.show_info.set_show_text('合并文件夹照片成功,但不包含文件夹和同名文件')
                             else:
-                                self.show_info.set_show_text('还未编辑过照片,或无文件可合并.')
+                                self.show_info.set_show_text('还未操作过照片,请先操作照片.')
                         self.show_info.show_window()
                     else:
                         self.excel_name = '非身份证信息需求.xlsx'
