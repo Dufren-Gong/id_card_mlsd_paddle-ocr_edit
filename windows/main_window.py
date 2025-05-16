@@ -894,13 +894,13 @@ class Main_Window(QMainWindow):
             else:
                 self.after_end('', name)
 
-    def after_end(self, source:str, name):
+    def after_end(self, name):
         if len(self.copy_threads) != 0:
-            text = self.show_info.row_one.tip_label.toPlainText()
-            company_name = source.replace('_', ' ')
-            self.show_info.set_show_text(f'{text}\n{company_name}复制完成')
-            self.show_info.show()
-            QApplication.processEvents()
+            # text = self.show_info.row_one.tip_label.toPlainText()
+            # company_name = source.replace('_', ' ')
+            # self.show_info.set_show_text(f'{text}\n{company_name}复制完成')
+            # self.show_info.show()
+            # QApplication.processEvents()
             self.count_finished_copy += 1
         if self.count_finished_copy == len(self.copy_threads):
             show_str = '更新完成\n现在可以关闭这个窗口打开新软件使用'

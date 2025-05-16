@@ -126,7 +126,7 @@ class Download_Sourcecode(QtCore.QThread):
             self.resSignal.emit(1, 1, 1, 1, 1)
 
 class Download_Copy_Large(QtCore.QThread):
-    resSignal = QtCore.pyqtSignal(object, object)  # 注册一个信号
+    resSignal = QtCore.pyqtSignal(object)  # 注册一个信号
     def __init__(self, source, target, name): # 从前端界面中传递参数到这个任务后台
         super().__init__()
         self.source = source
@@ -135,4 +135,4 @@ class Download_Copy_Large(QtCore.QThread):
 
     def run(self):  # 重写run  比较耗时的后台任务可以在这里运行
         shutil.copytree(self.source, self.target)
-        self.resSignal.emit(self.source, self.name)
+        self.resSignal.emit(self.name)
