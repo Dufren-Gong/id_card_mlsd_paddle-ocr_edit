@@ -921,8 +921,6 @@ class Main_Window(QMainWindow):
         if self.pyinstaller_process.poll() is None:
             self.update_timer.start(time_count)  # 继续定时器
         else:
-            self.show_info.set_show_text(f'马上更新完成,请稍等...')
-            self.show_info.show()
             wait_start_flag = True
         if wait_start_flag and self.only_once_flag:
             self.only_once_flag = False
