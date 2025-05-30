@@ -17,6 +17,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from my_utils.Traditional_to_Simplified_Chinese import fan_to_jian
 import subprocess, platform
 from send2trash import send2trash
+from uis.replace_select import Replace_Select
         
 class Main_Window(QMainWindow):
     def __init__(self, open_pic_operate_window, refresh_main_window, global_config):
@@ -39,7 +40,7 @@ class Main_Window(QMainWindow):
         # 启用拖放
         # self.setAcceptDrops(True)
         self.shape.layout([self.shape.combobox_height, self.shape.combobox_height, self.shape.button_height, self.shape.combobox_height, 27],
-                          [[60, 170, 60]] + [[60, 135, 95]] * 3 + [[298]])
+                          [[60, 170, 60]] + [[60, 135, 95]] + [[60, 71, 60, 95]] + [[60, 135, 95]] + [[298]])
         self.setWindowIcon(QIcon(get_internal_path('../files/icon/icon.ico')))
         self.init_ui()
         self.init_events()
@@ -319,11 +320,14 @@ class Main_Window(QMainWindow):
                 self.have_error_flag = True
         if outside_search_passed_flag:
             try:
+                self.row_one.outside_search_checkbox.setChecked(False)
+            except:
+                pass
+            try:
                 #缓存一定个数的excel,防止信息丢失
                 excel_path = os.path.join('模版', self.excel_name)
                 self.cache_excel(excel_path, './模版/excel备份')
                 pass_flag, error_rows, extra_searched = utils_operate_excel.check_excel(os.path.join('模版', self.excel_name), self.folder_path, mode, search_extra_floader = (self.row_one.outside_search_checkbox.isChecked(), outside_search_path))
-                self.row_one.outside_search_checkbox.setChecked(False)
             except PermissionError:
                 pass_flag = 'excel未关闭或excel文件损坏!若损坏,在{./模版/excel备份}内有备份,替换excel后重新逐步制作.'
             if pass_flag == True:
@@ -342,9 +346,9 @@ class Main_Window(QMainWindow):
                 except:
                     self.shwo_total_error()
             else:
-                open_floader(os.path.join('模版', self.excel_name))
                 self.have_error_flag = True
                 if pass_flag == False:
+                    open_floader(os.path.join('模版', self.excel_name))
                     str_to_show = ','.join(natsorted(error_rows))
                     if len(extra_searched) != 0:
                         open_floader('./查找到的照片')
@@ -489,7 +493,7 @@ class Main_Window(QMainWindow):
                     elif word == '年费':
                         changes, obj = zhuandan.get_sub_arr_nianfei(kaidan_pair)
                         shift = 2
-                    doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
+                    doc, _ = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
                     doc = replace_pic(doc, obj, 18 + shift, kaidan_path, 0, 6, self.pic_scale)
                     doc = replace_pic(doc, obj, 16 + shift, kaidan_path, 1, 6, self.pic_scale)
                     try:
@@ -518,7 +522,7 @@ class Main_Window(QMainWindow):
                     count += 1
                 kaidan_path = copy_template(mode, self.folder_path, name_concat, count, in_floader=self.global_config['in_floader'])
                 changes = nahuo.get_sub_arr(kaidan_pair)
-                doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
+                doc, _ = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
                 doc = replace_pic(doc, kaidan_pair,18, kaidan_path, 0, 6, self.pic_scale, self.global_config['in_floader'])
                 doc = replace_pic(doc, kaidan_pair, 16, kaidan_path, 1, 6, self.pic_scale, self.global_config['in_floader'])
                 try:
@@ -547,7 +551,7 @@ class Main_Window(QMainWindow):
                     count += 1
                 kaidan_path = copy_template(mode, self.folder_path, name_concat, count, in_floader=self.global_config['in_floader'])
                 changes = nianfei.get_sub_arr_nianfei(kaidan_pair)
-                doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
+                doc, _ = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
                 doc = replace_pic(doc, kaidan_pair,20, kaidan_path, 0, 6, self.pic_scale, self.global_config['in_floader'])
                 doc = replace_pic(doc, kaidan_pair, 18, kaidan_path, 1, 6, self.pic_scale, self.global_config['in_floader'])
                 try:
@@ -576,7 +580,7 @@ class Main_Window(QMainWindow):
                     count += 1
                 kaidan_path = copy_template(mode, self.folder_path, name_concat, count, in_floader=self.global_config['in_floader'])
                 changes = kaidan.get_sub_arr(kaidan_pair)
-                doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
+                doc, _ = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
                 doc = replace_pic(doc, kaidan_pair, 20, kaidan_path, 0, 6, self.pic_scale, self.global_config['in_floader'])
                 doc = replace_pic(doc, kaidan_pair, 18, kaidan_path, 1, 6, self.pic_scale, self.global_config['in_floader'])
                 try:
@@ -605,7 +609,7 @@ class Main_Window(QMainWindow):
                     count += 1
                 kaidan_path = copy_template(mode, self.folder_path, name_concat, count, in_floader=self.global_config['in_floader'])
                 changes = budan.get_sub_arr_budan(kaidan_pair)
-                doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
+                doc, _ = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
                 doc = replace_pic(doc, kaidan_pair, 14, kaidan_path, 0, 6, self.pic_scale, self.global_config['in_floader'])
                 doc = replace_pic(doc, kaidan_pair, 12, kaidan_path, 1, 6, self.pic_scale, self.global_config['in_floader'])
                 try:
@@ -634,7 +638,7 @@ class Main_Window(QMainWindow):
                     count += 1
                 kaidan_path = copy_template(mode, self.folder_path, name_concat, count, in_floader=self.global_config['in_floader'])
                 changes = buka.get_sub_arr_buka(kaidan_pair)
-                doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
+                doc, _ = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
                 doc = replace_pic(doc, kaidan_pair, 15, kaidan_path, 0, 6, self.pic_scale, self.global_config['in_floader'])
                 doc = replace_pic(doc, kaidan_pair, 13, kaidan_path, 1, 6, self.pic_scale, self.global_config['in_floader'])
                 try:
@@ -663,7 +667,7 @@ class Main_Window(QMainWindow):
                     count += 1
                 kaidan_path = copy_template(mode, self.folder_path, name_concat, count, in_floader=self.global_config['in_floader'])
                 changes = tuidan.get_sub_arr_tuidan(kaidan_pair)
-                doc = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
+                doc, _ = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
                 doc = replace_pic(doc, kaidan_pair, 17, kaidan_path, 0, 6, self.pic_scale, self.global_config['in_floader'])
                 doc = replace_pic(doc, kaidan_pair, 15, kaidan_path, 1, 6, self.pic_scale, self.global_config['in_floader'])
                 try:
@@ -695,6 +699,7 @@ class Main_Window(QMainWindow):
             self.shape.shape_tuples[2][0],
             self.shape.shape_tuples[2][1],
             self.shape.shape_tuples[2][2],
+            self.shape.shape_tuples[2][3],
         )
 
         self.row_one = Row_One(
@@ -1254,7 +1259,7 @@ class Main_Window(QMainWindow):
                                 full_path = os.path.join(dirpath, filename)
                                 doc_files.append(full_path)
                     for i in doc_files:
-                        doc = replace_text_with_same_format(i, copy_company.replace('_', ' '), [company_name] * 1000)
+                        doc, _ = replace_text_with_same_format(i, copy_company.replace('_', ' '), company_name)
                         doc.save(i)
                     global_config['companys'].append(floader_name)
                     global_config[f'{floader_name}_config'] = copy.deepcopy(global_config[f'{copy_company}_config'])
@@ -1278,6 +1283,10 @@ class Main_Window(QMainWindow):
             self.row_two.select_files_button.setText('选择文件/文件夹')
             self.row_two.select_files_button.setToolTip('选择文件或者文件夹直接跳转开始编辑')
 
+    def open_replace_window(self):
+        self.replace_window = Replace_Select()
+        self.replace_window.show()
+
     def init_events(self):
         self.init_black_button_timer()
         self.init_open_newest_timer()
@@ -1295,3 +1304,4 @@ class Main_Window(QMainWindow):
         self.row_catch.pic_name_lineedit.doubleClickedSignal.connect(self.change_height)
         self.row_company.confit_button.clicked.connect(self.change_config)
         self.row_one.searched_checkbox.clicked.connect(self.change_searched_concat_mode)
+        self.row_zero.replace_button.clicked.connect(self.open_replace_window)

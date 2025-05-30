@@ -27,12 +27,14 @@ class Row_Zero():
                  centralwidget,
                  tip_label_shape: tuple,
                  file_types_combobox_shape: tuple,
+                 replace_buttonz_shape: tuple,
                  exit_button_shape: tuple) -> None:
         self.centralwidget = centralwidget
         self.file_types = ["文件夹", "照片"]
         self.init_one_tip_label(tip_label_shape)
         self.init_one_column_two_select_file_file_type_combobox(file_types_combobox_shape)
         self.init_one_pic_name_lineedit(file_types_combobox_shape)
+        self.init_two_column_three_replace_pushbutton(replace_buttonz_shape)
         self.init_two_column_three_exit_pushbutton(exit_button_shape)
         self.init_one_select_newest_checkbox(merge_shape([tip_label_shape, file_types_combobox_shape], 4))
 
@@ -97,12 +99,27 @@ class Row_Zero():
         self.select_newest_checkbox = QtWidgets.QCheckBox(parent=self.centralwidget)
         self.select_newest_checkbox.setGeometry(QtCore.QRect(*shape))
         self.select_newest_checkbox.setObjectName("select_newest_checkbox")
-        self.select_newest_checkbox.setText("默认最新编辑的文件夹")
+        self.select_newest_checkbox.setText("默认最新编辑文件夹")
         # self.select_newest_checkbox.setLayoutDirection(QtCore.Qt.LayoutDirection.RightToLeft)
         self.select_newest_checkbox.setToolTip("默认选择最新编辑结果的文件夹，就不用再选择了，直接制作word，如果要选择其他文件夹，取消选中")
         self.select_newest_checkbox.hide()
         self.select_newest_checkbox.setChecked(True)
         self.select_newest_checkbox.setStyleSheet("QCheckBox { text-align: right; }")
+
+    def init_two_column_three_replace_pushbutton(self, shape):
+        self.replace_button = QtWidgets.QPushButton(parent=self.centralwidget)
+        self.replace_button.setGeometry(QtCore.QRect(*shape))
+        self.replace_button.setObjectName("replace_button")
+        self.replace_button.setText("替换文本")
+        self.replace_button.setToolTip('点击之后选择word,输入被替换文本和替换文本')
+        self.replace_button.setStyleSheet("""
+            QPushButton {
+                border-width: 1px;          /* 边缘宽度 */
+                border-style: solid;        /* 边缘样式 */
+                border-color: black;          /* 边缘颜色 */
+                background-color: lightgray;/* 背景颜色 */
+            }
+        """)
 
 class Row_One():
     def __init__(self,
@@ -197,7 +214,7 @@ class Row_One():
         self.searched_checkbox = QtWidgets.QCheckBox(parent=self.centralwidget)
         self.searched_checkbox.setGeometry(QtCore.QRect(*shape))
         self.searched_checkbox.setObjectName("searched_checkbox")
-        self.searched_checkbox.setText("合查找到的照片")
+        self.searched_checkbox.setText("查找到的照片")
         self.searched_checkbox.hide()
         self.searched_checkbox.setToolTip("默认选择合并'查找到的照片'文件夹里的照片到最新编辑结果里")
         self.searched_checkbox.setChecked(False)

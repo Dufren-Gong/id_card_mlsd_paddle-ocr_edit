@@ -6,12 +6,12 @@ from my_utils.utils import get_internal_path
 from PyQt6.QtCore import Qt
 
 class Show_Info_Window(QMainWindow):
-    def __init__(self):
+    def __init__(self, height_num = 5, width = [200, 35]):
         super().__init__()
         self.reopen_main_window = None
         self.shape = Ui_Shapes(round_gap=10)
-        self.shape.layout([self.shape.label_height*5],
-                          [[200, 35]])
+        self.shape.layout([self.shape.label_height*height_num],
+                          [width])
         self.setWindowIcon(QIcon(get_internal_path('../files/icon/icon.ico')))
         self.init_ui()
         self.init_events()

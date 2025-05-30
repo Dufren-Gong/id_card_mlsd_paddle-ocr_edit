@@ -516,3 +516,10 @@ def find_png_by_name_fast(root_folder:str, target_name:list, formate:str):
         return None
 
     return recursive_scan(root_folder)
+
+def to_relative_paths(abs_paths, base_path):
+    rel_paths = []
+    for abs_path in abs_paths:
+        rel_path = os.path.relpath(abs_path, base_path)
+        rel_paths.append(rel_path)
+    return rel_paths

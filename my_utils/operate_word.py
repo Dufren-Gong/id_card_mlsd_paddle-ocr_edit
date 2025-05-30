@@ -84,22 +84,60 @@ def number_to_chinese(s):
             re_re = re_re[1:]
     return re_re + '元'
 
+def count_placeholder_occurrences(file_path, placeholder):
+    count = 0
+    doc = Document(file_path)
+
+    def count_in_runs(runs):
+        nonlocal count
+        for run in runs:
+            # run.text 中可能出现多次 placeholder，使用 str.count 统计
+            count += run.text.count(placeholder)
+
+    # 统计段落中的占位符
+    for paragraph in doc.paragraphs:
+        count_in_runs(paragraph.runs)
+
+    # 统计表格中的占位符
+    for table in doc.tables:
+        for row in table.rows:
+            for cell in row.cells:
+                for paragraph in cell.paragraphs:
+                    count_in_runs(paragraph.runs)
+
+    return count
+
 def replace_text_with_same_format(file_path, placeholder, replacements):
     replacement_index = 0
+    all_count = 0
     doc = Document(file_path)
 
     def replace_in_runs(runs):
+        nonlocal all_count
         nonlocal replacement_index
-        for run in runs:
-            while placeholder in run.text and replacement_index < len(replacements):
-                # 找到占位符的位置
-                pos = run.text.find(placeholder)
-                # 分割文本
-                before = run.text[:pos]
-                after = run.text[pos + len(placeholder):]
-                # 替换文本，保持格式
-                run.text = before + replacements[replacement_index] + after
-                replacement_index += 1
+        if not isinstance(replacements, str):
+            for run in runs:
+                while placeholder in run.text and replacement_index < len(replacements):
+                    all_count += 1
+                    # 找到占位符的位置
+                    pos = run.text.find(placeholder)
+                    # 分割文本
+                    before = run.text[:pos]
+                    after = run.text[pos + len(placeholder):]
+                    # 替换文本，保持格式
+                    run.text = before + replacements[replacement_index] + after
+                    replacement_index += 1
+        else:
+            for run in runs:
+                while placeholder in run.text:
+                    all_count += 1
+                    # 找到占位符的位置
+                    pos = run.text.find(placeholder)
+                    # 分割文本
+                    before = run.text[:pos]
+                    after = run.text[pos + len(placeholder):]
+                    # 替换文本，保持格式
+                    run.text = before + replacements + after
 
     # 处理文档中的每个段落
     for paragraph in doc.paragraphs:
@@ -111,7 +149,7 @@ def replace_text_with_same_format(file_path, placeholder, replacements):
             for cell in row.cells:
                 for paragraph in cell.paragraphs:
                     replace_in_runs(paragraph.runs)
-    return doc
+    return doc, all_count
 
 def get_num_base(path, num=1):
     for i in range(num):
