@@ -6,16 +6,6 @@ from my_utils.utils import get_internal_path, to_relative_paths
 from windows.show_info_window import Show_Info_Window
 from my_utils.operate_word import count_placeholder_occurrences, replace_text_with_same_format
 
-class NoDropPlainTextEdit(QPlainTextEdit):
-    def dragEnterEvent(self, event):
-        event.ignore()
-
-    def dragMoveEvent(self, event):
-        event.ignore()
-
-    def dropEvent(self, event):
-        event.ignore()
-
 class Replace_Select(QWidget):
     def __init__(self):
         super().__init__()
@@ -63,7 +53,8 @@ class Replace_Select(QWidget):
         self.line_three_layout.addWidget(self.delete_button)
 
         self.line_four_layout = QHBoxLayout()
-        self.selected_label = NoDropPlainTextEdit()
+        self.selected_label = QPlainTextEdit()
+        self.selected_label.setReadOnly(True)
         self.selected_label.setFixedHeight(300)
         self.line_four_layout.addWidget(self.selected_label)
         # self.selected_label.setGeometry(QRect(*shape))
@@ -210,9 +201,11 @@ class Replace_Select(QWidget):
                 self.delete_input.setText(','.join([str(i) for i in num_del]))
             now_text = self.selected_label.toPlainText().split('\n')
             check_text = copy.deepcopy(now_text)
+            chech_file_paths = copy.deepcopy(self.file_paths)
             for i in del_arr:
                 check_text.remove(now_text[i])
-                self.file_paths.remove(self.file_paths[i])
+                chech_file_paths.remove(self.file_paths[i])
+            self.file_paths = chech_file_paths
             check_text = [f'({i+1})' + j.split(')', maxsplit = 1)[-1] for i,j in enumerate(check_text)]
             self.selected_label.setPlainText('\n'.join(check_text))
 

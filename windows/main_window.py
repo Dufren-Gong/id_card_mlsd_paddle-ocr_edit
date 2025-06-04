@@ -987,10 +987,11 @@ class Main_Window(QMainWindow):
         check = [os.path.join(floader_path, i) for i in os.listdir(floader_path)]
         paths = natsorted([i for i in check if os.path.isdir(i)])
         if len(paths) == 0:
-            paths = [os.path.join(floader_path, get_data_str())]
-        path = paths[-1]
-        os.makedirs(path, exist_ok=True)
-        self.open_folder_dialog(path)
+            path_t = os.path.join(floader_path, get_data_str())
+            os.makedirs(path_t, exist_ok=True)
+        else:
+            path_t = paths[-1]
+        self.open_folder_dialog(path_t)
 
     def operate_on_moren_pic(self):
         floader_path = './照片放这里'
@@ -1223,8 +1224,8 @@ class Main_Window(QMainWindow):
                 except:
                     pass
                 write_config(save_conf, '../配置/conf.yaml')
-        elif forever_flag:
-            write_config(save_conf, '../配置/conf.yaml')
+        # elif forever_flag:
+        #     write_config(global_config, '../配置/conf.yaml')
         self.set_config_window.close()
 
     def add_new_company(self, global_config):

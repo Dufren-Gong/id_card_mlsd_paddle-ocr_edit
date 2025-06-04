@@ -4,6 +4,33 @@ from my_utils.operate_excel import Pair
 from docx.shared import Inches
 from PIL import Image
 
+#提取照片
+def extract_images_from_docx(docx_path, output_folder):
+    # 创建输出文件夹，如果不存在的话
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+
+    # 打开docx文件
+    doc = Document(docx_path)
+
+    # 初始化图片计数器
+    image_count = 0
+
+    # 遍历文档中的所有段落和图形
+    for rel in doc.part.rels.values():
+        if "image" in rel.target_ref:
+            image_count += 1
+            # 获取图片数据
+            image = rel.target_part.blob
+            # 获取图片格式
+            extension = rel.target_part.content_type.split('/')[-1]
+            # 保存图片
+            image_filename = os.path.join(output_folder, f'image_{image_count}.{extension}')
+            with open(image_filename, 'wb') as img_file:
+                img_file.write(image)
+
+    print(f'提取完成，共提取了 {image_count} 张图片。')
+
 def copy_template(mode, base_path, name_concat, count, sub = None, in_floader=False):
     template_name = ['两个内地人模版', '一港一内地模版']
     if sub != None:
