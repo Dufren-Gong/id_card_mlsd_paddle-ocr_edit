@@ -10,7 +10,7 @@ import numpy as np
 from pathlib import Path
 from ruamel.yaml import YAML
 from send2trash import send2trash
-from pypinyin import pinyin, Style
+# from pypinyin import pinyin, Style
 
 def rgb_to_gray_with_three_channels(image):
     # 将 RGB 图像转换为灰度图像 (单通道)
@@ -525,10 +525,10 @@ def to_relative_paths(abs_paths, base_path):
         rel_paths.append(rel_path)
     return rel_paths
 
-#获取首字母
-def get_name_initials(name):
-    # 获取每个汉字的拼音首字母，Style.FIRST_LETTER表示首字母
-    initials = pinyin(name, style=Style.FIRST_LETTER)
-    # initials 是列表的列表，例如 [['z'], ['h'], ['a']]，展开并大写
-    initials_str = ''.join([item[0].upper() for item in initials])
-    return initials_str
+# #获取首字母
+# def get_name_initials(name):
+#     # 获取每个汉字的拼音首字母，Style.FIRST_LETTER表示首字母
+#     initials = pinyin(name, style=Style.FIRST_LETTER)
+#     # initials 是列表的列表，例如 [['z'], ['h'], ['a']]，展开并大写
+#     initials_str = ''.join([item[0].upper() for item in initials])
+#     return initials_str
