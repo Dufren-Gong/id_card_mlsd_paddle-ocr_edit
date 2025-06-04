@@ -1182,12 +1182,13 @@ class Main_Window(QMainWindow):
             paths = natsorted(os.listdir(floader_path))
             if '.DS_Store' in paths:
                 paths.remove('.DS_Store')
+            paths = [os.path.join(floader_path, i) for i in paths]
+            paths = [i for i in paths if os.path.isdir(i)]
             if len(paths) == 0:
                 self.show_info.set_show_text('”照片编辑结果“文件夹内为空,请先编辑.')
                 self.show_info.show()
             else:
-                path = paths[-1]
-                open_floader(os.path.join(floader_path, path))
+                open_floader(paths[-1])
 
     def init_combbox_change_tips_timer(self):
         self.combbox_change_tips_timer = QTimer()
