@@ -175,8 +175,8 @@ def check_sail_card_id(str_t:str, mode:str='内地'):
 def check_sail_id(str_t:str, mode:str='内地'):
     if not pd.isna(str_t) and str_t != None and str_t != '':
         sail_id = trans_to_str_and_strip(str_t)
-        if bool(re.fullmatch(r'[A-Za-z]+', sail_id[:4])) and bool(re.fullmatch(r'[A-Za-z0-9]+', sail_id[4:])):
-            return sail_id
+        if len(sail_id) == 12 and bool(re.fullmatch(r'[A-Za-z]+', sail_id[:4])) and bool(re.fullmatch(r'[A-Za-z0-9]+', sail_id[4:])):
+                return sail_id.upper()
     return None
 
 excel_info_check = dict(
