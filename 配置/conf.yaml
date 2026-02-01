@@ -1,0 +1,122 @@
+mlsd_conf:
+  device: cpu #[cpu, cuda:0]
+  tiny_model_path: ./files/models/mlsd_models/onnx/mlsd_tiny_512_fp32.onnx
+  large_model_path: ./files/models/mlsd_models/onnx/mlsd_large_512_fp32.onnx
+  model_type: all #[tiny, large, all], 使用什么模型来识别方框，或者暴力模式，可以权衡资源消耗和识别性能
+  tiny_first: true #如果是all的话，先tiny还是先large
+  tiny_max_input_size: 768 #[512, 768, 1024] tiny 的图片输入尺寸,好像只能512，要不然会报错
+  large_max_input_size: 768 #[512, 768]large 的图片输入尺寸,好像只能512，要不然会报错
+  max_threads: 1 #最大线程数
+  small_pic_fixed_width: 200 # 小图宽度，建议大于150
+  pic_shape: [856, 540] #[width, height]， 最终生成照片的尺寸
+  angle_rate: 30 #圆角弧度
+  outside_color: 255 #默认圆弧外部颜色为255白色，0为黑色，从255->0越来越暗
+  up_gap: 6 # 每边往里收的幅度
+  down_gap: 1
+  left_gap: 8
+  right_gap: 2
+  map_color: [0, 0, 0, 0.4]  # 黑色遮罩, RGBA，最后一个参数表示透明度，越小越透明
+  score: 0.1
+  outside_ratio: 0.28
+  inside_ratio: 0.45
+  w_overlap: 1.0
+  w_degree: 1.95
+  w_length: 0.0
+  w_area: 1.86
+  w_center: 0.14
+  top_n: 50 #取分数前多少的线条
+  zheng_fan_shift: 50 #正反面偏移位置大小
+  n_px: 2 #每次按键盘，移动坐标点的偏移大小
+  duibidu_shift: 2.5 #将黑白照片调整对比度后再送入模型识别边框，对比度调整的强度
+
+paddleocr_conf:
+  device: cpu #[cpu, gpu]
+  times: 1 # 1就是用原图识别一遍，2就是再用灰度图识别一遍，可以权衡资源消耗和识别性能
+  ocr_pic_type: origin # [origin, grey], disable when times == 2
+  det_path: ./files/models/ppocrv4/det/det.onnx
+  rec_path: ./files/models/ppocrv4/rec/rec.onnx
+  cls_path: ./files/models/ppocrv4/cls/cls.onnx
+  ppocr_keys_v1.txt: ./files/models/ppocrv4/ppocr_keys_v1.txt
+  use_cls: false #是否使用方向检测
+  scale: 1.0 #照片ocr时候缩放大小，可以平衡资源消耗和识别准确率
+  max_threads: 1 #最大线程数
+  small_pic_fixed_width: 200 # 小图宽度，建议大于150
+  one_line_scale: 30 #低端间距小于照片高度的多少分之一被认为是在一行
+  edge_ipx: 1 #初始化边缘宽度
+  edge_color: 偏白 #初始化颜色[黑, 偏黑, 灰, 暗灰, 偏白, 白]
+  defalut_position_mode: true #默认将所有对比信息文本框移动到照片默认位置比较
+  info_checks: #下面为识别文字时各种信息前缀的模糊搜索单词
+    name_checks: [姓名, 姓多, 姓名多]
+    sex_checks: [性别, 性到, 性刻, 住别, 性列]
+    birth_checks: [出生, 由生, 出年]
+    nation_checks: [民族, 民旅, 民旗]
+    address_checks: [住址, 佳址, 往址, 生址]
+    deadline_checks:
+      chinese_checks: [有效, 期限]
+      changqi_checks: [长期]
+      symble_checks: ['-', _, 一, —]
+  init_position: #点击移动之后，文本框的初始位置
+    neidi:
+      name: [285, 80]
+      sex: [215, 150]
+      nation: [400, 150]
+      birth: [170, 263]
+      address: [165, 380]
+      id: [310, 520]
+      deadline: [566, 60]
+    hk:
+      name: [215, 115]
+      sex: [550, 255]
+      birth: [345, 255]
+      id: [578, 530]
+  color:
+    right: green #正确文本的颜色
+    error: red #错误文本的颜色
+    check: blue #如果文本第一个字疑似为背景花纹识别出来的字，更改文本颜色为该颜色，注意检查
+    check_front_strs: [上, 中]
+    check_total_strs: [中国, CHINA]
+
+version: 2.0.5 #版本号
+check_back: true #是否检查背面信息
+tolerate_days: 30 #有效期还剩多久开始报错
+outside_search_path: #外部查找文件夹路径
+open_search_floader: false # 查找到照片的话是否打开文件夹
+open_search_info: false # 查找到照片的话是否打开所有找到的.info文件，方便更改
+catch_days: 30 #制作的照片缓存几天，填写0代表一直缓存, 正整数比如1，就缓存当天的照片，第二天再打开软件，前一天的缓存就删掉了
+excel_cache_num: 10 #缓存多少个excel
+button_timer_duration: 1000 #长按按钮的执行时间，单位为ms
+show_tip_timer_duration: 1500 #展示提示的窗口的执行时间，单位为ms,0就是不显示
+cut_proportion: 0.5 #从上到下切割的比例
+height_cut_proportion: 0.5 #从左到右切割的比例
+enable_update: false  #是否开启更新选项
+mandatory_update: false  #版本相同也强制更新
+update_window: true  #更新显示窗口展示信息
+stay_old: true #更新软件各个公司的内容是否复制被备份
+max_cash: 84513 #最大金额限制
+moren_pay: 62569 #设置默认支付金额
+moren_buy: 84513 #设置默认提货金额
+moren_annual_fee: 210 #设置默认年费
+in_floader: true  #是否为每一单单独创建文件夹
+main_window_conf:
+  catch_max_height: 20 #展开最大宽度占多少行，一行高度为20px
+  debug_mode: false  #非debug模式在窗口中报错，debug模式在terminal中报错
+
+# https://gitee.com/api/v5/repos/{owner}/{repo}/zipball?access_token={access_token}&ref={ref}
+access_token: 3d7b338f6b596cc32baf892157ac5f98 # gitee授权码
+owner: hellomrdj2597 # 源码拥有者
+repo: id_card_mlsd_paddle-ocr_edit # 项目名称
+ref: main #分支
+conda_env_name: paddle-ocr #更新程序的时候，需要激活的conda环境名
+update_shell_path: 配置/update_windows.bat
+
+#根据不同公司设置的选项
+companys: [BASTION, SIBELLAC_HOLDINGS_LIMITED, Belle_Venture_Holding(HK)Ltd]
+BASTION_config:
+  zhuandan_before: '90' #时间点前转单的费用
+  zhuandan_after: '60' #时间点后转单的费用
+SIBELLAC_HOLDINGS_LIMITED_config:
+  zhuandan_before: '60' #时间点前转单的费用
+  zhuandan_after: '60' #时间点后转单的费用
+Belle_Venture_Holding(HK)Ltd_config:
+  zhuandan_before: '60' #时间点前转单的费用
+  zhuandan_after: '60' #时间点后转单的费用
