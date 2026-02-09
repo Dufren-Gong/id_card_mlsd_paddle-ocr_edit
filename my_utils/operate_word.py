@@ -3,6 +3,7 @@ import os, shutil
 from my_utils.operate_excel import Pair
 from docx.shared import Inches
 from PIL import Image
+from pathlib import Path
 
 #提取照片
 def extract_images_from_docx(docx_path, output_folder):
@@ -31,7 +32,7 @@ def extract_images_from_docx(docx_path, output_folder):
 
     # print(f'提取完成，共提取了 {image_count} 张图片。')
 
-def copy_template(mode, base_path, name_concat, count, sub = None, in_floader=False):
+def copy_template(mode, base_path, name_concat, count, sub = None, in_floader=False, template_sub_path = []):
     template_name = ['两个内地人模版', '一港一内地模版']
     if sub != None:
         docx_name = name_concat + '_' + mode + '_' + sub + '.docx'
@@ -39,9 +40,11 @@ def copy_template(mode, base_path, name_concat, count, sub = None, in_floader=Fa
         docx_name = name_concat + '_' + mode + '.docx'
     name = template_name[int(bool(count))]
     if sub == None:
-        kaidan_template_path = f'模版/{mode}/{name}.docx'
+        kaidan_template_path = Path(f'模版/{mode}/{name}.docx')
     else:
-        kaidan_template_path = f'模版/{mode}/{name}/{sub}.docx'
+        kaidan_template_path = Path(f'模版/{mode}/{name}/{sub}.docx')
+    if len(template_sub_path) != 0:
+        kaidan_template_path = kaidan_template_path.parent / Path(*template_sub_path) / kaidan_template_path.name
     if in_floader:
         kaidan_base = os.path.join(base_path, mode, name_concat)
     else:

@@ -14,20 +14,23 @@ def get_name_id_st_without_kuohao(obj:People_Info):
     else:
         return f"{obj.name}，公民身份证号码：{obj.id}。"
 
-def get_name_sex_regin_birth_address_id_telephone(obj:People_Info):
+def get_name_sex_regin_birth_address_id_telephone(obj:People_Info, mode=''):
     if obj.native == "香港":
-        return f"{obj.name}，{obj.sex}，{obj.birth}出生，住址：{obj.address}，香港永久性居民身份证号码：{obj.id}，联系电话：{obj.telephone}。"
+        return_str = f"{obj.name}，{obj.sex}，{obj.birth}出生，住址：{obj.address}，香港永久性居民身份证号码：{obj.id}，联系电话：{obj.telephone}"
     else:
-        return f"{obj.name}，{obj.sex}，{obj.regin}族，{obj.birth}出生，住址：{obj.address}，公民身份证号码：{obj.id}，联系电话：{obj.telephone}。"
+        return_str = f"{obj.name}，{obj.sex}，{obj.regin}族，{obj.birth}出生，住址：{obj.address}，公民身份证号码：{obj.id}，联系电话：{obj.telephone}"
+    if mode == 'id':
+        return_str += f'，独立经销商卡号：{obj.sail_card_id}'
+    return return_str + '。'
 
 def page_two(pair:Pair):
     client_str = get_name_id_str(pair.client)
     entrusted_str = get_name_id_str(pair.entrusted)
     return client_str, entrusted_str
 
-def page_three(pair:Pair):
-    client_str = get_name_sex_regin_birth_address_id_telephone(pair.client)
-    entrusted_str = get_name_sex_regin_birth_address_id_telephone(pair.entrusted)
+def page_three(pair:Pair, mode=''):
+    client_str = get_name_sex_regin_birth_address_id_telephone(pair.client, mode)
+    entrusted_str = get_name_sex_regin_birth_address_id_telephone(pair.entrusted, mode)
     return client_str, entrusted_str
 
 def page_five(pair:Pair):
@@ -42,11 +45,11 @@ def page_six(pair:Pair):
     entrusted_str = entrusted_str.rsplit("联系电话", maxsplit=1)[0][:-1] + '。'
     return client_str, entrusted_str  
 
-def get_sub_arr(kaidan_pair:Pair):
+def get_sub_arr(kaidan_pair:Pair, mode = ''):
     changes = []
     client_str, entrusted_str = page_two(kaidan_pair)
     changes.extend([client_str, entrusted_str])
-    client_str, entrusted_str = page_three(kaidan_pair)
+    client_str, entrusted_str = page_three(kaidan_pair, mode)
     changes.extend([client_str, entrusted_str])
     pay = kaidan_pair.client.pay
     pay_ch = number_to_chinese(pay)

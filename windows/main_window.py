@@ -18,6 +18,7 @@ from my_utils.Traditional_to_Simplified_Chinese import fan_to_jian
 import subprocess, platform
 from send2trash import send2trash
 from uis.replace_select import Replace_Select
+import pandas as pd
         
 class Main_Window(QMainWindow):
     def __init__(self, open_pic_operate_window, refresh_main_window, global_config):
@@ -578,8 +579,15 @@ class Main_Window(QMainWindow):
                     count += 1
                 if kaidan_pair.entrusted.native == '香港':
                     count += 1
+                card_id_client = kaidan_pair.client.sail_card_id
+                card_id_entrusted = kaidan_pair.entrusted.sail_card_id
                 kaidan_path = copy_template(mode, self.folder_path, name_concat, count, in_floader=self.global_config['in_floader'])
-                changes = kaidan.get_sub_arr(kaidan_pair)
+                if (card_id_client != '' and not pd.isna(card_id_client)) and (card_id_entrusted != '' and not pd.isna(card_id_entrusted)):
+                    kaidan_path = copy_template(mode, self.folder_path, name_concat, count, in_floader=self.global_config['in_floader'], template_sub_path=['有经销商卡号'])
+                    changes = kaidan.get_sub_arr(kaidan_pair, mode = 'id')
+                else:
+                    kaidan_path = copy_template(mode, self.folder_path, name_concat, count, in_floader=self.global_config['in_floader'])
+                    changes = kaidan.get_sub_arr(kaidan_pair)
                 doc, _ = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
                 doc = replace_pic(doc, kaidan_pair, 20, kaidan_path, 0, 6, self.pic_scale, self.global_config['in_floader'])
                 doc = replace_pic(doc, kaidan_pair, 18, kaidan_path, 1, 6, self.pic_scale, self.global_config['in_floader'])

@@ -9,7 +9,12 @@ moren_pay = config['moren_pay']
 moren_buy = config['moren_buy']
 annual_fee = config['moren_annual_fee']
 max_cash = config['max_cash']
-overall_days = config['tolerate_days']
+try:
+    overall_days = int(config['tolerate_days'])
+    if overall_days <= 0:
+        overall_days = 30
+except:
+    overall_days = 30
 check_back_flag = config['check_back']
 real_date = get_beijing_date()
 

@@ -114,7 +114,7 @@ def load_json_data(path):
                 info = None
     return info
 
-def get_info(index, excel_row, info_json, add_flag=False):
+def get_info(index, excel_row, info_json, add_flag=False, add_card_id_flag=False):
     try:
         assert excel_row['姓名'] != '' and not pd.isna(excel_row['姓名']) and isinstance(excel_row['姓名'], str)
         assert excel_row['联系电话'] != '' and not pd.isna(excel_row['联系电话'])
@@ -127,6 +127,11 @@ def get_info(index, excel_row, info_json, add_flag=False):
                 info_json['住址'] = excel_row['地址']
         if add_flag:
             assert excel_row['提取金额'] != '' and not pd.isna(excel_row['提取金额'])
+        id = excel_row['独立经销商卡号']
+        if add_card_id_flag:
+            assert id != '' and not pd.isna(id)
+        else:
+            id = ''
     except:
         return None
     try:
@@ -141,7 +146,8 @@ def get_info(index, excel_row, info_json, add_flag=False):
                         info_json['籍贯'],
                         info_json['民族'],
                         excel_row['提取金额'],
-                        check.annual_fee)
+                        check.annual_fee,
+                        id)
     except:
         return None
 
@@ -429,7 +435,21 @@ def get_kaidan_pairs(df, base_path):
                 else:
                     name = or_name
             add_flag = not pd.isna(df.iloc[index + 1]['姓名'])
-            obj_temp = get_info(index, row, info, add_flag)
+            try:
+                if index == 0:
+                    if not pd.isna(df.iloc[index + 1]['独立经销商卡号']):
+                        add_card_id_flag = True
+                    else:
+                        add_card_id_flag = False
+                else:
+                    if (pd.isna(df.iloc[index - 1]['姓名']) and not pd.isna(df.iloc[index + 1]['独立经销商卡号'])) or \
+                    (pd.isna(df.iloc[index + 1]['姓名']) and not pd.isna(df.iloc[index - 1]['独立经销商卡号'])):
+                        add_card_id_flag = True
+                    else:
+                        add_card_id_flag = False
+            except:
+                add_card_id_flag = False
+            obj_temp = get_info(index, row, info, add_flag, add_card_id_flag)
             objs.append(obj_temp)
             if obj_temp == None:
                 errors.append(name)

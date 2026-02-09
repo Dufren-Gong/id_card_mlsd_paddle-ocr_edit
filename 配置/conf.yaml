@@ -76,7 +76,7 @@ paddleocr_conf:
     check_front_strs: [上, 中]
     check_total_strs: [中国, CHINA]
 
-version: 2.0.5 #版本号
+version: 2.0.6 #版本号
 check_back: true #是否检查背面信息
 tolerate_days: 30 #有效期还剩多久开始报错
 outside_search_path: #外部查找文件夹路径
@@ -110,7 +110,7 @@ conda_env_name: paddle-ocr #更新程序的时候，需要激活的conda环境�
 update_shell_path: 配置/update_windows.bat
 
 #根据不同公司设置的选项
-companys: [BASTION, SIBELLAC_HOLDINGS_LIMITED, Belle_Venture_Holding(HK)Ltd]
+companys: [BASTION, SIBELLAC_HOLDINGS_LIMITED, Belle_Venture_Holding(HK)Ltd, DIGITAL_CROWN_HOLDINGS_(HK)_LTD] 
 BASTION_config:
   zhuandan_before: '90' #时间点前转单的费用
   zhuandan_after: '60' #时间点后转单的费用
@@ -119,4 +119,7 @@ SIBELLAC_HOLDINGS_LIMITED_config:
   zhuandan_after: '60' #时间点后转单的费用
 Belle_Venture_Holding(HK)Ltd_config:
   zhuandan_before: '60' #时间点前转单的费用
+  zhuandan_after: '60' #时间点后转单的费用
+DIGITAL_CROWN_HOLDINGS_(HK)_LTD_config:
+  zhuandan_before: '90' #时间点前转单的费用
   zhuandan_after: '60' #时间点后转单的费用
