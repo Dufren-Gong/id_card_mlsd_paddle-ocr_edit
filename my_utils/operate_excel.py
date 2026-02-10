@@ -127,7 +127,10 @@ def get_info(index, excel_row, info_json, add_flag=False, add_card_id_flag=False
                 info_json['住址'] = excel_row['地址']
         if add_flag:
             assert excel_row['提取金额'] != '' and not pd.isna(excel_row['提取金额'])
-        id = excel_row['独立经销商卡号']
+        try:
+            id = excel_row['独立经销商卡号']
+        except:
+            id = ''
         if add_card_id_flag:
             assert id != '' and not pd.isna(id)
         else:

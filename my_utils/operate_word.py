@@ -44,7 +44,9 @@ def copy_template(mode, base_path, name_concat, count, sub = None, in_floader=Fa
     else:
         kaidan_template_path = Path(f'模版/{mode}/{name}/{sub}.docx')
     if len(template_sub_path) != 0:
-        kaidan_template_path = kaidan_template_path.parent / Path(*template_sub_path) / kaidan_template_path.name
+        kaidan_template_path_temp = kaidan_template_path.parent / Path(*template_sub_path) / kaidan_template_path.name
+        if os.path.exists(kaidan_template_path_temp):
+            kaidan_template_path = kaidan_template_path_temp
     if in_floader:
         kaidan_base = os.path.join(base_path, mode, name_concat)
     else:

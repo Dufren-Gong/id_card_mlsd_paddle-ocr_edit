@@ -561,7 +561,7 @@ class Row_Two():
         self.pic_name_lineedit = DraggableLineEdit(shape, parent=self.centralwidget, scale_width=45, init_pos=self.init_pos, init_hk_pas=self.init_hk_pos, tip='性别，男或者女')
         self.pic_name_lineedit.setObjectName("pic_name_lineedit2")
         self.pic_name_lineedit.setValidator(QRegularExpressionValidator(QRegularExpression(r"^[^\n]*$")))
-        self.pic_name_lineedit.setMaxLength(1)
+        # self.pic_name_lineedit.setMaxLength(1)
 
     def init_two_tip_label(self, shape):
         self.two_tip_label = QtWidgets.QLabel(parent=self.centralwidget)
@@ -576,7 +576,7 @@ class Row_Two():
     def init_two_pic_name_lineedit(self, shape):
         self.two_pic_name_lineedit = DraggableLineEdit(shape, parent=self.centralwidget, scale_width=135, init_pos=self.init_pos_two, tip='民族，中华56个民族均可')
         self.two_pic_name_lineedit.setObjectName("pic_name_lineedit3")
-        self.pic_name_lineedit.setValidator(QRegularExpressionValidator(QRegularExpression(r"^[^\n]*$")))
+        self.two_pic_name_lineedit.setValidator(QRegularExpressionValidator(QRegularExpression(r"^[^\n]*$")))
 
     def edge_change_pushbutton(self, shape):
         shape_temp = tuple([shape[0] + self.keyboard_shift * 1] + list(shape[1:]))
