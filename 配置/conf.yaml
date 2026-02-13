@@ -78,7 +78,7 @@ paddleocr_conf:
     check_front_strs: [上, 中]
     check_total_strs: [中国, CHINA]
 
-version: 2.0.6 #版本号
+version: 2.0.7 #版本号
 check_back: true #是否检查背面信息
 tolerate_days: 30 #有效期还剩多久开始报错
 outside_search_path: #外部查找文件夹路径
