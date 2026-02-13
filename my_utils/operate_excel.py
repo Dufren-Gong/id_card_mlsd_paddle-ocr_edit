@@ -739,7 +739,7 @@ def map_info(ws, template_column_info:str, i, check_cloumns, column_letters):
             continue
 
         temp_info_arr = [info]
-        if start_index != len(infos) - 1:
+        if j == '地址' and start_index != len(infos) - 1:
             for k in range(start_index + 1, len(infos)):
                 if "：" in infos[k]:
                     break
