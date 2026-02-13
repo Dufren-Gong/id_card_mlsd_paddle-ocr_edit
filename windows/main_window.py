@@ -1,7 +1,7 @@
 import os, shutil, copy, re
 from PyQt6.QtWidgets import QMainWindow, QWidget, QFileDialog, QApplication
 from uis.shapes import Ui_Shapes
-from my_utils.utils import delete_specific_files_and_folders
+from my_utils.utils import delete_specific_files_and_folders, append_fullpage_image_center
 from uis.main_window_ui import Row_Zero, Row_One, Row_Two, Select_Company, Row_Catch
 from windows.show_info_window import Show_Info_Window
 from uis.set_config import Set_Config_Window
@@ -497,6 +497,11 @@ class Main_Window(QMainWindow):
                     doc, _ = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
                     doc = replace_pic(doc, obj, 18 + shift, kaidan_path, 0, 6, self.pic_scale)
                     doc = replace_pic(doc, obj, 16 + shift, kaidan_path, 1, 6, self.pic_scale)
+                    if self.global_config['add_certain_pics']:
+                        try:
+                            doc = append_fullpage_image_center(doc, margin_mm=self.global_config['margin_mm'])
+                        except:
+                            pass
                     try:
                         utils_operate_excel.fill_information(obj, f'./模版/{self.excel_name}', mode, cache_all_flag=True)
                     except:
@@ -526,6 +531,11 @@ class Main_Window(QMainWindow):
                 doc, _ = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
                 doc = replace_pic(doc, kaidan_pair,18, kaidan_path, 0, 6, self.pic_scale, self.global_config['in_floader'])
                 doc = replace_pic(doc, kaidan_pair, 16, kaidan_path, 1, 6, self.pic_scale, self.global_config['in_floader'])
+                if self.global_config['add_certain_pics']:
+                    try:
+                        doc = append_fullpage_image_center(doc, margin_mm=self.global_config['margin_mm'])
+                    except:
+                        pass
                 try:
                     utils_operate_excel.fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
                 except:
@@ -555,6 +565,11 @@ class Main_Window(QMainWindow):
                 doc, _ = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
                 doc = replace_pic(doc, kaidan_pair,20, kaidan_path, 0, 6, self.pic_scale, self.global_config['in_floader'])
                 doc = replace_pic(doc, kaidan_pair, 18, kaidan_path, 1, 6, self.pic_scale, self.global_config['in_floader'])
+                if self.global_config['add_certain_pics']:
+                    try:
+                        doc = append_fullpage_image_center(doc, margin_mm=self.global_config['margin_mm'])
+                    except:
+                        pass
                 try:
                     utils_operate_excel.fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
                 except:
@@ -591,6 +606,11 @@ class Main_Window(QMainWindow):
                 doc, _ = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
                 doc = replace_pic(doc, kaidan_pair, 20, kaidan_path, 0, 6, self.pic_scale, self.global_config['in_floader'])
                 doc = replace_pic(doc, kaidan_pair, 18, kaidan_path, 1, 6, self.pic_scale, self.global_config['in_floader'])
+                if self.global_config['add_certain_pics']:
+                    try:
+                        doc = append_fullpage_image_center(doc, margin_mm=self.global_config['margin_mm'])
+                    except:
+                        pass
                 try:
                     utils_operate_excel.fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
                 except:
@@ -620,6 +640,11 @@ class Main_Window(QMainWindow):
                 doc, _ = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
                 doc = replace_pic(doc, kaidan_pair, 14, kaidan_path, 0, 6, self.pic_scale, self.global_config['in_floader'])
                 doc = replace_pic(doc, kaidan_pair, 12, kaidan_path, 1, 6, self.pic_scale, self.global_config['in_floader'])
+                if self.global_config['add_certain_pics']:
+                    try:
+                        doc = append_fullpage_image_center(doc, margin_mm=self.global_config['margin_mm'])
+                    except:
+                        pass
                 try:
                     utils_operate_excel.fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
                 except:
@@ -649,6 +674,11 @@ class Main_Window(QMainWindow):
                 doc, _ = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
                 doc = replace_pic(doc, kaidan_pair, 15, kaidan_path, 0, 6, self.pic_scale, self.global_config['in_floader'])
                 doc = replace_pic(doc, kaidan_pair, 13, kaidan_path, 1, 6, self.pic_scale, self.global_config['in_floader'])
+                if self.global_config['add_certain_pics']:
+                    try:
+                        doc = append_fullpage_image_center(doc, margin_mm=self.global_config['margin_mm'])
+                    except:
+                        pass
                 try:
                     utils_operate_excel.fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
                 except:
@@ -678,6 +708,11 @@ class Main_Window(QMainWindow):
                 doc, _ = replace_text_with_same_format(kaidan_path, "<<<<>", changes)
                 doc = replace_pic(doc, kaidan_pair, 17, kaidan_path, 0, 6, self.pic_scale, self.global_config['in_floader'])
                 doc = replace_pic(doc, kaidan_pair, 15, kaidan_path, 1, 6, self.pic_scale, self.global_config['in_floader'])
+                if self.global_config['add_certain_pics']:
+                    try:
+                        doc = append_fullpage_image_center(doc, margin_mm=self.global_config['margin_mm'])
+                    except:
+                        pass
                 try:
                     utils_operate_excel.fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
                 except:
