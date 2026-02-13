@@ -98,17 +98,16 @@ class Name_Pic(QMainWindow):
         self.ocr_model = get_ocr_model(self.global_config)
         gap = 2
         groups = int(len(self.photo_paths) / gap)
+        cut_shape = self.global_config['paddleocr_conf']['screen_correct']
         for i in range(groups):
             index = i * gap
             path = self.photo_paths[index]
             cv_img = cv_imread(path)
             if self.global_config['check_back']:
                 img_back = cv_imread(self.photo_paths[index + 1])
-                h, _ = img_back.shape[:2]
-                # 取第二张图片的下 1/5
-                img2_bottom = img_back[h * 4 // 5 : h, :]
+                h, w = img_back.shape[:2]
                 # 纵向拼接
-                cv_img = cv2.vconcat([img2_bottom, cv_img])
+                cv_img = cv2.vconcat([img_back[int(h * cut_shape[2]) : int(h * cut_shape[3]), int(w * cut_shape[4]) : int(w * cut_shape[5])], cv_img[int(h * cut_shape[0]) : int(h * cut_shape[1]), int(w * cut_shape[6]) : int(w * cut_shape[7])]])
             ocr_thread = Get_Ocr(cv_img, self.ocr_model, path, scale=copy.copy(self.global_config['paddleocr_conf']['scale']), 
                                  pic_shape=tuple(self.global_config['mlsd_conf']['pic_shape']), 
                                  times=self.global_config['paddleocr_conf']['times'], 
@@ -785,6 +784,8 @@ class Name_Pic(QMainWindow):
             self.large_image_label.row_two.change_button.setDisabled(True)
             self.first_index = int(self.this_index / 2 ) * 2
             temp_path = self.photo_paths[self.first_index + 1]
+            temp_path_back = self.photo_paths[self.first_index]
+            cut_shape = self.global_config['paddleocr_conf']['screen_correct']
             self.photo_paths[self.first_index + 1] = self.photo_paths[self.first_index]
             self.photo_paths[self.first_index] = temp_path
             if self.first_index in self.checked:
@@ -820,7 +821,10 @@ class Name_Pic(QMainWindow):
             self.ocr_model = get_ocr_model(self.global_config)
             self.thread_pool = QThreadPool.globalInstance()
             self.thread_pool.setMaxThreadCount(self.global_config['paddleocr_conf']['max_threads'])
-            ocr_thread = Get_Ocr(cv_imread(temp_path), self.ocr_model, temp_path, scale=copy.copy(self.global_config['paddleocr_conf']['scale']), 
+            img = cv_imread(temp_path)
+            h, w = img.shape[:2]
+            ocr_thread = Get_Ocr(cv2.vconcat([cv_imread(temp_path_back)[int(h * cut_shape[2]) : int(h * cut_shape[3]), int(w * cut_shape[4]) : int(w * cut_shape[5])], img[int(h * cut_shape[0]) : int(h * cut_shape[1]), int(w * cut_shape[6]) : int(w * cut_shape[7])]]),
+                                    self.ocr_model, temp_path, scale=copy.copy(self.global_config['paddleocr_conf']['scale']), 
                                     pic_shape=tuple(self.global_config['mlsd_conf']['pic_shape']), 
                                     times=self.global_config['paddleocr_conf']['times'], 
                                     pic_type=self.global_config['paddleocr_conf']['ocr_pic_type'],

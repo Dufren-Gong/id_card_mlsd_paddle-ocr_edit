@@ -766,6 +766,33 @@ def chech_and_add(arr_t: list, i):
         arr_t.append(i)
     return arr_t
 
+def split_on_blank_lines(text: str):
+    """Split a cell's text into chunks separated by one or more blank lines."""
+    if text is None:
+        return []
+    # Normalize line breaks and strip outer whitespace
+    s = str(text).replace('\r\n', '\n').replace('\r', '\n').strip()
+    if not s:
+        return []
+    # Split only on blank lines (>=1 empty line), not on single line breaks
+    parts = re.split(r"\n\s*\n+", s)
+    return [p.strip() for p in parts if p.strip()]
+
+def expend_column(ws, col, start_row):
+    row = start_row
+    while row <= ws.max_row:
+        value = fan_to_jian(ws[f'{col}{row}'].value)
+        if isinstance(value, str) and value.strip():
+            parts = split_on_blank_lines(value)
+            if len(parts) >= 2:
+                ws.insert_rows(row + 1, amount=len(parts) - 1)
+                for i, part in enumerate(parts):
+                    ws[f'{col}{row + i}'] = part
+                row += len(parts)
+                continue
+        row += 1
+    return ws
+
 def check_excel(file_path, pic_floader, sheet_name = None, search_extra_floader = (False, '')):
     passed_flag = True
     error_rows = []
@@ -811,6 +838,8 @@ def check_excel(file_path, pic_floader, sheet_name = None, search_extra_floader 
         address_column_letters = column_letters[address_column_index]
         template_column_letters = column_letters[-1]
         column_letters = column_letters[:-1]
+        #将一个单元格多个信息展平
+        ws = expend_column(ws, template_column_letters, 2)
         #将模版信息展平
         for i in range(2, row_count + 1):
             template_column_info = ws[f"{template_column_letters}{i}"].value
