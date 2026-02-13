@@ -776,7 +776,7 @@ def split_on_blank_lines(text: str):
         return []
     # Split only on blank lines (>=1 empty line), not on single line breaks
     parts = re.split(r"\n\s*\n+", s)
-    return [p.strip() for p in parts if p.strip()]
+    return [p.strip() for p in parts if (p.strip() and any(m in p for m in [':', '：']))]
 
 def expend_column(ws, col, start_row):
     row = start_row
@@ -827,7 +827,6 @@ def check_excel(file_path, pic_floader, sheet_name = None, search_extra_floader 
     for sheet in sheets:
         ws = wb[sheet]
         ws = read_openpyxl_by_str(ws)
-        row_count = ws.max_row
         # 遍历所有单元格并设置字体颜色为黑色
         for row in ws.iter_rows(min_row=2):
             for cell in row:
@@ -842,6 +841,7 @@ def check_excel(file_path, pic_floader, sheet_name = None, search_extra_floader 
         if map_flag:
             ws = expend_column(ws, template_column_letters, 2)
         #将模版信息展平
+        row_count = ws.max_row
         for i in range(2, row_count + 1):
             template_column_info = fan_to_jian(ws[f"{template_column_letters}{i}"].value)
             ws[f"{template_column_letters}{i}"].value = template_column_info
