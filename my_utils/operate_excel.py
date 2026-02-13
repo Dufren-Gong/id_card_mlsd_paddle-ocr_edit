@@ -781,7 +781,7 @@ def split_on_blank_lines(text: str):
 def expend_column(ws, col, start_row):
     row = start_row
     while row <= ws.max_row:
-        value = fan_to_jian(ws[f'{col}{row}'].value)
+        value = ws[f'{col}{row}'].value
         if isinstance(value, str) and value.strip():
             parts = split_on_blank_lines(value)
             if len(parts) >= 2:
@@ -793,7 +793,7 @@ def expend_column(ws, col, start_row):
         row += 1
     return ws
 
-def check_excel(file_path, pic_floader, sheet_name = None, search_extra_floader = (False, '')):
+def check_excel(file_path, pic_floader, sheet_name = None, search_extra_floader = (False, ''), map_flag = False):
     passed_flag = True
     error_rows = []
     # 设置绿色字体
@@ -839,10 +839,12 @@ def check_excel(file_path, pic_floader, sheet_name = None, search_extra_floader 
         template_column_letters = column_letters[-1]
         column_letters = column_letters[:-1]
         #将一个单元格多个信息展平
-        ws = expend_column(ws, template_column_letters, 2)
+        if map_flag:
+            ws = expend_column(ws, template_column_letters, 2)
         #将模版信息展平
         for i in range(2, row_count + 1):
-            template_column_info = ws[f"{template_column_letters}{i}"].value
+            template_column_info = fan_to_jian(ws[f"{template_column_letters}{i}"].value)
+            ws[f"{template_column_letters}{i}"].value = template_column_info
             if not pd.isna(template_column_info):
                 ws = map_info(ws, template_column_info, i, check_cloumns, column_letters)
 

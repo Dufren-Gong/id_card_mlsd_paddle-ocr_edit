@@ -281,7 +281,7 @@ class Main_Window(QMainWindow):
             try:
                 excel_path = os.path.join('模版', self.excel_name)
                 self.cache_excel(excel_path, './模版/excel备份')
-                pass_flag, error_rows, extra_searched = utils_operate_excel.check_excel(excel_path, self.folder_path, search_extra_floader = (self.row_one.outside_search_checkbox.isChecked(), outside_search_path))
+                pass_flag, error_rows, extra_searched = utils_operate_excel.check_excel(excel_path, self.folder_path, search_extra_floader = (self.row_one.outside_search_checkbox.isChecked(), outside_search_path), map_flag=self.global_config['map_flag'])
                 self.row_one.outside_search_checkbox.setChecked(False)
             except PermissionError:
                 pass_flag = 'excel未关闭或excel文件损坏!若损坏,在{./模版/excel备份}内有备份,替换excel后重新逐步制作.'
@@ -328,7 +328,7 @@ class Main_Window(QMainWindow):
                 #缓存一定个数的excel,防止信息丢失
                 excel_path = os.path.join('模版', self.excel_name)
                 self.cache_excel(excel_path, './模版/excel备份')
-                pass_flag, error_rows, extra_searched = utils_operate_excel.check_excel(os.path.join('模版', self.excel_name), self.folder_path, mode, search_extra_floader = (self.row_one.outside_search_checkbox.isChecked(), outside_search_path))
+                pass_flag, error_rows, extra_searched = utils_operate_excel.check_excel(os.path.join('模版', self.excel_name), self.folder_path, mode, search_extra_floader = (self.row_one.outside_search_checkbox.isChecked(), outside_search_path), map_flag=self.global_config['map_flag'])
             except PermissionError:
                 pass_flag = 'excel未关闭或excel文件损坏!若损坏,在{./模版/excel备份}内有备份,替换excel后重新逐步制作.'
             if pass_flag == True:

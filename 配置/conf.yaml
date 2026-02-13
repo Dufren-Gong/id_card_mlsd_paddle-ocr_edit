@@ -46,6 +46,7 @@ paddleocr_conf:
   edge_color: 偏白 #初始化颜色[黑, 偏黑, 灰, 暗灰, 偏白, 白]
   defalut_position_mode: true #默认将所有对比信息文本框移动到照片默认位置比较
   screen_correct: [0.06, 0.94, 0.78, 0.94, 0.03, 0.97, 0.03, 0.97] #为了识别更正确，正反面上下左右空白部分删除的比例,[正上，正下，反上，反下， 正左，正右，反左，反右]
+  # screen_correct: [0, 1, 0, 1, 0, 1, 0, 1] #为了识别更正确，正反面上下左右空白部分删除的比例,[正上，正下，反上，反下， 正左，正右，反左，反右]
   info_checks: #下面为识别文字时各种信息前缀的模糊搜索单词
     name_checks: [姓名, 姓多, 姓名多]
     sex_checks: [性别, 性到, 性刻, 住别, 性列]
@@ -101,6 +102,7 @@ in_floader: true  #是否为每一单单独创建文件夹
 main_window_conf:
   catch_max_height: 20 #展开最大宽度占多少行，一行高度为20px
   debug_mode: false  #非debug模式在窗口中报错，debug模式在terminal中报错
+map_flag: true
 
 # https://gitee.com/api/v5/repos/{owner}/{repo}/zipball?access_token={access_token}&ref={ref}
 access_token: 3d7b338f6b596cc32baf892157ac5f98 # gitee授权码
