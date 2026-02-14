@@ -15,7 +15,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.section import WD_SECTION_START
 from docx.shared import Mm
 
-def append_fullpage_image_center(doc, pics_floader='../files/pics', margin_mm=5):
+def append_fullpage_image_center(doc, pics_floader='../配置/pics', margin_mm=5):
     pics_paths = get_all_image_paths(pics_floader)
 
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -64,7 +64,7 @@ def append_fullpage_image_center(doc, pics_floader='../files/pics', margin_mm=5)
             run.add_picture(fixed_path, width=target_w)
     return doc
 
-def get_all_image_paths(root_dir='../files/pics'):
+def get_all_image_paths(root_dir='../配置/pics'):
     image_ext = ['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.tiff', '.webp']
     image_paths = []
 
