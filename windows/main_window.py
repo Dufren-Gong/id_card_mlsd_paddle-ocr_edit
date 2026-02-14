@@ -483,20 +483,20 @@ class Main_Window(QMainWindow):
                             self.front_doc = 'empty'
                     else:
                         self.front_doc = 'ne'
-                else:
-                    doc = concat_two_words(self.front_doc, doc)
+                elif not isinstance(self.front_doc, str):
+                    doc = concat_two_words(self.front_doc, doc, mode = 0)
                 if self.back_doc == None:
                     if os.path.exists(self.add_back_path):
-                        doc_temp = Document(self.add_back_path)
-                        if not is_word_empty(doc_temp):
-                            self.back_doc = doc_temp
+                        doc_temp_back = Document(self.add_back_path)
+                        if not is_word_empty(doc_temp_back):
+                            self.back_doc = doc_temp_back
                             doc = concat_two_words(doc, self.back_doc, mode = 1)
                         else:
                             self.back_doc = 'empty'
                     else:
                         self.back_doc = 'ne'
-                else:
-                    doc = concat_two_words(doc, self.back_doc)
+                elif not isinstance(self.back_doc, str):
+                    doc = concat_two_words(doc, self.back_doc, mode = 1)
         except:
             pass
         return doc
