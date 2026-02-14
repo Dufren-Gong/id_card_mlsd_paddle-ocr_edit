@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-import os, math, json, sys, base64, shutil, requests, cv2, copy, platform, tempfile
+import os, math, json, sys, base64, shutil, requests, cv2, copy, platform
 # import PIL
 # import PIL.Image
 # import PIL.ImageEnhance
@@ -10,59 +10,7 @@ from pathlib import Path
 from ruamel.yaml import YAML
 from send2trash import send2trash
 # from pypinyin import pinyin, Style
-from PIL import Image, ImageOps
-from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.enum.section import WD_SECTION_START
-from docx.shared import Mm
-
-def append_fullpage_image_center(doc, pics_floader='../配置/pics', margin_mm=5):
-    pics_paths = get_all_image_paths(pics_floader)
-
-    with tempfile.TemporaryDirectory() as tmpdir:
-        for idx, pic in enumerate(pics_paths):
-            # 新建一个新页 section
-            sec = doc.add_section(WD_SECTION_START.NEW_PAGE)
-
-            # A4
-            sec.page_width = Mm(210)
-            sec.page_height = Mm(297)
-
-            # 边距（打印建议 5~10mm）
-            sec.left_margin = Mm(margin_mm)
-            sec.right_margin = Mm(margin_mm)
-            sec.top_margin = Mm(margin_mm)
-            sec.bottom_margin = Mm(margin_mm)
-
-            # 版心尺寸
-            max_w = sec.page_width - sec.left_margin - sec.right_margin
-            max_h = sec.page_height - sec.top_margin - sec.bottom_margin
-
-            # 读取图片 + 纠正EXIF旋转
-            with Image.open(pic) as im:
-                im = ImageOps.exif_transpose(im)  # 关键：修正90度旋转
-                w_px, h_px = im.size
-                fixed_path = os.path.join(tmpdir, f"fixed_{idx}.png")
-                im.save(fixed_path, format="PNG")  # 用PNG避免再次受EXIF影响
-
-            ratio = w_px / h_px
-
-            # 等比最大
-            if (max_w / max_h) >= ratio:
-                target_h = int(max_h)
-                target_w = int(target_h * ratio)
-            else:
-                target_w = int(max_w)
-                target_h = int(target_w / ratio)
-
-            # 段落水平居中
-            p = doc.add_paragraph()
-            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            p.paragraph_format.space_before = 0
-            p.paragraph_format.space_after = 0
-
-            run = p.add_run()
-            run.add_picture(fixed_path, width=target_w)
-    return doc
+from PIL import Image
 
 def get_all_image_paths(root_dir='../配置/pics'):
     image_ext = ['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.tiff', '.webp']

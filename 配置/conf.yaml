@@ -103,8 +103,9 @@ main_window_conf:
   catch_max_height: 20 #展开最大宽度占多少行，一行高度为20px
   debug_mode: false  #非debug模式在窗口中报错，debug模式在terminal中报错
 map_flag: true #是否启用一个单元格展开到多个单元格的功能
-add_certain_pics: true #是否启用一个自动在word后添加照片的功能，以方便打印。从后面加照片以按照数字顺序添加。照片在./配置/pics文件夹里
-margin_mm: 5 #加入照片的四周留白，建议5-10，大于零。
+add_certain_pics: true #是否启用一个自动在word后添加照片的功能，以方便打印。从后面加照片以按照数字顺序添加。照片在./配置/pics文件夹里，前面.docx和后面.docx
+which_add_pic_way: 2 #使用那种方式添加照片，1为直接添加照片，2位合并word
+margin_mm: 5 #加入照片的四周留白，建议5-10，大于零。以加入照片的方式，照片放在./配置/pics文件夹里，按照照片顺序命名1，2，3.。。
 
 # https://gitee.com/api/v5/repos/{owner}/{repo}/zipball?access_token={access_token}&ref={ref}
 access_token: 3d7b338f6b596cc32baf892157ac5f98 # gitee授权码

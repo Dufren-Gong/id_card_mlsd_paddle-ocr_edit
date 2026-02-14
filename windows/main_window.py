@@ -1,7 +1,8 @@
 import os, shutil, copy, re
 from PyQt6.QtWidgets import QMainWindow, QWidget, QFileDialog, QApplication
 from uis.shapes import Ui_Shapes
-from my_utils.utils import delete_specific_files_and_folders, append_fullpage_image_center
+from docx import Document
+from my_utils.utils import delete_specific_files_and_folders
 from uis.main_window_ui import Row_Zero, Row_One, Row_Two, Select_Company, Row_Catch
 from windows.show_info_window import Show_Info_Window
 from uis.set_config import Set_Config_Window
@@ -11,7 +12,7 @@ from my_utils import operate_excel as utils_operate_excel
 from each_types import kaidan, nahuo, zhuandan, budan, nianfei, buka, tuidan
 from PyQt6.QtGui import QIcon#, QDragEnterEvent
 from PyQt6.QtCore import QThreadPool, QTimer#, QFileInfo
-from my_utils.operate_word import copy_template, replace_text_with_same_format, replace_pic
+from my_utils.operate_word import copy_template, replace_text_with_same_format, replace_pic, append_fullpage_image_center, concat_two_words, is_word_empty
 from natsort import natsorted
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from my_utils.Traditional_to_Simplified_Chinese import fan_to_jian
@@ -37,6 +38,10 @@ class Main_Window(QMainWindow):
         self.shape = Ui_Shapes(round_gap=10)
         self.concat_index = 3
         self.pdf_to_pic_count = 0
+        self.add_front_path = '../配置/pics/前面.docx'
+        self.add_back_path = '../配置/pics/后面.docx'
+        self.front_doc = None
+        self.back_doc = None
         self.pdf_to_pic_finished = 0
         # 启用拖放
         # self.setAcceptDrops(True)
@@ -463,6 +468,39 @@ class Main_Window(QMainWindow):
         self.show_info.set_show_text(f'excel里没有填写<{mode}>的任何信息,请先填写信息再制作.')
         self.show_info.show()
 
+    def add_certain_pics(self, doc):
+        try:
+            if self.global_config['which_add_pic_way'] == 1:
+                doc = append_fullpage_image_center(doc, margin_mm=self.global_config['margin_mm'])
+            else:
+                if self.front_doc == None:
+                    if os.path.exists(self.add_front_path):
+                        doc_temp = Document(self.add_front_path)
+                        if not is_word_empty(doc_temp):
+                            self.front_doc = doc_temp
+                            doc = concat_two_words(self.front_doc, doc, mode = 0)
+                        else:
+                            self.front_doc = 'empty'
+                    else:
+                        self.front_doc = 'ne'
+                else:
+                    doc = concat_two_words(self.front_doc, doc)
+                if self.back_doc == None:
+                    if os.path.exists(self.add_back_path):
+                        doc_temp = Document(self.add_back_path)
+                        if not is_word_empty(doc_temp):
+                            self.back_doc = doc_temp
+                            doc = concat_two_words(doc, self.back_doc, mode = 1)
+                        else:
+                            self.back_doc = 'empty'
+                    else:
+                        self.back_doc = 'ne'
+                else:
+                    doc = concat_two_words(doc, self.back_doc)
+        except:
+            pass
+        return doc
+
     def creat_zhuandan(self, mode, check_none = False):
         df = utils_operate_excel.read_sheets(f'./模版/{self.excel_name}', mode)
         kaidan_pairs, errors = utils_operate_excel.get_zhuandan_pairs(df, self.folder_path)
@@ -498,10 +536,7 @@ class Main_Window(QMainWindow):
                     doc = replace_pic(doc, obj, 18 + shift, kaidan_path, 0, 6, self.pic_scale)
                     doc = replace_pic(doc, obj, 16 + shift, kaidan_path, 1, 6, self.pic_scale)
                     if self.global_config['add_certain_pics']:
-                        try:
-                            doc = append_fullpage_image_center(doc, margin_mm=self.global_config['margin_mm'])
-                        except:
-                            pass
+                        doc = self.add_certain_pics(doc)
                     try:
                         utils_operate_excel.fill_information(obj, f'./模版/{self.excel_name}', mode, cache_all_flag=True)
                     except:
@@ -532,10 +567,7 @@ class Main_Window(QMainWindow):
                 doc = replace_pic(doc, kaidan_pair,18, kaidan_path, 0, 6, self.pic_scale, self.global_config['in_floader'])
                 doc = replace_pic(doc, kaidan_pair, 16, kaidan_path, 1, 6, self.pic_scale, self.global_config['in_floader'])
                 if self.global_config['add_certain_pics']:
-                    try:
-                        doc = append_fullpage_image_center(doc, margin_mm=self.global_config['margin_mm'])
-                    except:
-                        pass
+                    doc = self.add_certain_pics(doc)
                 try:
                     utils_operate_excel.fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
                 except:
@@ -566,10 +598,7 @@ class Main_Window(QMainWindow):
                 doc = replace_pic(doc, kaidan_pair,20, kaidan_path, 0, 6, self.pic_scale, self.global_config['in_floader'])
                 doc = replace_pic(doc, kaidan_pair, 18, kaidan_path, 1, 6, self.pic_scale, self.global_config['in_floader'])
                 if self.global_config['add_certain_pics']:
-                    try:
-                        doc = append_fullpage_image_center(doc, margin_mm=self.global_config['margin_mm'])
-                    except:
-                        pass
+                    doc = self.add_certain_pics(doc)
                 try:
                     utils_operate_excel.fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
                 except:
@@ -607,10 +636,7 @@ class Main_Window(QMainWindow):
                 doc = replace_pic(doc, kaidan_pair, 20, kaidan_path, 0, 6, self.pic_scale, self.global_config['in_floader'])
                 doc = replace_pic(doc, kaidan_pair, 18, kaidan_path, 1, 6, self.pic_scale, self.global_config['in_floader'])
                 if self.global_config['add_certain_pics']:
-                    try:
-                        doc = append_fullpage_image_center(doc, margin_mm=self.global_config['margin_mm'])
-                    except:
-                        pass
+                    doc = self.add_certain_pics(doc)
                 try:
                     utils_operate_excel.fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
                 except:
@@ -641,10 +667,7 @@ class Main_Window(QMainWindow):
                 doc = replace_pic(doc, kaidan_pair, 14, kaidan_path, 0, 6, self.pic_scale, self.global_config['in_floader'])
                 doc = replace_pic(doc, kaidan_pair, 12, kaidan_path, 1, 6, self.pic_scale, self.global_config['in_floader'])
                 if self.global_config['add_certain_pics']:
-                    try:
-                        doc = append_fullpage_image_center(doc, margin_mm=self.global_config['margin_mm'])
-                    except:
-                        pass
+                    doc = self.add_certain_pics(doc)
                 try:
                     utils_operate_excel.fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
                 except:
@@ -675,10 +698,7 @@ class Main_Window(QMainWindow):
                 doc = replace_pic(doc, kaidan_pair, 15, kaidan_path, 0, 6, self.pic_scale, self.global_config['in_floader'])
                 doc = replace_pic(doc, kaidan_pair, 13, kaidan_path, 1, 6, self.pic_scale, self.global_config['in_floader'])
                 if self.global_config['add_certain_pics']:
-                    try:
-                        doc = append_fullpage_image_center(doc, margin_mm=self.global_config['margin_mm'])
-                    except:
-                        pass
+                    doc = self.add_certain_pics(doc)
                 try:
                     utils_operate_excel.fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
                 except:
@@ -709,10 +729,7 @@ class Main_Window(QMainWindow):
                 doc = replace_pic(doc, kaidan_pair, 17, kaidan_path, 0, 6, self.pic_scale, self.global_config['in_floader'])
                 doc = replace_pic(doc, kaidan_pair, 15, kaidan_path, 1, 6, self.pic_scale, self.global_config['in_floader'])
                 if self.global_config['add_certain_pics']:
-                    try:
-                        doc = append_fullpage_image_center(doc, margin_mm=self.global_config['margin_mm'])
-                    except:
-                        pass
+                    doc = self.add_certain_pics(doc)
                 try:
                     utils_operate_excel.fill_information(kaidan_pair, f'./模版/{self.excel_name}', mode, cache_all_flag=False)
                 except:
