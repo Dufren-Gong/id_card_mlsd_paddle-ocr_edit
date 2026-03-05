@@ -722,9 +722,7 @@ def read_openpyxl_by_str(ws):
     return ws
 
 def map_info(ws, template_column_info:str, i, check_cloumns, column_letters):
-    infos_t = re.sub(r' +', ' ', template_column_info)
-    infos_t = infos_t.replace(':', '：')
-    infos_t = infos_t.split('\n')
+    infos_t = template_column_info.split('\n')
     infos = []
     for tt in infos_t:
         if tt != '' and tt != ' ':
@@ -776,15 +774,41 @@ def split_on_blank_lines(text: str):
         return []
     # Split only on blank lines (>=1 empty line), not on single line breaks
     parts = re.split(r"\n\s*\n+", s)
-    return [p.strip() for p in parts if (p.strip() and any(m in p for m in [':', '：']))]
+    return [p.strip() for p in parts if (p.count('：') >= 2)]
+
+def check_pairs(info_strs_arr):
+    # check_pairs = [('委托人', '受委托人'), ('转让方', '受让方', '受委托人')]
+    new_info_strs = []
+    before_name = ''
+    for text in info_strs_arr[::-1]:
+        if '受委托人' in text:
+            text_temp = text.split('\n')
+            for j in text_temp:
+                if '姓名' in j:
+                    temp_name = re.sub(r'[\s:：]+', '', j.split('姓名')[-1])
+                    if temp_name != before_name:
+                        before_name = temp_name
+                        new_info_strs.append('')
+                        new_info_strs.append(text)
+                    break
+        else:
+            new_info_strs.append(text)
+    if new_info_strs[0] == '' and len(new_info_strs) > 1:
+        new_info_strs = new_info_strs[1:]
+    new_info_strs = new_info_strs[::-1]
+    return new_info_strs
 
 def expend_column(ws, col, start_row):
     row = start_row
     while row <= ws.max_row:
         value = ws[f'{col}{row}'].value
+        if value:
+            value = re.sub(r' +', ' ', value)
+        ws[f'{col}{row}'].value = fan_to_jian(value)
         if isinstance(value, str) and value.strip():
             parts = split_on_blank_lines(value)
             if len(parts) >= 2:
+                parts = check_pairs(parts)
                 ws.insert_rows(row + 1, amount=len(parts) - 1)
                 for i, part in enumerate(parts):
                     ws[f'{col}{row + i}'] = part
@@ -843,7 +867,8 @@ def check_excel(file_path, pic_floader, sheet_name = None, search_extra_floader 
         #将模版信息展平
         row_count = ws.max_row
         for i in range(2, row_count + 1):
-            template_column_info = fan_to_jian(ws[f"{template_column_letters}{i}"].value)
+            template_column_info = ws[f"{template_column_letters}{i}"].value.replace(':', '：')
+            if not map_flag: template_column_info = fan_to_jian(template_column_info)
             ws[f"{template_column_letters}{i}"].value = template_column_info
             if not pd.isna(template_column_info):
                 ws = map_info(ws, template_column_info, i, check_cloumns, column_letters)

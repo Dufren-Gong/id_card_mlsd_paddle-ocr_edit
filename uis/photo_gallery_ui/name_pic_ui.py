@@ -1,7 +1,7 @@
 import os, cv2, shutil, json, copy
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QLineEdit, QPlainTextEdit
 from PyQt6.QtGui import QIcon
-from my_utils.utils import get_all_pic_path, cv_to_qpixmap, cv_imread, cv_imwrite, rgb_to_gray_with_three_channels, check_catch_pic, get_internal_path, add_edge #, calculate_brightness, adjust_brightness
+from my_utils.utils import get_all_pic_path, cv_to_qpixmap, cv_imread, cv_imwrite, rgb_to_gray_with_three_channels, check_catch_pic, get_internal_path, add_edge, change_three_channel
 from PyQt6.QtCore import Qt, QThreadPool, QTimer
 from uis.photo_gallery_ui.scroll_area import Scroll_Area, ClickableLabel  # 导入 Scroll_Area 模块
 from windows.show_info_window import Show_Info_Window
@@ -107,6 +107,11 @@ class Name_Pic(QMainWindow):
                 img_back = cv_imread(self.photo_paths[index + 1])
                 h, w = img_back.shape[:2]
                 # 纵向拼接
+                try:
+                    assert cv_img.shape == img_back.shape
+                except:
+                    cv_img = change_three_channel(cv_img)
+                    img_back = change_three_channel(img_back)
                 cv_img = cv2.vconcat([img_back[int(h * cut_shape[2]) : int(h * cut_shape[3]), int(w * cut_shape[4]) : int(w * cut_shape[5])], cv_img[int(h * cut_shape[0]) : int(h * cut_shape[1]), int(w * cut_shape[6]) : int(w * cut_shape[7])]])
             ocr_thread = Get_Ocr(cv_img, self.ocr_model, path, scale=copy.copy(self.global_config['paddleocr_conf']['scale']), 
                                  pic_shape=tuple(self.global_config['mlsd_conf']['pic_shape']), 
@@ -822,8 +827,14 @@ class Name_Pic(QMainWindow):
             self.thread_pool = QThreadPool.globalInstance()
             self.thread_pool.setMaxThreadCount(self.global_config['paddleocr_conf']['max_threads'])
             img = cv_imread(temp_path)
+            img_back = cv_imread(temp_path_back)
             h, w = img.shape[:2]
-            ocr_thread = Get_Ocr(cv2.vconcat([cv_imread(temp_path_back)[int(h * cut_shape[2]) : int(h * cut_shape[3]), int(w * cut_shape[4]) : int(w * cut_shape[5])], img[int(h * cut_shape[0]) : int(h * cut_shape[1]), int(w * cut_shape[6]) : int(w * cut_shape[7])]]),
+            try:
+                assert img.shape == img_back.shape
+            except:
+                img = change_three_channel(img)
+                img_back = change_three_channel(img_back)
+            ocr_thread = Get_Ocr(cv2.vconcat([img_back[int(h * cut_shape[2]) : int(h * cut_shape[3]), int(w * cut_shape[4]) : int(w * cut_shape[5])], img[int(h * cut_shape[0]) : int(h * cut_shape[1]), int(w * cut_shape[6]) : int(w * cut_shape[7])]]),
                                     self.ocr_model, temp_path, scale=copy.copy(self.global_config['paddleocr_conf']['scale']), 
                                     pic_shape=tuple(self.global_config['mlsd_conf']['pic_shape']), 
                                     times=self.global_config['paddleocr_conf']['times'], 
