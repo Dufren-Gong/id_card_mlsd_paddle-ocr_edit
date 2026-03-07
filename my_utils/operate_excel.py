@@ -867,10 +867,11 @@ def check_excel(file_path, pic_floader, sheet_name = None, search_extra_floader 
         #将模版信息展平
         row_count = ws.max_row
         for i in range(2, row_count + 1):
-            template_column_info = ws[f"{template_column_letters}{i}"].value.replace(':', '：')
-            if not map_flag: template_column_info = fan_to_jian(template_column_info)
-            ws[f"{template_column_letters}{i}"].value = template_column_info
+            template_column_info = ws[f"{template_column_letters}{i}"].value
             if not pd.isna(template_column_info):
+                template_column_info = template_column_info.replace(':', '：')
+                if not map_flag: template_column_info = fan_to_jian(template_column_info)
+                ws[f"{template_column_letters}{i}"].value = template_column_info
                 ws = map_info(ws, template_column_info, i, check_cloumns, column_letters)
 
         for index, letter in enumerate(column_letters):
