@@ -729,33 +729,41 @@ def map_info(ws, template_column_info:str, i, check_cloumns, column_letters):
             infos.append(tt)
     for name_index, j in enumerate(check_cloumns):
         start_index = -1
+        start_index_temp = -1
         for index, info in enumerate(infos):
-            if j + '：' in info or j + ' ：' in info:
-                start_index = index
-                break
-        if start_index == -1:
-            continue
-
-        temp_info_arr = [info]
-        if j == '地址' and start_index != len(infos) - 1:
-            for k in range(start_index + 1, len(infos)):
-                if "：" in infos[k]:
+            if j in info:
+                if "：" in info:
+                    start_index = index
                     break
                 else:
-                    temp_info_arr.append(infos[k])
-        
-        result_str = ''
-        for m in temp_info_arr:
-            infos.remove(m)
-            if "：" in m:
-                a = m.split('：', maxsplit=1)[-1]
-                result_str += a.strip().replace(' ', '')
+                    start_index_temp = index
+        if start_index == -1:
+            if start_index_temp == -1:
+                continue
             else:
+                start_index = start_index_temp
+
+        temp_info_arr = [infos[start_index]]
+        if j == '地址' and start_index != len(infos) - 1:
+            for k in range(start_index + 1, len(infos)):
+                next_text = infos[k]
+                if any(m in next_text for m in ['：', '(', '（', ')', '）']):
+                    break
+                else:
+                    temp_info_arr.append(next_text)
+        
+        first_line = temp_info_arr[0]
+        if "：" in first_line:
+            a = first_line.split('：', maxsplit=1)[-1]
+        else:
+            a = first_line.split(j, maxsplit=1)[-1]
+        result_str = a.strip().replace(' ', '')
+
+        if j == '地址':
+            for m in temp_info_arr[1:]:
                 result_str += m.strip().replace(' ', '')
         if result_str != '':
             name_t = column_letters[name_index]
-            # if j == '姓名':
-            #     result_str = fan_to_jian(result_str)
             ws[f"{name_t}{i}"].value = result_str
     return ws
 
@@ -769,46 +777,68 @@ def split_on_blank_lines(text: str):
     if text is None:
         return []
     # Normalize line breaks and strip outer whitespace
-    s = str(text).replace('\r\n', '\n').replace('\r', '\n').strip()
+    s = str(text).replace('\r\n', '\n').replace('\r', '\n').replace(':', '：').strip()
     if not s:
         return []
     # Split only on blank lines (>=1 empty line), not on single line breaks
     parts = re.split(r"\n\s*\n+", s)
-    return [p.strip() for p in parts if (p.count('：') >= 2)]
+    return [p.strip() for p in parts if (p.count('\n') >= 2)]
 
-def check_pairs(info_strs_arr):
-    # check_pairs = [('委托人', '受委托人'), ('转让方', '受让方', '受委托人')]
-    new_info_strs = []
-    before_name = ''
-    for text in info_strs_arr[::-1]:
-        if '受委托人' in text:
-            text_temp = text.split('\n')
-            for j in text_temp:
-                if '姓名' in j:
-                    temp_name = re.sub(r'[\s:：]+', '', j.split('姓名')[-1])
-                    if temp_name != before_name:
-                        before_name = temp_name
-                        new_info_strs.append('')
-                        new_info_strs.append(text)
-                    break
-        else:
-            new_info_strs.append(text)
-    if new_info_strs[0] == '' and len(new_info_strs) > 1:
-        new_info_strs = new_info_strs[1:]
-    new_info_strs = new_info_strs[::-1]
-    return new_info_strs
+# def extract_name(text):
+#     text_temp = text.split('\n')
+#     for j in text_temp:
+#         if '姓名' in j:
+#             temp_name = re.sub(r'[\s:：]+', '', j.split('姓名')[-1])
+#             break
+#         else:
+#             temp_name = ''
+#     return temp_name
+
+# def check_pairs(info_strs_arr, sheet):
+#     # check_pairs = [('委托人', '受委托人'), ('转让方', '受让方', '受委托人')]
+#     new_info_strs = {}
+#     first_temp = []
+#     cache_names = {}
+#     for text in info_strs_arr:
+#         if '受委托人' in text:
+#             temp_name = extract_name(text)
+#             if temp_name:
+#                 if temp_name not in cache_names.keys():
+#                     cache_names[temp_name] = text
+#                     new_info_strs[temp_name] = first_temp
+#                 else:
+#                     new_info_strs[temp_name].extend(first_temp)
+#                 first_temp = []
+#         else:
+#             first_temp.append(text)
+#     if first_temp != []:
+#         new_info_strs['"无受委托人"'] = first_temp
+#         first_temp = []
+#         cache_names['"无受委托人"'] = '姓名："无受委托人"'
+#     for key in new_info_strs.keys():
+#         if new_info_strs[key] == []:
+#             new_info_strs[key] = ['姓名："无委托人"']
+#         #去除重复委托人
+#         else:
+#             temp_wtr = {}
+#             for wtr in new_info_strs[key]:
+#                 temp_name = extract_name(wtr)
+#                 temp_wtr[temp_name] = wtr
+#             new_info_strs[key] = temp_wtr.values()
+#     for index_t, key in enumerate(new_info_strs.keys()):
+#         first_temp.extend(new_info_strs[key])
+#         first_temp.append(cache_names[key])
+#         if index_t != len(new_info_strs) - 1:
+#             first_temp.append(None)
+#     return first_temp
 
 def expend_column(ws, col, start_row):
     row = start_row
     while row <= ws.max_row:
-        value = ws[f'{col}{row}'].value
-        if value:
-            value = re.sub(r' +', ' ', value)
-        ws[f'{col}{row}'].value = fan_to_jian(value)
+        value = fan_to_jian(ws[f'{col}{row}'].value)
         if isinstance(value, str) and value.strip():
             parts = split_on_blank_lines(value)
             if len(parts) >= 2:
-                parts = check_pairs(parts)
                 ws.insert_rows(row + 1, amount=len(parts) - 1)
                 for i, part in enumerate(parts):
                     ws[f'{col}{row + i}'] = part
@@ -869,7 +899,6 @@ def check_excel(file_path, pic_floader, sheet_name = None, search_extra_floader 
         for i in range(2, row_count + 1):
             template_column_info = ws[f"{template_column_letters}{i}"].value
             if not pd.isna(template_column_info):
-                template_column_info = template_column_info.replace(':', '：')
                 if not map_flag: template_column_info = fan_to_jian(template_column_info)
                 ws[f"{template_column_letters}{i}"].value = template_column_info
                 ws = map_info(ws, template_column_info, i, check_cloumns, column_letters)
