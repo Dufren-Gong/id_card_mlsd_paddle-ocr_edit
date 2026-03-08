@@ -782,7 +782,7 @@ def split_on_blank_lines(text: str):
         return []
     # Split only on blank lines (>=1 empty line), not on single line breaks
     parts = re.split(r"\n\s*\n+", s)
-    return [p.strip() for p in parts if (p.count('\n') >= 2)]
+    return [p.strip() for p in parts if (p.count('\n') >= 1 and p.count('：') >=1)]
 
 # def extract_name(text):
 #     text_temp = text.split('\n')
@@ -844,6 +844,8 @@ def expend_column(ws, col, start_row):
                     ws[f'{col}{row + i}'] = part
                 row += len(parts)
                 continue
+            elif len(parts) == 1:
+                ws[f'{col}{row}'] = parts[0]
         row += 1
     return ws
 
