@@ -107,10 +107,9 @@ add_certain_pics: false #是否启用一个自动在word后添加照片的功能
 which_add_pic_way: 2 #使用那种方式添加照片，1为直接添加照片，2位合并word
 margin_mm: 5 #加入照片的四周留白，建议5-10，大于零。以加入照片的方式，照片放在./配置/pics文件夹里，按照照片顺序命名1，2，3.。。
 
-# https://gitee.com/api/v5/repos/{owner}/{repo}/zipball?access_token={access_token}&ref={ref}
-access_token: 3d7b338f6b596cc32baf892157ac5f98 # gitee授权码
-owner: hellomrdj2597 # 源码拥有者
-repo: id_card_mlsd_paddle-ocr_edit # 项目名称
+access_token:
+owner:
+repo:
 ref: main #分支
 conda_env_name: paddle-ocr #更新程序的时候，需要激活的conda环境名
 update_shell_path: 配置/update_windows.bat

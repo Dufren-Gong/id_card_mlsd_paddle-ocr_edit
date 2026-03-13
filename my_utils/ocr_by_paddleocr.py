@@ -342,6 +342,7 @@ def get_infos(infos, catch, info_checks, check_back):
             if any(m in line for m in changqi_checks):
                 catch[6] = '长期'
             elif any(m in line for m in deadline_chinese_checks):
+                deadline = ''
                 for m in dealline_symble_checks:
                     if m in line:
                         deadline = re.sub(r"\D", "", line.strip().split(m)[-1])

@@ -903,6 +903,10 @@ class Main_Window(QMainWindow):
             self.new_name_flag = False
             result_name = '身份证照片识别'
             name = self.global_config['repo']
+            if not name:
+                self.show_info.set_show_text(f'未提供在线更新密钥')
+                self.show_info.show()
+                return 0
             ref = self.global_config['ref']
             name = f'{name}-{ref}'
             zip_file_path = f'{result_name}.zip'
