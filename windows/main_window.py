@@ -20,6 +20,7 @@ import subprocess, platform
 from send2trash import send2trash
 from uis.replace_select import Replace_Select
 import pandas as pd
+from my_utils.generate_pdf_pairs import images_to_paired_pdfs
         
 class Main_Window(QMainWindow):
     def __init__(self, open_pic_operate_window, refresh_main_window, global_config):
@@ -53,54 +54,10 @@ class Main_Window(QMainWindow):
         self.row_one.open_floader_checkbox.setChecked(self.global_config['open_search_floader'])
         self.row_one.open_text_checkbox.setChecked(self.global_config['open_search_info'])
 
-    # def dragEnterEvent(self, event: QDragEnterEvent):
-    #     # 只要拖拽内容包含 URL,就接受拖拽
-    #     if self.row_one.function_combobox.currentIndex() != 2:
-    #         if event.mimeData().hasUrls():
-    #             event.acceptProposedAction()  # 接受所有拖拽操作
-    #         else:
-    #             event.ignore()  # 如果没有 URL,忽略拖拽
-    #     else:
-    #         event.ignore()
-
-    # def dropEvent(self, event):
-    #     index = self.row_one.function_combobox.currentIndex()
-    #     pic_check_index = [0, 1]
-    #     # floader_check_index = [3, 4, 5, 6, 7, 8, 9, 10]
-    #     no_event_arr = [2, 12, 13]
-    #     # 获取拖拽的所有文件或文件夹路径
-    #     urls = event.mimeData().urls()
-    #     if urls:
-    #         for index_t, url in enumerate(urls):
-    #             local_path = url.toLocalFile()  # 获取本地路径
-    #             if local_path:
-    #                 file_info = QFileInfo(local_path)
-    #                 if file_info.isFile():  # 如果是文件
-    #                     # 检查文件扩展名
-    #                     file_extension = file_info.suffix().lower()  # 获取文件后缀,并转为小写
-    #                     if index != 13 and index != 12:
-    #                         if file_extension in self.formates[:-1]:
-    #                             shutil.copy(local_path, os.path.join('./照片放这里', get_data_str() + f'_{index_t}.' + file_extension))
-    #                     elif index == 12:
-    #                         if file_extension == 'pdf':
-    #                             self.pdf_to_pic_count += 1
-    #                             self.open_folder_dialog(local_path)
-    #                     elif index == 13:
-    #                         if file_extension == 'zip':
-    #                             shutil.move(local_path, '.')
-    #                         else:
-    #                             self.show_info.set_show_text('该功能拖拽只接受后缀为zip类型的压缩包')
-    #                             self.show_info.show_window()
-    #                 elif file_info.isDir():  # 如果是文件夹
-    #                     if index not in no_event_arr:
-    #                         if not (self.row_zero.file_type_combobox.currentIndex() == 1 and index in pic_check_index):
-    #                             self.open_folder_dialog(local_path)
-    #                         break
-
     def closeEvent(self, event):
         if self.thread_pool is not None:
             self.thread_pool.clear()
-        delete_specific_files_and_folders('.', '__pycache__', '.DS_Store')
+        delete_specific_files_and_folders('.', ['__pycache__', '.vscode'], ['.DS_Store'])
         self.deleteLater()
         self.close()
 
@@ -132,7 +89,7 @@ class Main_Window(QMainWindow):
 
     def open_folder_dialog(self, floader_path = None):
         selected_options = self.row_one.function_combobox.currentIndex()
-        if selected_options != 12:
+        if selected_options not in [12, 13]:
             # 打开文件夹选择对话框
             if selected_options == 0 or selected_options == 1:
                 if self.row_zero.file_type_combobox.currentIndex() == 0:
@@ -225,7 +182,10 @@ class Main_Window(QMainWindow):
                     self.select_file_flag = False
         else:
             if floader_path == None:
-                self.folder_path, _ = QFileDialog.getOpenFileName(self, '选择pdf文件', '', 'Pdf Files (*.pdf);;All Files (*)')
+                if selected_options == 12:
+                    self.folder_path, _ = QFileDialog.getOpenFileName(self, '选择pdf文件', '', 'Pdf Files (*.pdf);;All Files (*)')
+                elif selected_options == 13:
+                    self.folder_path, _ = QFileDialog.getOpenFileNames(self, '选择双数照片文件', '', 'All Files (*)')
             else:
                 self.folder_path = floader_path
             self.select_file_flag = True
@@ -233,19 +193,33 @@ class Main_Window(QMainWindow):
             if selected_options == 0 or selected_options == 1:
                 self.hide()
                 self.open_pic_operate_window(natsorted(self.folder_path), selected_options)
-            elif selected_options == 12:
+            elif selected_options in [12, 13]:
                 if floader_path == None:
                     self.pdf_to_pic_count += 1
-                if self.pdf_to_pic_finished == 0:
+                save_path = os.path.join('./照片编辑结果', get_data_str())
+                os.makedirs(save_path, exist_ok=True)
+                if selected_options == 12:
+                    if self.pdf_to_pic_finished == 0:
+                        self.row_two.select_files_button.setDisabled(True)
+                        self.show_info.set_show_text('可能需要一些时间,请等待')
+                        self.show_info.show_window()
+                        QApplication.processEvents()
+                    self.Thread_pdf_to_pic = Pdf_to_Pic_Thread(self.folder_path, save_path, 'png')
+                    self.Thread_pdf_to_pic.signals.finished.connect(self.end_pdf_to_pic)  # 把任务完成的信号与任务完成后处理的槽函数绑定
+                    self.thread_pool.start(self.Thread_pdf_to_pic)
+                elif selected_options == 13:
                     self.row_two.select_files_button.setDisabled(True)
                     self.show_info.set_show_text('可能需要一些时间,请等待')
                     self.show_info.show_window()
                     QApplication.processEvents()
-                save_path = os.path.join('./照片编辑结果', get_data_str())
-                os.makedirs(save_path, exist_ok=True)
-                self.Thread_pdf_to_pic = Pdf_to_Pic_Thread(self.folder_path, save_path, 'png')
-                self.Thread_pdf_to_pic.signals.finished.connect(self.end_pdf_to_pic)  # 把任务完成的信号与任务完成后处理的槽函数绑定
-                self.thread_pool.start(self.Thread_pdf_to_pic)
+                    return_info = images_to_paired_pdfs(self.folder_path,
+                                                               save_path,
+                                                               self.global_config['pic_to_pdf_config']['image_gap'],
+                                                               self.global_config['pic_to_pdf_config']['width_ratio'],
+                                                               self.global_config['pic_to_pdf_config']['reserve'])
+                    self.show_info.set_show_text(return_info)
+                    self.show_info.show_window()
+                    self.row_two.select_files_button.setEnabled(True)
         self.have_error_flag = False
         self.select_file_flag = False
 
@@ -628,7 +602,7 @@ class Main_Window(QMainWindow):
                 kaidan_path = copy_template(mode, self.folder_path, name_concat, count, in_floader=self.global_config['in_floader'])
                 if (card_id_client != '' and not pd.isna(card_id_client)) and (card_id_entrusted != '' and not pd.isna(card_id_entrusted)):
                     kaidan_path = copy_template(mode, self.folder_path, name_concat, count, in_floader=self.global_config['in_floader'], template_sub_path=['有经销商卡号'])
-                    changes = kaidan.get_sub_arr(kaidan_pair, mode = 'id')
+                    changes = kaidan.get_sub_arr(kaidan_pair, mode = 'id', have_id = True)
                 else:
                     kaidan_path = copy_template(mode, self.folder_path, name_concat, count, in_floader=self.global_config['in_floader'])
                     changes = kaidan.get_sub_arr(kaidan_pair)
@@ -831,7 +805,7 @@ class Main_Window(QMainWindow):
             self.row_zero.file_type_combobox.hide()
             self.row_zero.select_newest_checkbox.hide()
             self.row_zero.pic_name_lineedit.setFocus()
-        elif current_index == self.concat_index or current_index == 12 or current_index == 13:
+        elif current_index == self.concat_index or current_index in [12, 13, 14]:
             self.row_one.open_floader_checkbox.hide()
             self.row_one.open_text_checkbox.hide()
             self.row_one.pic_here_checkbox.hide()
@@ -851,7 +825,7 @@ class Main_Window(QMainWindow):
             self.row_zero.file_type_combobox.setDisabled(True)
             self.row_zero.pic_name_lineedit.hide()
             self.row_zero.select_newest_checkbox.hide()
-            if current_index != 13:
+            if current_index != 14:
                 if current_index != self.concat_index:
                     self.row_two.select_files_button.setText('选择文件/文件夹')
                     self.row_two.select_files_button.setToolTip('选择文件或者文件夹直接跳转开始编辑')
@@ -882,14 +856,20 @@ class Main_Window(QMainWindow):
             self.change_moren()
 
     def only_download_source_code(self):
-        self.pwd = os.getcwd()
-        os.chdir('..')
-        self.show_info.set_show_text(f'正在下载源代码,请稍等......')
-        self.show_info.show()
-        QApplication.processEvents()
-        self.download_source_code_thread = Download_Sourcecode(self.global_config, 1, 1, '源码', 1, 1, True)
-        self.download_source_code_thread.resSignal.connect(self.end_only_download_sourcecode)
-        self.download_source_code_thread.start()
+        name = self.global_config['repo']
+        if not name:
+            self.show_info.set_show_text(f'未提供在线更新密钥')
+            self.show_info.show()
+            return 0
+        else:
+            self.pwd = os.getcwd()
+            os.chdir('..')
+            self.show_info.set_show_text(f'正在下载源代码,请稍等......')
+            self.show_info.show()
+            QApplication.processEvents()
+            self.download_source_code_thread = Download_Sourcecode(self.global_config, 1, 1, '源码', 1, 1, True)
+            self.download_source_code_thread.resSignal.connect(self.end_only_download_sourcecode)
+            self.download_source_code_thread.start()
 
     def end_only_download_sourcecode(self, pos1, pos2, pos3, pos4, pos5):
         self.show_info.set_show_text(f'下载完成,请在根目录下查看,手动更新软件.')

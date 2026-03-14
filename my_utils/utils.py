@@ -40,8 +40,12 @@ def get_config(config_path = '配置/conf.yaml'):
     # 初始化 YAML 处理器
     yaml = YAML()
     yaml.preserve_quotes = True  # 保留引号（如果 YAML 中有引号）
-    with open(config_path, 'r', encoding='utf-8') as file:
-        global_config = yaml.load(file)
+    try:
+        with open(config_path, 'r', encoding='utf-8') as file:
+            global_config = yaml.load(file)
+    except:
+        with open(os.path.join('..', config_path), 'r', encoding='utf-8') as file:
+            global_config = yaml.load(file)
     return global_config
 
 def get_beijing_date():
@@ -75,19 +79,19 @@ def find_in_catch_pic(name, floader, in_level=2):
     return ''
 
 def delete_specific_files_and_folders(target_dir, del_dirname = None, del_filename = None):#, global_config = None):
-    if del_dirname != None and del_filename != None:
+    if del_dirname != None or del_filename != None:
         for root, dirs, files in os.walk(target_dir, topdown=False):
             # 删除 __pycache__ 文件夹
             if del_dirname != None:
                 for dir_name in dirs:
-                    if dir_name == del_dirname:
+                    if dir_name in del_dirname:
                         dir_path = os.path.join(root, dir_name)
                         shutil.rmtree(dir_path)  # 删除整个文件夹
 
             if del_filename != None:
                 # 删除 .DS_Store 文件
                 for file_name in files:
-                    if file_name == del_filename:
+                    if file_name in del_filename:
                         file_path = os.path.join(root, file_name)
                         os.remove(file_path)  # 删除文件
     #将该文件夹隐藏

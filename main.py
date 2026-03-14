@@ -94,7 +94,7 @@ if __name__ == "__main__":
     if not global_config['main_window_conf']['debug_mode']:
         # 将全局异常处理器替换为自定义函数
         sys.excepthook = global_exception_handler
-    delete_specific_files_and_folders('.', '__pycache__', '.DS_Store')
+    delete_specific_files_and_folders('.', ['__pycache__', '.vscode'], ['.DS_Store'])
     companys = global_config['companys']
     result_path = '照片编辑结果'
     pic_path = '照片放这里/横着中间截图'

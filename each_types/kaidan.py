@@ -45,7 +45,7 @@ def page_six(pair:Pair):
     entrusted_str = entrusted_str.rsplit("联系电话", maxsplit=1)[0][:-1] + '。'
     return client_str, entrusted_str  
 
-def get_sub_arr(kaidan_pair:Pair, mode = ''):
+def get_sub_arr(kaidan_pair:Pair, mode = '', have_id = False):
     changes = []
     client_str, entrusted_str = page_two(kaidan_pair)
     changes.extend([client_str, entrusted_str])
@@ -54,16 +54,18 @@ def get_sub_arr(kaidan_pair:Pair, mode = ''):
     pay = kaidan_pair.client.pay
     pay_ch = number_to_chinese(pay)
     changes.extend([pay, pay_ch])
-    annual_fee = kaidan_pair.client.annual_fee
-    annual_fee_ch = number_to_chinese(annual_fee)
-    changes.extend([annual_fee, annual_fee_ch])
+    if not have_id:
+        annual_fee = kaidan_pair.client.annual_fee
+        annual_fee_ch = number_to_chinese(annual_fee)
+        changes.extend([annual_fee, annual_fee_ch])
     buy = kaidan_pair.client.buy
     buy_ch = number_to_chinese(buy)
     changes.extend([buy, buy_ch])
     extract = kaidan_pair.client.extract
     extract_ch = number_to_chinese(extract)
     changes.extend([extract, extract_ch])
-    changes.extend([annual_fee, annual_fee_ch])
+    if not have_id:
+        changes.extend([annual_fee, annual_fee_ch])
     client_str, entrusted_str = page_five(kaidan_pair)
     changes.extend([client_str, entrusted_str])
     changes.extend([kaidan_pair.entrusted.name, kaidan_pair.client.name])
