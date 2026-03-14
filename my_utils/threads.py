@@ -12,22 +12,24 @@ class PDFToPicSignals(QtCore.QObject):
     error = QtCore.pyqtSignal(str)
 
 class Pdf_to_Pic_Thread(QtCore.QRunnable):  # 继承QThread
-    def __init__(self, folder_path, save_path, pic_formate): # 从前端界面中传递参数到这个任务后台
+    def __init__(self, folder_path, save_path, pic_formate, resolution, color): # 从前端界面中传递参数到这个任务后台
         super().__init__()
         self.folder_path = folder_path
         self.pic_formate = pic_formate
         self.save_path = save_path
+        self.resolution = resolution
+        self.color = color
         self.signals = PDFToPicSignals()
 
     def run(self):  # 重写run  比较耗时的后台任务可以在这里运行
         try:
-            convert_pdf_to_images(self.folder_path, self.save_path, self.pic_formate)
+            convert_pdf_to_images(self.folder_path, self.save_path, self.pic_formate, self.resolution, self.color)
             self.signals.finished.emit('')  # 任务完成后，发送信号
         except Exception:
             self.signals.error.emit(traceback.format_exc())
 
 class Pic_to_Pdf_Thread(QtCore.QRunnable):  # 继承QThread
-    def __init__(self, folder_path, save_path, image_gap, width_ratio, reserve, black_flag): # 从前端界面中传递参数到这个任务后台
+    def __init__(self, folder_path, save_path, image_gap, width_ratio, reserve, black_flag, result_mode): # 从前端界面中传递参数到这个任务后台
         super().__init__()
         self.folder_path = folder_path
         self.save_path = save_path
@@ -35,11 +37,12 @@ class Pic_to_Pdf_Thread(QtCore.QRunnable):  # 继承QThread
         self.width_ratio = width_ratio
         self.reserve = reserve
         self.black_flag = black_flag
+        self.result_mode = result_mode
         self.signals = PDFToPicSignals()
 
     def run(self):  # 重写run  比较耗时的后台任务可以在这里运行
         try:
-            return_str = images_to_paired_pdfs(self.folder_path, self.save_path, self.image_gap, self.width_ratio, self.reserve, self.black_flag)
+            return_str = images_to_paired_pdfs(self.folder_path, self.save_path, self.image_gap, self.width_ratio, self.reserve, self.black_flag, self.result_mode)
             self.signals.finished.emit(return_str)  # 任务完成后，发送信号
         except Exception:
             self.signals.error.emit(traceback.format_exc())

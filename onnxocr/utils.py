@@ -317,7 +317,7 @@ def infer_args():
     parser.add_argument(
         "--rec_char_dict_path",
         type=str,
-        default=get_internal_path(global_config['paddleocr_conf']['ppocr_keys_v1.txt']),
+        default=get_internal_path(global_config['paddleocr_conf']['ppocr_keys_v1_txt']),
     )
     parser.add_argument("--use_space_char", type=str2bool, default=True)
     parser.add_argument(

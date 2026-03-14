@@ -36,7 +36,7 @@ paddleocr_conf:
   det_path: ./files/models/ppocrv4/det/det.onnx
   rec_path: ./files/models/ppocrv4/rec/rec.onnx
   cls_path: ./files/models/ppocrv4/cls/cls.onnx
-  ppocr_keys_v1.txt: ./files/models/ppocrv4/ppocr_keys_v1.txt
+  ppocr_keys_v1_txt: ./files/models/ppocrv4/ppocr_keys_v1.txt
   use_cls: false #是否使用方向检测
   scale: 1.0 #照片ocr时候缩放大小，可以平衡资源消耗和识别准确率
   max_threads: 1 #最大线程数
@@ -83,6 +83,11 @@ pic_to_pdf_config:
   width_ratio: 0.4 #照片宽度占pdf宽度的比例
   reserve: false #是否反向照片顺序
   black_flag: true #是否转换成黑白照片
+  result_mode: 0 #0代表生成pdf，1代表生成图片
+
+pdf_to_pic_config:
+  color: 'rgb' #色彩域，'rgb'或者'gray', gray快
+  resolution: 2048 #分辨率，越高越清晰，但是越慢，1200， 1600，2048
 
 version: 2.0.9 #版本号
 check_back: true #是否检查背面信息

@@ -198,14 +198,17 @@ class Main_Window(QMainWindow):
                 self.show_info.show_window()
                 QApplication.processEvents()
                 if selected_options == 12:
-                    self.Thread_pdf_to_pic = Pdf_to_Pic_Thread(self.folder_path, save_path, 'png')
+                    self.Thread_pdf_to_pic = Pdf_to_Pic_Thread(self.folder_path, save_path, 'png',
+                                                                self.global_config['pdf_to_pic_config']['resolution'],
+                                                                self.global_config['pdf_to_pic_config']['color'],)
                 elif selected_options == 13:
                     self.Thread_pdf_to_pic = Pic_to_Pdf_Thread(self.folder_path,
                                                                 save_path,
                                                                 self.global_config['pic_to_pdf_config']['image_gap'],
                                                                 self.global_config['pic_to_pdf_config']['width_ratio'],
                                                                 self.global_config['pic_to_pdf_config']['reserve'],
-                                                                self.global_config['pic_to_pdf_config']['black_flag'])
+                                                                self.global_config['pic_to_pdf_config']['black_flag'],
+                                                                self.global_config['pic_to_pdf_config']['result_mode'])
                 self.Thread_pdf_to_pic.signals.finished.connect(self.end_pdf_to_pic, Qt.ConnectionType.QueuedConnection)
                 self.Thread_pdf_to_pic.signals.error.connect(self.handle_pdf_to_pic_error, Qt.ConnectionType.QueuedConnection)
                 self.thread_pool.start(self.Thread_pdf_to_pic)
