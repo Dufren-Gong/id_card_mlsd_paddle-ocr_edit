@@ -1,6 +1,6 @@
 from PyQt6 import QtWidgets, QtCore
-from PyQt6.QtCore import QRegularExpression
-from PyQt6.QtGui import QRegularExpressionValidator
+# from PyQt6.QtCore import QRegularExpression
+# from PyQt6.QtGui import QRegularExpressionValidator
 import copy
 
 def merge_shape(shapes, gap):
@@ -84,8 +84,8 @@ class Row_Zero():
         self.pic_name_lineedit.setObjectName("pic_name_lineedit4")
         self.pic_name_lineedit.setToolTip("在这里输入要查询的名字")
         self.pic_name_lineedit.hide()
-        validator = QRegularExpressionValidator(QRegularExpression(r"^[^\n]*$"))
-        self.pic_name_lineedit.setValidator(validator)
+        # validator = QRegularExpressionValidator(QRegularExpression(r"^[^\n]*$"))
+        # self.pic_name_lineedit.setValidator(validator)
         self.pic_name_lineedit.setStyleSheet("""
             QPushButton {
                 border-width: 1px;          /* 边缘宽度 */

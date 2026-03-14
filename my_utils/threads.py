@@ -3,11 +3,13 @@ from my_utils.utils import download_zip, unzip_file
 from my_utils.pdf_to_pic import convert_pdf_to_images
 from my_utils.ocr_by_paddleocr import pic_to_str
 from my_utils.mlsd_scan import square_four_lines, get_square_dots
+from my_utils.generate_pdf_pairs import images_to_paired_pdfs
 import numpy as np
-import os, shutil
+import os, shutil, traceback
 
 class PDFToPicSignals(QtCore.QObject):
-    finished = QtCore.pyqtSignal()
+    finished = QtCore.pyqtSignal(object)
+    error = QtCore.pyqtSignal(str)
 
 class Pdf_to_Pic_Thread(QtCore.QRunnable):  # 继承QThread
     def __init__(self, folder_path, save_path, pic_formate): # 从前端界面中传递参数到这个任务后台
@@ -18,8 +20,29 @@ class Pdf_to_Pic_Thread(QtCore.QRunnable):  # 继承QThread
         self.signals = PDFToPicSignals()
 
     def run(self):  # 重写run  比较耗时的后台任务可以在这里运行
-        convert_pdf_to_images(self.folder_path, self.save_path, self.pic_formate)
-        self.signals.finished.emit()  # 任务完成后，发送信号
+        try:
+            convert_pdf_to_images(self.folder_path, self.save_path, self.pic_formate)
+            self.signals.finished.emit('')  # 任务完成后，发送信号
+        except Exception:
+            self.signals.error.emit(traceback.format_exc())
+
+class Pic_to_Pdf_Thread(QtCore.QRunnable):  # 继承QThread
+    def __init__(self, folder_path, save_path, image_gap, width_ratio, reserve, black_flag): # 从前端界面中传递参数到这个任务后台
+        super().__init__()
+        self.folder_path = folder_path
+        self.save_path = save_path
+        self.image_gap = image_gap
+        self.width_ratio = width_ratio
+        self.reserve = reserve
+        self.black_flag = black_flag
+        self.signals = PDFToPicSignals()
+
+    def run(self):  # 重写run  比较耗时的后台任务可以在这里运行
+        try:
+            return_str = images_to_paired_pdfs(self.folder_path, self.save_path, self.image_gap, self.width_ratio, self.reserve, self.black_flag)
+            self.signals.finished.emit(return_str)  # 任务完成后，发送信号
+        except Exception:
+            self.signals.error.emit(traceback.format_exc())
 
 class OcrSignals(QtCore.QObject):
     finished = QtCore.pyqtSignal(object, object, object)

@@ -82,6 +82,7 @@ pic_to_pdf_config:
   image_gap: 100 #上下照片的间距
   width_ratio: 0.4 #照片宽度占pdf宽度的比例
   reserve: false #是否反向照片顺序
+  black_flag: true #是否转换成黑白照片
 
 version: 2.0.9 #版本号
 check_back: true #是否检查背面信息

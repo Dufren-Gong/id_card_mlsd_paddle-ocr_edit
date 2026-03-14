@@ -1,17 +1,17 @@
 import os, shutil, copy, re
-from PyQt6.QtWidgets import QMainWindow, QWidget, QFileDialog, QApplication
+from PyQt6.QtWidgets import QMainWindow, QWidget, QFileDialog, QApplication, QMessageBox
 from uis.shapes import Ui_Shapes
 from docx import Document
 from my_utils.utils import delete_specific_files_and_folders
 from uis.main_window_ui import Row_Zero, Row_One, Row_Two, Select_Company, Row_Catch
 from windows.show_info_window import Show_Info_Window
 from uis.set_config import Set_Config_Window
-from my_utils.threads import Pdf_to_Pic_Thread, Download_Sourcecode, Download_Copy_Large
+from my_utils.threads import Pdf_to_Pic_Thread, Download_Sourcecode, Download_Copy_Large, Pic_to_Pdf_Thread
 from my_utils.utils import get_data_str, open_floader, find_in_catch_pic, get_internal_path, get_config, download_single_file, split_image, write_config, recursive_update
 from my_utils import operate_excel as utils_operate_excel
 from each_types import kaidan, nahuo, zhuandan, budan, nianfei, buka, tuidan
 from PyQt6.QtGui import QIcon#, QDragEnterEvent
-from PyQt6.QtCore import QThreadPool, QTimer#, QFileInfo
+from PyQt6.QtCore import QThreadPool, QTimer, Qt#, QFileInfo
 from my_utils.operate_word import copy_template, replace_text_with_same_format, replace_pic, append_fullpage_image_center, concat_two_words, is_word_empty
 from natsort import natsorted
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -20,7 +20,6 @@ import subprocess, platform
 from send2trash import send2trash
 from uis.replace_select import Replace_Select
 import pandas as pd
-from my_utils.generate_pdf_pairs import images_to_paired_pdfs
         
 class Main_Window(QMainWindow):
     def __init__(self, open_pic_operate_window, refresh_main_window, global_config):
@@ -38,12 +37,10 @@ class Main_Window(QMainWindow):
         self.select_file_flag = False
         self.shape = Ui_Shapes(round_gap=10)
         self.concat_index = 3
-        self.pdf_to_pic_count = 0
         self.add_front_path = '../配置/pics/前面.docx'
         self.add_back_path = '../配置/pics/后面.docx'
         self.front_doc = None
         self.back_doc = None
-        self.pdf_to_pic_finished = 0
         # 启用拖放
         # self.setAcceptDrops(True)
         self.shape.layout([self.shape.combobox_height, self.shape.combobox_height, self.shape.button_height, self.shape.combobox_height, 27],
@@ -183,7 +180,7 @@ class Main_Window(QMainWindow):
         else:
             if floader_path == None:
                 if selected_options == 12:
-                    self.folder_path, _ = QFileDialog.getOpenFileName(self, '选择pdf文件', '', 'Pdf Files (*.pdf);;All Files (*)')
+                    self.folder_path, _ = QFileDialog.getOpenFileNames(self, '选择pdf文件', '', 'Pdf Files (*.pdf);;All Files (*)')
                 elif selected_options == 13:
                     self.folder_path, _ = QFileDialog.getOpenFileNames(self, '选择双数照片文件', '', 'All Files (*)')
             else:
@@ -196,30 +193,22 @@ class Main_Window(QMainWindow):
             elif selected_options in [12, 13]:
                 save_path = os.path.join('./照片编辑结果', get_data_str())
                 os.makedirs(save_path, exist_ok=True)
+                self.row_two.select_files_button.setDisabled(True)
+                self.show_info.set_show_text('可能需要一些时间,请等待')
+                self.show_info.show_window()
+                QApplication.processEvents()
                 if selected_options == 12:
-                    if floader_path == None:
-                        self.pdf_to_pic_count += 1
-                    if self.pdf_to_pic_finished == 0:
-                        self.row_two.select_files_button.setDisabled(True)
-                        self.show_info.set_show_text('可能需要一些时间,请等待')
-                        self.show_info.show_window()
-                        QApplication.processEvents()
                     self.Thread_pdf_to_pic = Pdf_to_Pic_Thread(self.folder_path, save_path, 'png')
-                    self.Thread_pdf_to_pic.signals.finished.connect(self.end_pdf_to_pic)  # 把任务完成的信号与任务完成后处理的槽函数绑定
-                    self.thread_pool.start(self.Thread_pdf_to_pic)
                 elif selected_options == 13:
-                    self.row_two.select_files_button.setDisabled(True)
-                    self.show_info.set_show_text('可能需要一些时间,请等待')
-                    self.show_info.show_window()
-                    QApplication.processEvents()
-                    return_info = images_to_paired_pdfs(self.folder_path,
-                                                               save_path,
-                                                               self.global_config['pic_to_pdf_config']['image_gap'],
-                                                               self.global_config['pic_to_pdf_config']['width_ratio'],
-                                                               self.global_config['pic_to_pdf_config']['reserve'])
-                    self.show_info.set_show_text(return_info)
-                    self.show_info.show_window()
-                    self.row_two.select_files_button.setEnabled(True)
+                    self.Thread_pdf_to_pic = Pic_to_Pdf_Thread(self.folder_path,
+                                                                save_path,
+                                                                self.global_config['pic_to_pdf_config']['image_gap'],
+                                                                self.global_config['pic_to_pdf_config']['width_ratio'],
+                                                                self.global_config['pic_to_pdf_config']['reserve'],
+                                                                self.global_config['pic_to_pdf_config']['black_flag'])
+                self.Thread_pdf_to_pic.signals.finished.connect(self.end_pdf_to_pic, Qt.ConnectionType.QueuedConnection)
+                self.Thread_pdf_to_pic.signals.error.connect(self.handle_pdf_to_pic_error, Qt.ConnectionType.QueuedConnection)
+                self.thread_pool.start(self.Thread_pdf_to_pic)
         self.have_error_flag = False
         self.select_file_flag = False
 
@@ -418,17 +407,18 @@ class Main_Window(QMainWindow):
         else:
             return ''
 
-    def end_pdf_to_pic(self):
-        self.pdf_to_pic_finished += 1
-        if self.pdf_to_pic_finished == self.pdf_to_pic_count:
-            self.row_two.select_files_button.setEnabled(True)
-            duration = self.global_config['show_tip_timer_duration']
-            if duration > 0:
-                self.show_info.set_show_text('转换成功!')
-                self.show_info.show_window()
-                self.combbox_change_tips_timer.start(duration)  
-            self.pdf_to_pic_finished = 0
-            self.pdf_to_pic_count = 0
+    def end_pdf_to_pic(self, return_str=''):
+        if return_str == '':
+            return_str = '转换成功!'
+        self.row_two.select_files_button.setEnabled(True)
+        duration = self.global_config['show_tip_timer_duration']
+        if duration > 0:
+            self.show_info.set_show_text(return_str)
+            self.show_info.show_window()
+            self.combbox_change_tips_timer.start(duration)  
+
+    def handle_pdf_to_pic_error(self, err_msg):
+        QMessageBox.critical(self, "错误", err_msg)
 
     def show_error(self, errors):
         if len(errors) != 0:

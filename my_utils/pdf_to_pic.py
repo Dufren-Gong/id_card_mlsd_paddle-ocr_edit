@@ -6,7 +6,7 @@ import os
 
 def process_page(args):
     time_str = get_data_str()
-    pdf_path, page_number, extist_nums, resolution, output_folder, pic_format, color_mode = args
+    id, pdf_path, page_number, extist_nums, resolution, output_folder, pic_format, color_mode = args
     # 打开 PDF 文件
     pdf_document = fitzopen(pdf_path)
     page = pdf_document[page_number]
@@ -23,7 +23,7 @@ def process_page(args):
     pix = page.get_pixmap(matrix=mat, alpha=False, colorspace=color_mode)
 
     # 定义输出图片的路径
-    output_path = os.path.join(output_folder, f"{time_str}_page_{page_number + 1 + extist_nums}.{pic_format}")
+    output_path = os.path.join(output_folder, f"{id}_{time_str}_page_{page_number + 1 + extist_nums}.{pic_format}")
 
     # 保存图片
     pix.save(output_path)
@@ -31,16 +31,21 @@ def process_page(args):
     # 关闭 PDF 文件
     pdf_document.close()
 
-def convert_pdf_to_images(pdf_path, save_path, pic_format, resolution=2048, color_mode='rgb'):
-    # 打开 PDF 文件
-    extist_nums = len(os.listdir(save_path))
-    pdf_document = fitzopen(pdf_path)
-    num_pages = len(pdf_document)
-    pdf_document.close()
+def convert_pdf_to_images(pdf_paths, save_path, pic_format, resolution=2048, color_mode='rgb'):
+    if isinstance(pdf_paths, str):
+        pdf_path_arr = [pdf_paths]
+    else:
+        pdf_path_arr = pdf_paths
+    for id, pdf_path in enumerate(pdf_path_arr):
+        # 打开 PDF 文件
+        extist_nums = len(os.listdir(save_path))
+        pdf_document = fitzopen(pdf_path)
+        num_pages = len(pdf_document)
+        pdf_document.close()
 
-    # 准备参数列表
-    args = [(pdf_path, page_number, extist_nums, resolution, save_path, pic_format, color_mode) for page_number in range(num_pages)]
+        # 准备参数列表
+        args = [(id, pdf_path, page_number, extist_nums, resolution, save_path, pic_format, color_mode) for page_number in range(num_pages)]
 
-    # 使用多进程来处理每个页面
-    with Pool(processes=cpu_count()) as pool:
-        pool.map(process_page, args)
+        # 使用多进程来处理每个页面
+        with Pool(processes=cpu_count()) as pool:
+            pool.map(process_page, args)
