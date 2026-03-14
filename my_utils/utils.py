@@ -36,21 +36,33 @@ def rgb_to_gray_with_three_channels(image):
     gray_3_channels = cv2.merge([gray, gray, gray])
     return gray_3_channels
 
-def get_config(config_path=''):
-    if config_path == '':
-        # utils.py 所在目录
-        current_dir = os.path.dirname(os.path.abspath(__file__))
+# def get_config(config_path=''):
+#     if config_path == '':
+#         # utils.py 所在目录
+#         current_dir = os.path.dirname(os.path.abspath(__file__))
 
-        # 项目根目录
-        project_root = os.path.dirname(current_dir)
+#         # 项目根目录
+#         project_root = os.path.dirname(current_dir)
 
-        # 配置文件绝对路径
-        config_path = os.path.join(project_root, '配置', 'conf.yaml')
+#         # 配置文件绝对路径
+#         config_path = os.path.join(project_root, '配置', 'conf.yaml')
+#     yaml = YAML()
+
+#     with open(config_path, 'r', encoding='utf-8') as file:
+#         global_config = yaml.load(file)
+
+#     return global_config
+
+def get_config(config_path = '配置/conf.yaml'):
+    # 初始化 YAML 处理器
     yaml = YAML()
-
-    with open(config_path, 'r', encoding='utf-8') as file:
-        global_config = yaml.load(file)
-
+    yaml.preserve_quotes = True  # 保留引号（如果 YAML 中有引号）
+    try:
+        with open(config_path, 'r', encoding='utf-8') as file:
+            global_config = yaml.load(file)
+    except:
+        with open(os.path.join('..', config_path), 'r', encoding='utf-8') as file:
+            global_config = yaml.load(file)
     return global_config
 
 def get_beijing_date():

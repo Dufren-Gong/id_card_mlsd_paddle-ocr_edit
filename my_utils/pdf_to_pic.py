@@ -1,6 +1,21 @@
 import os
 import fitz
-from my_utils.utils import get_data_str
+
+def parse_colorspace(color):
+    if color is None:
+        return fitz.csRGB
+
+    if isinstance(color, str):
+        color = color.strip().lower()
+        if color in ["gray", "grey", "grayscale"]:
+            return fitz.csGRAY
+        elif color in ["rgb", "color", "colour"]:
+            return fitz.csRGB
+        elif color in ["cmyk"]:
+            return fitz.csCMYK
+
+    # 默认给 RGB，避免崩
+    return fitz.csRGB
 
 def convert_pdf_to_images(pdf_paths, save_path, pic_format, resolution=2048, color_mode='rgb'):
     """
@@ -28,9 +43,6 @@ def convert_pdf_to_images(pdf_paths, save_path, pic_format, resolution=2048, col
 
     os.makedirs(save_path, exist_ok=True)
 
-    # 只调用一次，避免每页重复生成时间戳
-    time_str = get_data_str()
-
     for pdf_id, pdf_path in enumerate(pdf_path_arr):
         if not os.path.isfile(pdf_path):
             continue
@@ -55,12 +67,12 @@ def convert_pdf_to_images(pdf_paths, save_path, pic_format, resolution=2048, col
                 pix = page.get_pixmap(
                     matrix=mat,
                     alpha=False,
-                    colorspace=color_mode
+                    colorspace=parse_colorspace(color_mode)
                 )
 
                 output_path = os.path.join(
                     save_path,
-                    f"{pdf_id}_page_{page_number + 1}_{time_str}.{pic_format}"
+                    f"{pdf_id + 1}_page_{page_number + 1}.{pic_format}"
                 )
 
                 pix.save(output_path)
