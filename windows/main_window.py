@@ -194,11 +194,11 @@ class Main_Window(QMainWindow):
                 self.hide()
                 self.open_pic_operate_window(natsorted(self.folder_path), selected_options)
             elif selected_options in [12, 13]:
-                if floader_path == None:
-                    self.pdf_to_pic_count += 1
                 save_path = os.path.join('./照片编辑结果', get_data_str())
                 os.makedirs(save_path, exist_ok=True)
                 if selected_options == 12:
+                    if floader_path == None:
+                        self.pdf_to_pic_count += 1
                     if self.pdf_to_pic_finished == 0:
                         self.row_two.select_files_button.setDisabled(True)
                         self.show_info.set_show_text('可能需要一些时间,请等待')
@@ -977,8 +977,9 @@ class Main_Window(QMainWindow):
             write_config(recursive_update(get_config(os.path.join('配置', 'conf.yaml')), get_config(os.path.join(name, '配置', 'conf.yaml')), [('version')]), os.path.join(name, '配置', 'conf.yaml'))
             shutil.move(os.path.join(name, '配置'), os.path.join(name, 'dist', 'main', '配置'))
             if os.path.exists(zip_file_path):
+                os.remove(zip_file_path)
                 # send2trash(zip_file_path)
-                shutil.move(zip_file_path, os.path.join(name, 'dist', 'main', '配置', zip_file_path))
+                # shutil.move(zip_file_path, os.path.join(name, 'dist', 'main', '配置', zip_file_path))
             if not os.path.exists(os.path.join(name, 'dist', 'main', '_internal', '_tk_data')) and os.path.exists(os.path.join('_internal', '_tk_data')):
                 shutil.copytree(os.path.join('_internal', '_tk_data'), os.path.join(name, 'dist', 'main', '_internal', '_tk_data'))
             time_new_str = get_data_str()
