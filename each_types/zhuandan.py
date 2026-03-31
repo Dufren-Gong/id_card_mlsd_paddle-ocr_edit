@@ -2,6 +2,7 @@ from my_utils.operate_excel import Pair
 from my_utils.operate_word import number_to_chinese
 import each_types.kaidan as kaidan
 import copy
+import pandas as pd
 
 def get_gap_flag(data_str, before, after):
     data_str = data_str.strip().replace(' ', '')
@@ -49,14 +50,30 @@ def get_sub_arr_zhuanrang(kaidan_pair:Pair, before, after):
     changes.append(gap)
     return changes, kaidan_pair
 
+def get_company_flag(temp:Pair):
+    if temp.client.company != '' and not pd.isna(temp.client.company):
+        client_company_flag = True
+        client_company_name = temp.client.company.split('，')[0]
+    else:
+        client_company_flag = False
+        client_company_name = ''
+    if temp.entrusted.company != '' and not pd.isna(temp.entrusted.company):
+        entrusted_company_flag = True
+        entrusted_company_name = temp.entrusted.company.split('，')[0]
+    else:
+        entrusted_company_flag = False
+        entrusted_company_name = ''
+    return client_company_flag, entrusted_company_flag, client_company_name, entrusted_company_name
+
 def get_sub_arr_shouquan(kaidan_pair:Pair, company_id):
     changes = []
     temp = copy.deepcopy(kaidan_pair)
     temp.swap_client_and_entrusted()
     temp.swap_entrusted_and_beiweituo()
-    client_str, entrusted_str = kaidan.page_two(temp)
+    client_company_flag, entrusted_company_flag, client_company_name, entrusted_company_name = get_company_flag(temp)
+    client_str, entrusted_str = kaidan.page_two(temp, client_company_flag, entrusted_company_flag)
     changes.extend([client_str, entrusted_str])
-    client_str, entrusted_str = kaidan.page_three(temp)
+    client_str, entrusted_str = kaidan.page_three(temp, client_company_flag = client_company_flag, entrusted_company_flag = entrusted_company_flag)
     changes.extend([client_str, entrusted_str])
     if company_id == 'SIBELLAC_HOLDINGS_LIMITED':
         changes.append(temp.client.name)
@@ -64,11 +81,11 @@ def get_sub_arr_shouquan(kaidan_pair:Pair, company_id):
         changes.append(temp.beiweituo.name)
     changes.append(temp.beiweituo.sail_card_id)
     changes.append(temp.beiweituo.sail_id)
-    client_str, entrusted_str = kaidan.page_five(temp)
+    client_str, entrusted_str = kaidan.page_five(temp, client_company_flag, entrusted_company_flag)
     changes.extend([client_str, entrusted_str])
-    changes.extend([temp.entrusted.name, temp.client.name])
-    changes.extend([temp.client.name, temp.entrusted.name])
-    client_str, entrusted_str = kaidan.page_six(temp)
+    changes.extend([temp.entrusted.name if not entrusted_company_flag else entrusted_company_name, temp.client.name if not client_company_flag else client_company_name])
+    changes.extend([temp.client.name if not client_company_flag else client_company_name, temp.entrusted.name if not entrusted_company_flag else entrusted_company_name])
+    client_str, entrusted_str = kaidan.page_six(temp, client_company_flag, entrusted_company_flag)
     changes.extend([client_str, entrusted_str])
     return changes, temp
 
@@ -76,20 +93,21 @@ def get_sub_arr_nianfei(kaidan_pair:Pair):
     changes = []
     temp = copy.deepcopy(kaidan_pair)
     temp.swap_entrusted_and_beiweituo()
-    client_str, entrusted_str = kaidan.page_two(temp)
+    client_company_flag, entrusted_company_flag, client_company_name, entrusted_company_name = get_company_flag(temp)
+    client_str, entrusted_str = kaidan.page_two(temp, client_company_flag, entrusted_company_flag)
     changes.extend([client_str, entrusted_str])
-    client_str, entrusted_str = kaidan.page_three(temp)
+    client_str, entrusted_str = kaidan.page_three(temp, client_company_flag=client_company_flag, entrusted_company_flag=entrusted_company_flag)
     changes.extend([client_str, entrusted_str])
     changes.append(temp.client.sail_card_id)
     annual_fee = temp.client.annual_fee
     annual_fee_ch = number_to_chinese(annual_fee)
     changes.extend([annual_fee, annual_fee_ch])
     changes.append(temp.entrusted.sail_card_id)
-    client_str, entrusted_str = kaidan.page_five(temp)
+    client_str, entrusted_str = kaidan.page_five(temp, client_company_flag, entrusted_company_flag)
     changes.extend([client_str, entrusted_str])
-    changes.extend([temp.entrusted.name, temp.client.name])
-    changes.extend([temp.client.name, temp.entrusted.name])
-    client_str, entrusted_str = kaidan.page_six(temp)
+    changes.extend([temp.entrusted.name if not entrusted_company_flag else entrusted_company_name, temp.client.name if not client_company_flag else client_company_name])
+    changes.extend([temp.client.name if not client_company_flag else client_company_name, temp.entrusted.name if not entrusted_company_flag else entrusted_company_name])
+    client_str, entrusted_str = kaidan.page_six(temp, client_company_flag, entrusted_company_flag)
     changes.extend([client_str, entrusted_str])
     changes.extend([annual_fee, annual_fee_ch])
     return changes, temp

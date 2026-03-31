@@ -212,6 +212,12 @@ def check_sail_id(str_t:str, mode:str='内地'):
                 return sail_id.upper()
     return None
 
+def check_company(str_t:str, mode:str='内地'):
+    if not pd.isna(str_t) and str_t != None and str_t != '':
+        company_name = trans_to_str_and_strip(str_t)
+        return company_name
+    return None
+
 excel_info_check = dict(
     姓名=check_name,
     电话=check_phone_number,

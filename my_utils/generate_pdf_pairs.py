@@ -1,4 +1,4 @@
-import re, tempfile, os
+import re, os
 from pathlib import Path
 from typing import List, Union
 from PIL import Image
@@ -274,7 +274,7 @@ def images_to_paired_pdfs(folder_path: Union[str, List[str]],
 
                 # 保存图片
                 out_path = output_dir / f"{base_name}.jpg"
-                if page_img.mode == "RGBA":
+                if page_img.mode != "RGB":
                     page_img = page_img.convert("RGB")
                 page_img.save(out_path, quality=95)
 

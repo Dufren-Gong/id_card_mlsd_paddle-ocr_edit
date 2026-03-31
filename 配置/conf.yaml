@@ -83,13 +83,13 @@ pic_to_pdf_config:
   width_ratio: 0.4 #照片宽度占pdf宽度的比例
   reserve: false #是否反向照片顺序
   black_flag: true #是否转换成黑白照片
-  result_mode: 0 #0代表生成pdf，1代表生成图片
+  result_mode: 1 #0代表生成pdf，1代表生成图片
 
 pdf_to_pic_config:
   color: 'rgb' #色彩域，'rgb'或者'gray', gray快
   resolution: 2048 #分辨率，越高越清晰，但是越慢，1200， 1600，2048
 
-version: 2.0.9 #版本号
+version: 2.1.0 #版本号
 check_back: true #是否检查背面信息
 tolerate_days: 30 #有效期还剩多久开始报错
 outside_search_path: #外部查找文件夹路径
@@ -117,6 +117,18 @@ map_flag: true #是否启用一个单元格展开到多个单元格的功能
 add_certain_pics: false #是否启用一个自动在word后添加照片的功能，以方便打印。从后面加照片以按照数字顺序添加。照片在./配置/pics文件夹里，前面.docx和后面.docx
 which_add_pic_way: 2 #使用那种方式添加照片，1为直接添加照片，2位合并word
 margin_mm: 5 #加入照片的四周留白，建议5-10，大于零。以加入照片的方式，照片放在./配置/pics文件夹里，按照照片顺序命名1，2，3.。。
+
+#模版模糊识别参数
+template_info_checks:
+  name_checks: [姓名, 名字]
+  phone_checks: [电话, 联系电话, 手机号, 联系方式]
+  extra_money_checks: [提取, 提取金额, 提取数额]
+  card_checks: [卡号, 独立经销商卡号, 经销商卡号]
+  order_checks: [货单号, 订单号, 订单号码, 货单号码]
+  date_checks: [日期, 开单日期]
+  remain_checks: [剩余货值, 剩余金额]
+  address_checks: [地址, 住址]
+  company_checks: [公司, 公司(xx公司，登记证号码：xx，股东名：xx)]
 
 access_token:
 owner:

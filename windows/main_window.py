@@ -592,7 +592,6 @@ class Main_Window(QMainWindow):
                     count += 1
                 card_id_client = kaidan_pair.client.sail_card_id
                 card_id_entrusted = kaidan_pair.entrusted.sail_card_id
-                kaidan_path = copy_template(mode, self.folder_path, name_concat, count, in_floader=self.global_config['in_floader'])
                 if (card_id_client != '' and not pd.isna(card_id_client)) and (card_id_entrusted != '' and not pd.isna(card_id_entrusted)):
                     kaidan_path = copy_template(mode, self.folder_path, name_concat, count, in_floader=self.global_config['in_floader'], template_sub_path=['有经销商卡号'])
                     changes = kaidan.get_sub_arr(kaidan_pair, mode = 'id', have_id = True)

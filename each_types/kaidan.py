@@ -2,45 +2,58 @@ from my_utils.operate_excel import People_Info, Pair
 from my_utils.operate_word import number_to_chinese
 import shutil, os
 
-def get_name_id_str(obj:People_Info):
-    if obj.native == "香港":
-        return f"{obj.name}(香港永久性居民身份证号码：{obj.id})"
+def match_name(obj:People_Info, company_flag = False):
+    name = obj.name
+    company = obj.company
+    if company_flag:
+        temp = company.rsplit('：', maxsplit=1)[0]
+        company = temp + '：' + name
+        return company
     else:
-        return f"{obj.name}(公民身份证号码：{obj.id})"
-    
-def get_name_id_st_without_kuohao(obj:People_Info):
-    if obj.native == "香港":
-        return f"{obj.name}，香港永久性居民身份证号码：{obj.id}。"
-    else:
-        return f"{obj.name}，公民身份证号码：{obj.id}。"
+        return name
 
-def get_name_sex_regin_birth_address_id_telephone(obj:People_Info, mode=''):
+def get_name_id_str(obj:People_Info, company_flag = False):
+    temp_name = match_name(obj, company_flag)
     if obj.native == "香港":
-        return_str = f"{obj.name}，{obj.sex}，{obj.birth}出生，住址：{obj.address}，香港永久性居民身份证号码：{obj.id}，联系电话：{obj.telephone}"
+        return f"{temp_name}(香港永久性居民身份证号码：{obj.id})"
     else:
-        return_str = f"{obj.name}，{obj.sex}，{obj.regin}族，{obj.birth}出生，住址：{obj.address}，公民身份证号码：{obj.id}，联系电话：{obj.telephone}"
+        return f"{temp_name}(公民身份证号码：{obj.id})"
+    
+def get_name_id_st_without_kuohao(obj:People_Info, company_flag = False):
+    temp_name = match_name(obj, company_flag)
+    if obj.native == "香港":
+        return f"{temp_name}，香港永久性居民身份证号码：{obj.id}。"
+    else:
+        return f"{temp_name}，公民身份证号码：{obj.id}。"
+
+def get_name_sex_regin_birth_address_id_telephone(obj:People_Info, mode='', company_flag = False):
+    temp_name = match_name(obj, company_flag)
+    if obj.native == "香港":
+        return_str = f"{temp_name}，{obj.sex}，{obj.birth}出生，住址：{obj.address}，香港永久性居民身份证号码：{obj.id}，联系电话：{obj.telephone}"
+    else:
+        return_str = f"{temp_name}，{obj.sex}，{obj.regin}族，{obj.birth}出生，住址：{obj.address}，公民身份证号码：{obj.id}，联系电话：{obj.telephone}"
     if mode == 'id':
         return_str += f'，独立经销商卡号：{obj.sail_card_id}'
     return return_str + '。'
 
-def page_two(pair:Pair):
-    client_str = get_name_id_str(pair.client)
-    entrusted_str = get_name_id_str(pair.entrusted)
+def page_two(pair:Pair, client_company_flag = False, entrusted_company_flag = False):
+    client_str = get_name_id_str(pair.client, client_company_flag)
+    entrusted_str = get_name_id_str(pair.entrusted, entrusted_company_flag)
     return client_str, entrusted_str
 
-def page_three(pair:Pair, mode=''):
-    client_str = get_name_sex_regin_birth_address_id_telephone(pair.client, mode)
-    entrusted_str = get_name_sex_regin_birth_address_id_telephone(pair.entrusted, mode)
+def page_three(pair:Pair, mode='', client_company_flag = False, entrusted_company_flag = False):
+    client_str = get_name_sex_regin_birth_address_id_telephone(pair.client, mode, client_company_flag)
+    entrusted_str = get_name_sex_regin_birth_address_id_telephone(pair.entrusted, mode, entrusted_company_flag)
     return client_str, entrusted_str
 
-def page_five(pair:Pair):
-    client_str = get_name_id_st_without_kuohao(pair.client)
-    entrusted_str = get_name_id_st_without_kuohao(pair.entrusted)
-    return client_str, entrusted_str 
+def page_five(pair:Pair, client_company_flag = False, entrusted_company_flag = False):
+    client_str = get_name_id_st_without_kuohao(pair.client, client_company_flag)
+    entrusted_str = get_name_id_st_without_kuohao(pair.entrusted, entrusted_company_flag)
+    return client_str, entrusted_str
 
-def page_six(pair:Pair):
-    client_str = get_name_sex_regin_birth_address_id_telephone(pair.client)
-    entrusted_str = get_name_sex_regin_birth_address_id_telephone(pair.entrusted)
+def page_six(pair:Pair, client_company_flag = False, entrusted_company_flag = False):
+    client_str = get_name_sex_regin_birth_address_id_telephone(pair.client, company_flag=client_company_flag)
+    entrusted_str = get_name_sex_regin_birth_address_id_telephone(pair.entrusted, company_flag=entrusted_company_flag)
     client_str = client_str.rsplit("联系电话", maxsplit=1)[0][:-1] + '。'
     entrusted_str = entrusted_str.rsplit("联系电话", maxsplit=1)[0][:-1] + '。'
     return client_str, entrusted_str  

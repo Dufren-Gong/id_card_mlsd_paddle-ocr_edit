@@ -6,19 +6,32 @@ from my_utils.Traditional_to_Simplified_Chinese import fan_to_jian
 from openpyxl import load_workbook
 from openpyxl.styles import Font
 from my_utils import check
-from my_utils.utils import find_in_catch_pic, find_png_by_name_fast
+from my_utils.utils import find_in_catch_pic, find_png_by_name_fast, get_config
 
 sheet_names = ['开单', '拿货', '转单', '年费', '补单', '补卡', '退单']
 catch_columns = ['性别', '归属地', '民族', '出生日期', '身份证号码', '住址']
 
-column_names = dict(姓名=check.check_name,
-                    联系电话=check.check_phone_number,
-                    提取金额=check.check_cash,
-                    独立经销商卡号=check.check_sail_card_id,
-                    货单号码=check.check_sail_id,
-                    开单日期=check.check_open_date,
-                    剩余货值=check.check_cash,
-                    地址=check.check_address)
+column_names = {
+    "姓名": check.check_name,
+    "联系电话": check.check_phone_number,
+    "提取金额": check.check_cash,
+    "独立经销商卡号": check.check_sail_card_id,
+    "货单号码": check.check_sail_id,
+    "开单日期": check.check_open_date,
+    "剩余货值": check.check_cash,
+    "地址": check.check_address,
+    "公司(xx公司，登记证号码：xx，股东名：xx)": check.check_company
+}
+
+map_dicts = {'姓名':'name_checks',
+             '联系电话':'phone_checks',
+             '提取金额':'extra_money_checks',
+             '独立经销商卡号':'card_checks',
+             '货单号码':'order_checks',
+             '开单日期':'date_checks',
+             '剩余货值':'remain_checks',
+             '地址':'address_checks',
+             '公司(xx公司，登记证号码：xx，股东名：xx)':'company_checks'}
 
 column_names_after = dict(性别=check.check_sex,
                     民族=check.check_nation,
@@ -44,7 +57,8 @@ class People_Info():
                  sail_card_id = '0',
                  sail_id = '',
                  open_date = '',
-                 left_money = '0') -> None:
+                 left_money = '0',
+                 company = '') -> None:
         self.raw_index_in_excel = raw_index_in_excel
         self.name = name
         self.telephone = telephone
@@ -62,6 +76,7 @@ class People_Info():
         self.sail_id = sail_id
         self.open_date = open_date
         self.left_money = left_money
+        self.company = company 
 
 class Pair():
     def __init__(self,
@@ -169,6 +184,11 @@ def get_nahuo_info(index, excel_row, info_json, add_flag = False):
         if add_flag:
             assert excel_row['货单号码'] != '' and not pd.isna(excel_row['货单号码'])
             assert excel_row['提取金额'] != '' and not pd.isna(excel_row['提取金额'])
+        try:
+            company = excel_row['公司(xx公司，登记证号码：xx，股东名：xx)'].strip().replace(',', '，')
+            company = re.sub(r'[\n\r ]', '', company)
+        except:
+            company = ''
     except:
         return None
     try:
@@ -185,7 +205,8 @@ def get_nahuo_info(index, excel_row, info_json, add_flag = False):
                         excel_row['提取金额'],
                         '0',
                         excel_row['独立经销商卡号'],
-                        excel_row['货单号码'])
+                        excel_row['货单号码'],
+                        company=company)
     except:
         return None
 
@@ -207,6 +228,11 @@ def get_zhuandan_info(index, excel_row, info_json, add_flag=False, end_flag=Fals
             # excel_row['开单日期'] = manage_data(excel_row['开单日期'])
         if not end_flag:
             assert excel_row['独立经销商卡号'] != '' and not pd.isna(excel_row['独立经销商卡号'])
+        try:
+            company = excel_row['公司(xx公司，登记证号码：xx，股东名：xx)'].strip().replace(',', '，')
+            company = re.sub(r'[\n\r ]', '', company)
+        except:
+            company = ''
     except:
         return None
     try:
@@ -225,7 +251,8 @@ def get_zhuandan_info(index, excel_row, info_json, add_flag=False, end_flag=Fals
                        excel_row['独立经销商卡号'],
                        excel_row['货单号码'],
                        excel_row['开单日期'],
-                       excel_row['剩余货值'])
+                       excel_row['剩余货值'],
+                       company=company)
     except:
         return None
     
@@ -343,6 +370,11 @@ def get_nianfei_info(index, excel_row, info_json):
         else:
             if isinstance(excel_row['地址'], str) and excel_row['地址'].replace(' ', '') != '':
                 info_json['住址'] = excel_row['地址']
+        try:
+            company = excel_row['公司(xx公司，登记证号码：xx，股东名：xx)'].strip().replace(',', '，')
+            company = re.sub(r'[\n\r ]', '', company)
+        except:
+            company = ''
     except:
         return None
     try:
@@ -358,7 +390,8 @@ def get_nianfei_info(index, excel_row, info_json):
                        info_json['民族'],
                        '0',
                        check.annual_fee,
-                       excel_row['独立经销商卡号'])
+                       excel_row['独立经销商卡号'],
+                       company=company)
     except:
         return None
 
@@ -721,22 +754,24 @@ def read_openpyxl_by_str(ws):
             cell.value = str(cell.value) if cell.value is not None else None
     return ws
 
-def map_info(ws, template_column_info:str, i, check_cloumns, column_letters):
+def map_info(ws, template_column_info:str, i, check_cloumns, column_letters, map_info_checks):
     infos_t = template_column_info.split('\n')
     infos = []
     for tt in infos_t:
         if tt != '' and tt != ' ':
             infos.append(tt)
     for name_index, j in enumerate(check_cloumns):
+        cache_checks = map_info_checks[map_dicts[j]]
         start_index = -1
         start_index_temp = -1
         for index, info in enumerate(infos):
-            if j in info:
-                if "：" in info:
-                    start_index = index
-                    break
-                else:
-                    start_index_temp = index
+            for m in cache_checks:
+                if m in info:
+                    if "：" in info:
+                        start_index = index
+                        break
+                    else:
+                        start_index_temp = index
         if start_index == -1:
             if start_index_temp == -1:
                 continue
@@ -747,7 +782,7 @@ def map_info(ws, template_column_info:str, i, check_cloumns, column_letters):
         if j == '地址' and start_index != len(infos) - 1:
             for k in range(start_index + 1, len(infos)):
                 next_text = infos[k]
-                if any(m in next_text for m in ['：', '(', '（', ')', '）']):
+                if any(mn in next_text for mn in ['：', '(', '（', ')', '）']):
                     break
                 else:
                     temp_info_arr.append(next_text)
@@ -756,7 +791,7 @@ def map_info(ws, template_column_info:str, i, check_cloumns, column_letters):
         if "：" in first_line:
             a = first_line.split('：', maxsplit=1)[-1]
         else:
-            a = first_line.split(j, maxsplit=1)[-1]
+            a = first_line.split(m, maxsplit=1)[-1]
         result_str = a.strip().replace(' ', '')
 
         if j == '地址':
@@ -880,6 +915,8 @@ def check_excel(file_path, pic_floader, sheet_name = None, search_extra_floader 
         if os.path.exists(save_path):
             shutil.rmtree(save_path)
         os.makedirs(save_path, exist_ok=True)
+    global_config = get_config()
+    map_info_checks = global_config['template_info_checks']
     for sheet in sheets:
         ws = wb[sheet]
         ws = read_openpyxl_by_str(ws)
@@ -903,7 +940,7 @@ def check_excel(file_path, pic_floader, sheet_name = None, search_extra_floader 
             if not pd.isna(template_column_info):
                 if not map_flag: template_column_info = fan_to_jian(template_column_info)
                 ws[f"{template_column_letters}{i}"].value = template_column_info
-                ws = map_info(ws, template_column_info, i, check_cloumns, column_letters)
+                ws = map_info(ws, template_column_info, i, check_cloumns, column_letters, map_info_checks)
 
         for index, letter in enumerate(column_letters):
             c_name = check_cloumns[index]
