@@ -1,5 +1,5 @@
 import pandas as pd
-import os, json, shutil, re
+import os, json, shutil, re, copy
 from natsort import natsorted
 import numpy as np
 from my_utils.Traditional_to_Simplified_Chinese import fan_to_jian
@@ -754,52 +754,33 @@ def read_openpyxl_by_str(ws):
             cell.value = str(cell.value) if cell.value is not None else None
     return ws
 
-def map_info(ws, template_column_info:str, i, check_cloumns, column_letters, map_info_checks):
-    infos_t = template_column_info.split('\n')
-    infos = []
-    for tt in infos_t:
-        if tt != '' and tt != ' ':
-            infos.append(tt)
+def map_info(ws, template_column_info:str, i, check_cloumns, column_letters, map_info_checks, all_checks):
+    all_checks_temp = copy.deepcopy(all_checks)
+    infos = [j for j in template_column_info.split('\n') if j != '' and j != ' ']
     for name_index, j in enumerate(check_cloumns):
         cache_checks = map_info_checks[map_dicts[j]]
-        start_index = -1
-        start_index_temp = -1
+        cache_checks.sort(key=lambda x: len(x), reverse=True)
         for index, info in enumerate(infos):
+            pass_flag = False
             for m in cache_checks:
-                if m in info:
-                    if "：" in info:
-                        start_index = index
-                        break
-                    else:
-                        start_index_temp = index
-        if start_index == -1:
-            if start_index_temp == -1:
-                continue
-            else:
-                start_index = start_index_temp
-
-        temp_info_arr = [infos[start_index]]
-        if j == '地址' and start_index != len(infos) - 1:
-            for k in range(start_index + 1, len(infos)):
-                next_text = infos[k]
-                if any(mn in next_text for mn in ['：', '(', '（', ')', '）']):
+                if info.startswith(m):
+                    name_t = column_letters[name_index]
+                    info_temp = info
+                    if j in ['地址', '公司(xx公司，登记证号码：xx，股东名：xx)']:
+                        for next_two in infos[index + 1: min(index + 3, len(infos))]:
+                            if any(mn in next_two for mn in ['：', '(', '（', ')', '）']) or any(next_two.startswith(mn) for mn in all_checks_temp):
+                                break
+                            else:
+                                info_temp += next_two.strip()
+                                infos.remove(next_two)
+                    ws[f"{name_t}{i}"].value = info_temp.replace('：', '').split(m, maxsplit=1)[-1].strip()
+                    for ss in cache_checks:
+                        all_checks_temp.remove(ss)
+                    infos.remove(info)
+                    pass_flag = True
                     break
-                else:
-                    temp_info_arr.append(next_text)
-        
-        first_line = temp_info_arr[0]
-        if "：" in first_line:
-            a = first_line.split('：', maxsplit=1)[-1]
-        else:
-            a = first_line.split(m, maxsplit=1)[-1]
-        result_str = a.strip().replace(' ', '')
-
-        if j == '地址':
-            for m in temp_info_arr[1:]:
-                result_str += m.strip().replace(' ', '')
-        if result_str != '':
-            name_t = column_letters[name_index]
-            ws[f"{name_t}{i}"].value = result_str
+            if pass_flag:
+                break
     return ws
 
 def chech_and_add(arr_t: list, i):
@@ -807,7 +788,7 @@ def chech_and_add(arr_t: list, i):
         arr_t.append(i)
     return arr_t
 
-def split_on_blank_lines(text: str):
+def split_on_blank_lines(text: str, namechecks: list):
     """Split a cell's text into chunks separated by one or more blank lines."""
     if text is None:
         return []
@@ -816,8 +797,23 @@ def split_on_blank_lines(text: str):
     if not s:
         return []
     # Split only on blank lines (>=1 empty line), not on single line breaks
-    parts = re.split(r"\n\s*\n+", s)
-    return [p.strip() for p in parts if (p.count('\n') >= 1 and p.count('：') >=1)]
+    parts_temp = re.split(r"\n\s*\n+", s)
+    parts = []
+    for i in parts_temp:
+        j = i.split('\n')
+        pass_flag = False
+        for k in j:
+            if any(k.strip().startswith(check) for check in namechecks):
+                pass_flag = True
+                parts.append(i)
+                break
+        if not pass_flag:
+            # if i.count('\n') >= 1 and i.count('：') >=1:
+                if len(parts) > 0:
+                    parts[-1] += '\n' + i
+                else:
+                    parts.append(i)
+    return [p.strip() for p in parts]
 
 # def extract_name(text):
 #     text_temp = text.split('\n')
@@ -867,12 +863,12 @@ def split_on_blank_lines(text: str):
 #             first_temp.append(None)
 #     return first_temp
 
-def expend_column(ws, col, start_row):
+def expend_column(ws, col, start_row, namechecks):
     row = start_row
     while row <= ws.max_row:
         value = fan_to_jian(ws[f'{col}{row}'].value)
         if isinstance(value, str) and value.strip():
-            parts = split_on_blank_lines(value)
+            parts = split_on_blank_lines(value, namechecks)
             if len(parts) >= 2:
                 ws.insert_rows(row + 1, amount=len(parts) - 1)
                 for i, part in enumerate(parts):
@@ -932,15 +928,17 @@ def check_excel(file_path, pic_floader, sheet_name = None, search_extra_floader 
         column_letters = column_letters[:-1]
         #将一个单元格多个信息展平
         if map_flag:
-            ws = expend_column(ws, template_column_letters, 2)
+            ws = expend_column(ws, template_column_letters, 2, global_config['template_info_checks']['name_checks'])
         #将模版信息展平
         row_count = ws.max_row
+        all_checks = [x for check_sample1 in check_cloumns for x in map_info_checks[map_dicts[check_sample1]]]
+        all_checks.sort(key=lambda x: len(x), reverse=False)
         for i in range(2, row_count + 1):
             template_column_info = ws[f"{template_column_letters}{i}"].value
             if not pd.isna(template_column_info):
                 if not map_flag: template_column_info = fan_to_jian(template_column_info)
                 ws[f"{template_column_letters}{i}"].value = template_column_info
-                ws = map_info(ws, template_column_info, i, check_cloumns, column_letters, map_info_checks)
+                ws = map_info(ws, template_column_info, i, check_cloumns, column_letters, map_info_checks, all_checks)
 
         for index, letter in enumerate(column_letters):
             c_name = check_cloumns[index]
