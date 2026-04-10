@@ -746,7 +746,8 @@ class Main_Window(QMainWindow):
         self.row_catch = Row_Catch(
             central_widget,
             self.shape.shape_tuples[4][0],
-            self.shape.label_height * self.global_config['main_window_conf']['catch_max_height']
+            self.shape.label_height * self.global_config['main_window_conf']['catch_max_height'],
+            self.global_config['temp_text_color']
         )
 
     def change_function_index(self):

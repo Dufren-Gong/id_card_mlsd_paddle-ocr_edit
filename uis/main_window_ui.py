@@ -402,21 +402,24 @@ class Row_Catch():
     def __init__(self,
                  centralwidget,
                  row_catch_shape: tuple,
-                 max_height) -> None:
+                 max_height,
+                 color) -> None:
         self.centralwidget = centralwidget
-        self.init_one_pic_name_lineedit(row_catch_shape, max_height)
+        self.init_one_pic_name_lineedit(row_catch_shape, max_height, color)
 
-    def init_one_pic_name_lineedit(self, shape, max_height):
+    def init_one_pic_name_lineedit(self, shape, max_height, color):
         self.pic_name_lineedit = ResizablePlainTextEdit(max_height, shape[3], parent=self.centralwidget)
         self.pic_name_lineedit.setGeometry(QtCore.QRect(*shape))
         self.pic_name_lineedit.setObjectName("pic_name_lineedit8")
         self.pic_name_lineedit.setToolTip('当出现选择文本复制，但复制不全的时候，可以把所有文本复制到这里进行选取复制。')
         self.pic_name_lineedit.setPlaceholderText('文本暂存区,可随意复制,粘贴。双击展开/收起')
-        self.pic_name_lineedit.setStyleSheet("""
+        styles = """
             QPlainTextEdit {
                 border-width: 1px;          /* 边缘宽度 */
                 border-style: solid;        /* 边缘样式 */
                 border-color: black;          /* 边缘颜色 */
                 background-color: white;/* 背景颜色 */
+                color: """+ color +""";  /* 设置字体颜色为红色 */
             }
-        """)
+        """
+        self.pic_name_lineedit.setStyleSheet(styles)
