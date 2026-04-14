@@ -14,6 +14,7 @@ def get_sub_arr_nianfei(kaidan_pair:Pair):
     annual_fee = kaidan_pair.client.annual_fee
     annual_fee_ch = number_to_chinese(annual_fee)
     changes.extend([annual_fee, annual_fee_ch])
+    changes.append(kaidan_pair.client.name)
     changes.append(kaidan_pair.entrusted.sail_card_id)
     client_str, entrusted_str = kaidan.page_five(kaidan_pair, client_company_flag, entrusted_company_flag)
     changes.extend([client_str, entrusted_str])
