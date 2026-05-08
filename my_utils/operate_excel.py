@@ -808,7 +808,7 @@ def split_on_blank_lines(text: str, namechecks: list):
                 parts.append(i)
                 break
         if not pass_flag:
-            # if i.count('\n') >= 1 and i.count('：') >=1:
+            if i.count('\n') >= 1 and i.count('：') >=1:
                 if len(parts) > 0:
                     parts[-1] += '\n' + i
                 else:

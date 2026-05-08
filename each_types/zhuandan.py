@@ -65,7 +65,8 @@ def get_company_flag(temp:Pair):
         entrusted_company_name = ''
     return client_company_flag, entrusted_company_flag, client_company_name, entrusted_company_name
 
-def get_sub_arr_shouquan(kaidan_pair:Pair, company_id):
+def get_sub_arr_shouquan(kaidan_pair:Pair, global_config):
+    company_id = global_config['company_name']
     changes = []
     temp = copy.deepcopy(kaidan_pair)
     temp.swap_client_and_entrusted()
@@ -75,9 +76,9 @@ def get_sub_arr_shouquan(kaidan_pair:Pair, company_id):
     changes.extend([client_str, entrusted_str])
     client_str, entrusted_str = kaidan.page_three(temp, client_company_flag = client_company_flag, entrusted_company_flag = entrusted_company_flag)
     changes.extend([client_str, entrusted_str])
-    if company_id == 'SIBELLAC_HOLDINGS_LIMITED':
+    if company_id in global_config['unique_settings']['shouquan_add_client_name']:
         changes.append(temp.client.name)
-    elif company_id == 'BASTION':
+    elif company_id in global_config['unique_settings']['shouquan_add_beiweituo_name']:
         changes.append(temp.beiweituo.name)
     changes.append(temp.beiweituo.sail_card_id)
     changes.append(temp.beiweituo.sail_id)
